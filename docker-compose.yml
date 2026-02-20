@@ -1,0 +1,15 @@
+services:
+  guenther:
+    build: .
+    container_name: guenther
+    ports:
+      - "3333:5000"
+    volumes:
+      - guenther-data:/app/data
+    environment:
+      - DATA_DIR=/app/data
+      - DEBUG=false
+    restart: unless-stopped
+
+volumes:
+  guenther-data:

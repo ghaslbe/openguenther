@@ -1,0 +1,161 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import ChatList from './components/ChatList';
+import ChatWindow from './components/ChatWindow';
+import GuentherBox from './components/GuentherBox';
+import Settings from './components/Settings';
+import { fetchChats, fetchChat, deleteChat } from './services/api';
+import { getSocket } from './services/socket';
+
+export default function App() {
+  const [chats, setChats] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [guentherLogs, setGuentherLogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [guentherWidth, setGuentherWidth] = useState(480);
+
+  const isResizing = useRef(false);
+  const socket = getSocket();
+
+  // Load chats on mount
+  useEffect(() => {
+    loadChats();
+  }, []);
+
+  // Socket event listeners
+  useEffect(() => {
+    socket.on('guenther_log', (data) => {
+      setGuentherLogs(prev => [...prev, data]);
+    });
+
+    socket.on('chat_created', (data) => {
+      setActiveChatId(data.chat_id);
+      loadChats();
+    });
+
+    socket.on('chat_updated', (data) => {
+      setChats(prev => prev.map(c =>
+        c.id === data.chat_id ? { ...c, title: data.title } : c
+      ));
+    });
+
+    socket.on('agent_start', () => {
+      setIsLoading(true);
+    });
+
+    socket.on('agent_response', (data) => {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: data.content
+      }]);
+    });
+
+    socket.on('agent_end', () => {
+      setIsLoading(false);
+      loadChats();
+    });
+
+    return () => {
+      socket.off('guenther_log');
+      socket.off('chat_created');
+      socket.off('chat_updated');
+      socket.off('agent_start');
+      socket.off('agent_response');
+      socket.off('agent_end');
+    };
+  }, [socket]);
+
+  // Resize handlers
+  const handleResizeStart = useCallback((e) => {
+    e.preventDefault();
+    isResizing.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const handleMouseMove = (e) => {
+      if (!isResizing.current) return;
+      const newWidth = window.innerWidth - e.clientX;
+      setGuentherWidth(Math.max(300, Math.min(newWidth, window.innerWidth - 500)));
+    };
+
+    const handleMouseUp = () => {
+      isResizing.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, []);
+
+  async function loadChats() {
+    const data = await fetchChats();
+    setChats(data);
+  }
+
+  async function handleSelectChat(chatId) {
+    setActiveChatId(chatId);
+    const chat = await fetchChat(chatId);
+    if (chat && chat.messages) {
+      setMessages(chat.messages.map(m => ({
+        role: m.role,
+        content: m.content
+      })));
+    }
+  }
+
+  function handleNewChat() {
+    setActiveChatId(null);
+    setMessages([]);
+  }
+
+  async function handleDeleteChat(chatId) {
+    await deleteChat(chatId);
+    if (activeChatId === chatId) {
+      setActiveChatId(null);
+      setMessages([]);
+    }
+    loadChats();
+  }
+
+  function handleSendMessage(content) {
+    setMessages(prev => [...prev, { role: 'user', content }]);
+    socket.emit('send_message', {
+      chat_id: activeChatId,
+      content
+    });
+  }
+
+  return (
+    <div className="app-wrapper">
+      <div className="app-topbar">
+        <span className="topbar-open">OPEN</span><span className="topbar-guenther">guenther</span>
+      </div>
+      <div className="app">
+        <ChatList
+        chats={chats}
+        activeChatId={activeChatId}
+        onSelectChat={handleSelectChat}
+        onNewChat={handleNewChat}
+        onDeleteChat={handleDeleteChat}
+        onOpenSettings={() => setShowSettings(true)}
+      />
+      <ChatWindow
+        messages={messages}
+        onSendMessage={handleSendMessage}
+        isLoading={isLoading}
+        activeChatId={activeChatId}
+      />
+      <GuentherBox
+        logs={guentherLogs}
+        width={guentherWidth}
+        onResizeStart={handleResizeStart}
+      />
+      {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+      </div>
+    </div>
+  );
+}
