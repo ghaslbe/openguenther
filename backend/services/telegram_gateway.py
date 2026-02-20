@@ -1,3 +1,5 @@
+import base64
+import io
 import threading
 import time
 import re
@@ -58,6 +60,19 @@ class TelegramGateway:
         if len(text) > 4096:
             text = text[:4090] + "\n[...]"
         self._api_post(token, "sendMessage", chat_id=chat_id, text=text)
+
+    def _send_photo(self, token, chat_id, image_bytes, caption=None):
+        url = TELEGRAM_API.format(token=token, method="sendPhoto")
+        try:
+            files = {"photo": ("image.png", io.BytesIO(image_bytes), "image/png")}
+            data = {"chat_id": chat_id}
+            if caption:
+                data["caption"] = caption[:1024]
+            r = http_requests.post(url, files=files, data=data, timeout=30)
+            return r.json()
+        except Exception as e:
+            logger.error(f"Telegram sendPhoto error: {e}")
+            return None
 
     def _get_updates(self, token, offset):
         url = TELEGRAM_API.format(token=token, method="getUpdates")
@@ -212,8 +227,12 @@ class TelegramGateway:
             self.socketio.emit("agent_response", {"chat_id": chat_id, "content": response})
             self.socketio.emit("agent_end", {"chat_id": chat_id})
 
-            clean = self._clean_for_telegram(response)
-            self._send_message(token, telegram_chat_id, clean)
+            text_part, images = self._extract_images(response)
+            clean = self._clean_text_for_telegram(text_part)
+            if clean:
+                self._send_message(token, telegram_chat_id, clean)
+            for img_bytes in images:
+                self._send_photo(token, telegram_chat_id, img_bytes)
 
         except Exception as e:
             logger.error(f"Error processing Telegram message: {e}", exc_info=True)
@@ -222,13 +241,26 @@ class TelegramGateway:
                 f"Fehler bei der Verarbeitung: {str(e)}"
             )
 
-    def _clean_for_telegram(self, text):
-        """Strip base64 image embeds and truncate for Telegram."""
-        text = re.sub(
-            r'!\[.*?\]\(data:image/[^)]+\)',
-            '[Bild generiert – im Browser ansehen]',
-            text
-        )
+    def _extract_images(self, text):
+        """Extract base64 image embeds from markdown, return (clean_text, [image_bytes])."""
+        images = []
+
+        def replace_image(m):
+            data_uri = m.group(1)
+            try:
+                # data:image/png;base64,<data>
+                b64_part = data_uri.split(",", 1)[1]
+                images.append(base64.b64decode(b64_part))
+            except Exception as e:
+                logger.warning(f"Could not decode base64 image: {e}")
+            return ""
+
+        clean = re.sub(r'!\[.*?\]\((data:image/[^)]+)\)', replace_image, text)
+        clean = clean.strip()
+        return clean, images
+
+    def _clean_text_for_telegram(self, text):
+        """Truncate text for Telegram message limit."""
         if len(text) > 4096:
             text = text[:4090] + "\n[...]"
         return text

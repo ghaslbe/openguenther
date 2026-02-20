@@ -39,5 +39,24 @@ def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'
         json=payload,
         timeout=120
     )
-    response.raise_for_status()
+
+    if not response.ok:
+        try:
+            error_body = response.json()
+            error_detail = error_body.get('error', {})
+            if isinstance(error_detail, dict):
+                error_msg = error_detail.get('message', str(error_body))
+                error_code = error_detail.get('code', response.status_code)
+            else:
+                error_msg = str(error_detail)
+                error_code = response.status_code
+        except Exception:
+            error_msg = response.text or response.reason
+            error_code = response.status_code
+
+        raise requests.HTTPError(
+            f"OpenRouter {error_code}: {error_msg}",
+            response=response
+        )
+
     return response.json()
