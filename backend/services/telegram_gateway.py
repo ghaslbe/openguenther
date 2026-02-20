@@ -10,11 +10,13 @@ import requests as http_requests
 
 from models import create_chat, add_message, get_chat, update_chat_title
 from services.agent import run_agent
+from services import image_store
 from config import get_settings
 
 logger = logging.getLogger(__name__)
 
 TELEGRAM_API = "https://api.telegram.org/bot{token}/{method}"
+TELEGRAM_FILE_URL = "https://api.telegram.org/file/bot{token}/{file_path}"
 
 
 class TelegramGateway:
@@ -74,6 +76,27 @@ class TelegramGateway:
             logger.error(f"Telegram sendPhoto error: {e}")
             return None
 
+    def _send_typing(self, token, chat_id):
+        """Send a single typing action indicator."""
+        self._api_post(token, "sendChatAction", chat_id=chat_id, action="typing")
+
+    def _start_typing_loop(self, token, chat_id):
+        """
+        Start a background thread that sends 'typing' every 4 seconds.
+        Returns a threading.Event — set it to stop the loop.
+        """
+        stop_event = threading.Event()
+
+        def loop():
+            while not stop_event.wait(4):
+                self._send_typing(token, chat_id)
+
+        # Send immediately before first 4s wait
+        self._send_typing(token, chat_id)
+        t = threading.Thread(target=loop, daemon=True)
+        t.start()
+        return stop_event
+
     def _get_updates(self, token, offset):
         url = TELEGRAM_API.format(token=token, method="getUpdates")
         try:
@@ -90,6 +113,31 @@ class TelegramGateway:
         except Exception as e:
             logger.error(f"getUpdates error: {e}")
             return None
+
+    def _download_telegram_photo(self, token, file_id):
+        """
+        Download a photo from Telegram.
+        Returns (bytes, mime_type) or (None, None) on error.
+        """
+        result = self._api_post(token, "getFile", file_id=file_id)
+        if not result or not result.get("ok"):
+            logger.error(f"getFile failed: {result}")
+            return None, None
+
+        file_path = result["result"]["file_path"]
+        url = TELEGRAM_FILE_URL.format(token=token, file_path=file_path)
+        try:
+            r = http_requests.get(url, timeout=30)
+            if not r.ok:
+                logger.error(f"Photo download failed: {r.status_code}")
+                return None, None
+            mime = "image/jpeg"
+            if file_path.lower().endswith(".png"):
+                mime = "image/png"
+            return r.content, mime
+        except Exception as e:
+            logger.error(f"Photo download error: {e}")
+            return None, None
 
     def _poll_loop(self, token):
         offset = 0
@@ -134,21 +182,55 @@ class TelegramGateway:
             )
             return
 
-        # Reject non-text content
-        media_keys = ("photo", "audio", "voice", "video", "document", "sticker", "animation")
-        if any(k in msg for k in media_keys):
+        # Reject unsupported media types (but allow photos)
+        unsupported = ("audio", "voice", "video", "document", "sticker", "animation")
+        if any(k in msg for k in unsupported):
             self._send_message(
                 token, telegram_chat_id,
-                "Aktuell werden nur Text-Nachrichten unterstützt. "
-                "Bilder und Audio werden nicht verarbeitet."
+                "Aktuell werden nur Text-Nachrichten und Fotos unterstützt."
             )
             return
 
+        # ── Photo message ──
+        if "photo" in msg:
+            caption = msg.get("caption", "").strip() or "Was soll ich mit diesem Bild machen?"
+
+            if username not in self._user_sessions:
+                title = f"Telegram: @{username}"
+                chat_id = create_chat(title)
+                self._user_sessions[username] = chat_id
+                self.socketio.emit("chat_created", {"chat_id": chat_id, "title": title})
+
+            chat_id = self._user_sessions[username]
+
+            # Get highest-resolution variant
+            photo = msg["photo"][-1]
+            file_id = photo["file_id"]
+
+            img_bytes, mime = self._download_telegram_photo(token, file_id)
+            if img_bytes is None:
+                self._send_message(
+                    token, telegram_chat_id,
+                    "Fehler: Bild konnte nicht heruntergeladen werden."
+                )
+                return
+
+            img_b64 = base64.b64encode(img_bytes).decode()
+
+            t = threading.Thread(
+                target=self._process_message,
+                args=(token, telegram_chat_id, username, chat_id, caption),
+                kwargs={"image_b64": img_b64, "image_mime": mime},
+                daemon=True
+            )
+            t.start()
+            return
+
+        # ── Text message ──
         text = msg.get("text", "").strip()
         if not text:
             return
 
-        # /new command: start a new chat session
         if text.startswith("/new"):
             parts = text.split(None, 1)
             title = (
@@ -165,16 +247,15 @@ class TelegramGateway:
             )
             return
 
-        # /start: welcome message (already whitelisted at this point)
         if text == "/start":
             self._send_message(
                 token, telegram_chat_id,
                 "Hallo! Ich bin Guenther, dein MCP-Agent. "
-                "Schreib einfach los oder nutze /new <Name> für eine neue Chat-Session."
+                "Schreib einfach los oder nutze /new <Name> für eine neue Chat-Session. "
+                "Du kannst mir auch Fotos schicken!"
             )
             return
 
-        # Get or create session for user
         if username not in self._user_sessions:
             title = f"Telegram: @{username}"
             chat_id = create_chat(title)
@@ -183,7 +264,6 @@ class TelegramGateway:
 
         chat_id = self._user_sessions[username]
 
-        # Process message in background thread to not block the poller
         t = threading.Thread(
             target=self._process_message,
             args=(token, telegram_chat_id, username, chat_id, text),
@@ -191,7 +271,10 @@ class TelegramGateway:
         )
         t.start()
 
-    def _process_message(self, token, telegram_chat_id, username, chat_id, text):
+    def _process_message(self, token, telegram_chat_id, username, chat_id, text,
+                         image_b64=None, image_mime=None):
+        typing_stop = self._start_typing_loop(token, telegram_chat_id)
+        session_key = f"tg_{username}"
         try:
             add_message(chat_id, "user", text)
             self.socketio.emit("chat_updated", {"chat_id": chat_id, "title": None})
@@ -212,6 +295,20 @@ class TelegramGateway:
                 title = text[:50] + ("..." if len(text) > 50 else "")
                 update_chat_title(chat_id, title)
                 self.socketio.emit("chat_updated", {"chat_id": chat_id, "title": title})
+
+            # If a photo was sent, store it and inject a text hint for the LLM
+            if image_b64:
+                image_store.store(session_key, image_b64, image_mime or "image/jpeg")
+                for i in range(len(messages) - 1, -1, -1):
+                    if messages[i]["role"] == "user":
+                        hint = (
+                            f"\n\n[System: Bild vom Nutzer empfangen (Session-Key: '{session_key}'). "
+                            f"Für Bildbearbeitung: process_image(session_key='{session_key}', operation='...'). "
+                            f"Operationen: blur, grayscale, rotate, resize, sharpen, "
+                            f"brightness, contrast, flip_horizontal, flip_vertical, invert]"
+                        )
+                        messages[i]["content"] = messages[i]["content"] + hint
+                        break
 
             settings = get_settings()
 
@@ -240,6 +337,10 @@ class TelegramGateway:
                 token, telegram_chat_id,
                 f"Fehler bei der Verarbeitung: {str(e)}"
             )
+        finally:
+            typing_stop.set()
+            if image_b64:
+                image_store.remove(session_key)
 
     def _extract_images(self, text):
         """Extract base64 image embeds from markdown, return (clean_text, [image_bytes])."""
@@ -248,7 +349,6 @@ class TelegramGateway:
         def replace_image(m):
             data_uri = m.group(1)
             try:
-                # data:image/png;base64,<data>
                 b64_part = data_uri.split(",", 1)[1]
                 images.append(base64.b64decode(b64_part))
             except Exception as e:
@@ -260,7 +360,6 @@ class TelegramGateway:
         return clean, images
 
     def _clean_text_for_telegram(self, text):
-        """Truncate text for Telegram message limit."""
         if len(text) > 4096:
             text = text[:4090] + "\n[...]"
         return text

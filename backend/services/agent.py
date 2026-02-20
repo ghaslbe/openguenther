@@ -33,11 +33,18 @@ def _select_tools(all_tools, chat_messages, api_key, model, emit_log):
             "description": func.get("description", "")
         })
 
-    # Get the last user message
+    # Get the last user message (handle vision content arrays)
     last_user_msg = ""
     for msg in reversed(chat_messages):
         if msg.get("role") == "user":
-            last_user_msg = msg.get("content", "")
+            content = msg.get("content", "")
+            if isinstance(content, list):
+                last_user_msg = " ".join(
+                    part.get("text", "") for part in content
+                    if part.get("type") == "text"
+                )
+            else:
+                last_user_msg = content
             break
 
     router_messages = [
@@ -129,7 +136,15 @@ def run_agent(chat_messages, settings, emit_log):
     for msg in chat_messages:
         role = msg.get('role', '?')
         content = msg.get('content', '')
-        emit_log({"type": "text", "message": f"[{role}] {content}"})
+        if isinstance(content, list):
+            text_parts = [p.get('text', '') for p in content if p.get('type') == 'text']
+            has_image = any(p.get('type') == 'image_url' for p in content)
+            display = " ".join(text_parts)
+            if has_image:
+                display += " [+Bild]"
+        else:
+            display = content
+        emit_log({"type": "text", "message": f"[{role}] {display}"})
 
     collected_images = []
     max_iterations = 10
@@ -264,8 +279,18 @@ def _sanitize_messages(messages):
     for msg in messages:
         if isinstance(msg, dict):
             m = dict(msg)
-            if 'content' in m and isinstance(m['content'], str) and len(m['content']) > 500:
-                m['content'] = m['content'][:500] + f"... ({len(msg['content'])} chars)"
+            if 'content' in m:
+                if isinstance(m['content'], str) and len(m['content']) > 500:
+                    m['content'] = m['content'][:500] + f"... ({len(msg['content'])} chars)"
+                elif isinstance(m['content'], list):
+                    # Vision content: truncate image_url parts for logging
+                    parts = []
+                    for part in m['content']:
+                        if part.get('type') == 'image_url':
+                            parts.append({'type': 'image_url', 'image_url': {'url': '[base64 gekuerzt]'}})
+                        else:
+                            parts.append(part)
+                    m['content'] = parts
             sanitized.append(m)
         else:
             sanitized.append(msg)

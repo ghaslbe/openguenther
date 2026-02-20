@@ -10,10 +10,11 @@ RUN npm run build
 FROM python:3.12-slim
 WORKDIR /app
 
-# Install system dependencies (fonts for Pillow text rendering)
+# Install system dependencies (fonts for Pillow text rendering, ImageMagick for image processing)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
+    imagemagick \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
