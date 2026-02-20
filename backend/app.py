@@ -21,10 +21,12 @@ from mcp.tools.email_tool import send_email, TOOL_DEFINITION as EMAIL_TOOL_DEF, 
 from mcp.tools.help_tool import list_available_tools, get_help, LIST_TOOLS_DEFINITION, HELP_DEFINITION
 from mcp.manager import load_external_tools
 from services.agent import run_agent
+from services.telegram_gateway import TelegramGateway
 
 app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
+telegram_gateway = TelegramGateway(socketio)
 
 app.register_blueprint(chat_bp)
 app.register_blueprint(settings_bp)
@@ -251,6 +253,12 @@ def handle_message(data):
 @socketio.on('disconnect')
 def handle_disconnect():
     pass
+
+
+# Auto-start Telegram gateway if token is configured
+_tg_token = get_settings().get('telegram', {}).get('bot_token', '')
+if _tg_token:
+    telegram_gateway.start(_tg_token)
 
 
 if __name__ == '__main__':

@@ -10,6 +10,10 @@ DEFAULT_SETTINGS = {
     'model': 'openai/gpt-4o-mini',
     'mcp_servers': [],
     'tool_settings': {},
+    'telegram': {
+        'bot_token': '',
+        'allowed_users': [],
+    },
 }
 
 

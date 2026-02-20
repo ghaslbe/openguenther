@@ -81,3 +81,60 @@ def toggle_mcp_server(server_id):
             break
     save_settings(settings)
     return jsonify({'success': True})
+
+
+@settings_bp.route('/api/telegram/settings', methods=['GET'])
+def get_telegram_settings():
+    settings = get_settings()
+    cfg = settings.get('telegram', {})
+    token = cfg.get('bot_token', '')
+    masked = ''
+    if token and len(token) > 12:
+        masked = token[:8] + '...' + token[-4:]
+    elif token:
+        masked = '***'
+    return jsonify({
+        'bot_token_masked': masked,
+        'allowed_users': cfg.get('allowed_users', []),
+    })
+
+
+@settings_bp.route('/api/telegram/settings', methods=['PUT'])
+def update_telegram_settings():
+    data = request.get_json()
+    settings = get_settings()
+    if 'telegram' not in settings:
+        settings['telegram'] = {}
+
+    if 'bot_token' in data and data['bot_token']:
+        settings['telegram']['bot_token'] = data['bot_token']
+    if 'allowed_users' in data:
+        settings['telegram']['allowed_users'] = data['allowed_users']
+
+    save_settings(settings)
+    return jsonify({'success': True})
+
+
+@settings_bp.route('/api/telegram/status', methods=['GET'])
+def get_telegram_status():
+    from app import telegram_gateway
+    return jsonify({'running': telegram_gateway.is_running()})
+
+
+@settings_bp.route('/api/telegram/restart', methods=['POST'])
+def restart_telegram():
+    from app import telegram_gateway
+    settings = get_settings()
+    token = settings.get('telegram', {}).get('bot_token', '')
+    if not token:
+        return jsonify({'success': False, 'error': 'Kein Bot-Token konfiguriert'}), 400
+    telegram_gateway.stop()
+    telegram_gateway.start(token)
+    return jsonify({'success': True})
+
+
+@settings_bp.route('/api/telegram/stop', methods=['POST'])
+def stop_telegram():
+    from app import telegram_gateway
+    telegram_gateway.stop()
+    return jsonify({'success': True})

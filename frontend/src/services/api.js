@@ -78,3 +78,32 @@ export async function updateToolSettings(toolName, data) {
   });
   return res.json();
 }
+
+export async function fetchTelegramSettings() {
+  const res = await fetch(`${BASE}/api/telegram/settings`);
+  return res.json();
+}
+
+export async function updateTelegramSettings(data) {
+  const res = await fetch(`${BASE}/api/telegram/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+export async function fetchTelegramStatus() {
+  const res = await fetch(`${BASE}/api/telegram/status`);
+  return res.json();
+}
+
+export async function restartTelegram() {
+  const res = await fetch(`${BASE}/api/telegram/restart`, { method: 'POST' });
+  return res.json();
+}
+
+export async function stopTelegram() {
+  const res = await fetch(`${BASE}/api/telegram/stop`, { method: 'POST' });
+  return res.json();
+}
