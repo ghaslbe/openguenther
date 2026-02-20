@@ -8,7 +8,7 @@ import ReactMarkdown from 'react-markdown';
 function parseContent(content) {
   if (!content) return [{ type: 'text', value: '' }];
 
-  const regex = /!\[([^\]]*)\]\((data:image\/[^;]+;base64,[A-Za-z0-9+/=]+)\)/g;
+  const regex = /!\[([^\]]*)\]\((data:image\/[^)]+)\)/g;
   const parts = [];
   let lastIndex = 0;
   let match;
