@@ -26,16 +26,175 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **Container**: Docker (Multi-Stage Build)
 - **LLM**: OpenRouter API (beliebiges Modell wählbar)
 
-## Schnellstart
+## Installation auf einem Hetzner VPS (Schritt-für-Schritt für Einsteiger)
 
-### Voraussetzungen
+Diese Anleitung zeigt, wie du OPENguenther auf einem günstigen virtuellen Server bei Hetzner zum Laufen bringst. Du brauchst keine Linux-Vorkenntnisse — alles wird erklärt.
 
-- Docker
-- OpenRouter API Key → https://openrouter.ai
+---
 
-### Starten
+### Schritt 1 — Hetzner-Account und Server erstellen
+
+1. Registriere dich unter **[hetzner.com/cloud](https://www.hetzner.com/cloud)**
+2. Erstelle ein neues Projekt (z.B. „openguenther")
+3. Klicke auf **„Server hinzufügen"** und wähle:
+   - **Standort**: Frankfurt oder Nürnberg
+   - **Image**: Debian 12
+   - **Typ**: CX22 (2 vCPU, 4 GB RAM) reicht völlig — ca. 4 €/Monat
+   - **SSH-Key**: Füge deinen öffentlichen SSH-Key ein (empfohlen) **oder** aktiviere die Root-Passwort-Option
+4. Klicke auf **„Server erstellen"** — nach wenigen Sekunden hat der Server eine IP-Adresse (z.B. `123.456.789.0`)
+
+> 💡 **SSH-Key erstellen** (falls du noch keinen hast): Auf dem Mac/Linux öffne ein Terminal und tippe `ssh-keygen -t ed25519`. Den Inhalt der Datei `~/.ssh/id_ed25519.pub` fügst du bei Hetzner ein.
+
+---
+
+### Schritt 2 — Mit dem Server verbinden
+
+Öffne ein Terminal (Mac: Programme → Terminal, Windows: PowerShell oder [PuTTY](https://putty.org)) und verbinde dich:
 
 ```bash
+ssh root@123.456.789.0
+```
+
+Ersetze `123.456.789.0` mit der IP-Adresse deines Servers. Beim ersten Verbinden erscheint eine Sicherheitsfrage — tippe `yes` und drücke Enter.
+
+---
+
+### Schritt 3 — System aktualisieren
+
+Führe diese Befehle nacheinander aus:
+
+```bash
+apt update && apt upgrade -y
+```
+
+Das aktualisiert alle vorinstallierten Programme. Kann 1–2 Minuten dauern.
+
+---
+
+### Schritt 4 — Docker installieren
+
+Docker ist das System, das OPENguenther in einer isolierten Umgebung ausführt. Installiere es mit einem einzigen Befehl:
+
+```bash
+curl -fsSL https://get.docker.com | sh
+```
+
+Warte bis die Installation abgeschlossen ist, dann überprüfe ob Docker läuft:
+
+```bash
+docker --version
+```
+
+Es sollte etwas wie `Docker version 26.x.x` erscheinen.
+
+---
+
+### Schritt 5 — Git installieren und Code herunterladen
+
+```bash
+apt install -y git
+git clone https://github.com/ghaslbe/openguenther.git
+cd openguenther
+```
+
+Jetzt befindest du dich im Projektordner.
+
+---
+
+### Schritt 6 — Docker-Image bauen
+
+Dieser Befehl baut OPENguenther (dauert beim ersten Mal 3–5 Minuten):
+
+```bash
+docker build -t openguenther .
+```
+
+Du siehst viele Zeilen — das ist normal. Wenn am Ende `Successfully tagged openguenther:latest` erscheint, hat es geklappt.
+
+---
+
+### Schritt 7 — OPENguenther starten
+
+```bash
+docker run -d \
+  --name openguenther \
+  -p 3333:5000 \
+  -v openguenther-data:/app/data \
+  --restart unless-stopped \
+  openguenther
+```
+
+Das startet OPENguenther im Hintergrund. Mit `--restart unless-stopped` startet es auch nach einem Server-Neustart automatisch wieder.
+
+Überprüfe ob es läuft:
+
+```bash
+docker logs openguenther
+```
+
+Du solltest `Running on all addresses (0.0.0.0)` sehen.
+
+---
+
+### Schritt 8 — Im Browser öffnen
+
+Öffne deinen Browser und rufe auf:
+
+```
+http://123.456.789.0:3333
+```
+
+(Ersetze `123.456.789.0` durch deine Server-IP.)
+
+Du solltest jetzt das OPENguenther-Interface sehen! 🎉
+
+---
+
+### Schritt 9 — OpenRouter API Key einrichten
+
+OPENguenther braucht einen API-Key um mit einem KI-Modell zu kommunizieren.
+
+1. Registriere dich kostenlos unter **[openrouter.ai](https://openrouter.ai)**
+2. Gehe zu **Keys** → **Create Key**
+3. Kopiere den Key (beginnt mit `sk-or-v1-...`)
+4. In OPENguenther: Klicke auf das **Zahnrad-Icon** (⚙️) oben links
+5. Füge den Key bei **„API Key"** ein und klicke **Speichern**
+6. Wähle ein Modell, z.B. `openai/gpt-4o-mini` (günstig) oder `google/gemini-2.0-flash-001` (schnell)
+
+> 💡 **Tipp**: Bei OpenRouter kannst du ein Ausgaben-Limit setzen, damit keine unerwarteten Kosten entstehen.
+
+---
+
+### Schritt 10 — Fertig!
+
+Du kannst jetzt mit OPENguenther chatten. Probiere zum Beispiel:
+- *„Wie ist das Wetter in Berlin?"*
+- *„Generiere ein Passwort mit 20 Zeichen"*
+- *„Erstelle einen QR-Code für https://example.com"*
+
+---
+
+### Optionale Schritte
+
+#### Firewall einrichten (empfohlen)
+
+Nur Port 3333 nach außen öffnen, alles andere sperren:
+
+```bash
+apt install -y ufw
+ufw allow ssh
+ufw allow 3333
+ufw enable
+```
+
+#### OPENguenther aktualisieren
+
+Wenn es eine neue Version gibt:
+
+```bash
+cd openguenther
+git pull
+docker stop openguenther && docker rm openguenther
 docker build -t openguenther .
 docker run -d \
   --name openguenther \
@@ -45,15 +204,35 @@ docker run -d \
   openguenther
 ```
 
-Aufruf im Browser: `http://localhost:3333`
+Deine Chats und Einstellungen bleiben erhalten (sie liegen im Docker-Volume `openguenther-data`).
+
+#### Telegram-Bot einrichten (optional)
+
+1. Schreibe in Telegram mit **[@BotFather](https://t.me/BotFather)**: `/newbot`
+2. Folge den Anweisungen und kopiere den Bot-Token
+3. In OPENguenther-Einstellungen: Token eintragen, deinen Telegram-Username in die Whitelist und auf **„Gateway starten"** klicken
+
+---
+
+## Schnellstart (für Erfahrene)
+
+```bash
+git clone https://github.com/ghaslbe/openguenther.git && cd openguenther
+docker build -t openguenther .
+docker run -d --name openguenther -p 3333:5000 -v openguenther-data:/app/data --restart unless-stopped openguenther
+```
+
+Aufruf: `http://localhost:3333` — API Key in den Einstellungen eintragen.
+
+---
 
 ### Konfiguration
 
-Alle Einstellungen werden über das Web-Interface vorgenommen (Zahnrad-Icon):
+Alle Einstellungen werden über das Web-Interface vorgenommen (Zahnrad-Icon ⚙️):
 
 - **OpenRouter API Key** + Modell
 - **Telegram Bot Token** + erlaubte Nutzer
-- **OpenAI API Key** (optional, für Whisper STT)
+- **OpenAI API Key** (optional, für Whisper Spracherkennung)
 - **Bildgenerierungs-Modell** (optional, z.B. `black-forest-labs/flux-1.1-pro`)
 - **STT-Modell** (optional, z.B. `google/gemini-2.5-flash`)
 
