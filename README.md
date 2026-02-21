@@ -8,6 +8,10 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+![OPENguenther Screenshot 1](openguenther1.png)
+![OPENguenther Screenshot 2](openguenther2.png)
+![Telegram Integration](telegram.jpeg)
+
 ---
 
 ## Features
