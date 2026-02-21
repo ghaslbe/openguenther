@@ -12,6 +12,7 @@ from models import create_chat, add_message, get_chat, update_chat_title
 from services.agent import run_agent
 from services import image_store
 from services.openrouter import transcribe_audio
+from services.whisper import transcribe_with_whisper
 from config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -311,10 +312,33 @@ class TelegramGateway:
                 return
 
             settings = get_settings()
-            api_key = settings.get("openrouter_api_key", "")
-            stt_model = settings.get("stt_model") or settings.get("model", "openai/gpt-4o-mini")
+            use_whisper = settings.get("use_openai_whisper", False)
+            openai_key = settings.get("openai_api_key", "").strip()
 
-            transcript = transcribe_audio(audio_bytes, audio_format, api_key, stt_model)
+            if use_whisper:
+                if not openai_key:
+                    self._send_message(
+                        token, telegram_chat_id,
+                        "Whisper aktiviert, aber kein OpenAI API-Key konfiguriert."
+                    )
+                    return
+                logger.info(f"STT via Whisper: format={audio_format} bytes={len(audio_bytes)}")
+                transcript = transcribe_with_whisper(audio_bytes, audio_format, openai_key)
+            else:
+                or_key = settings.get("openrouter_api_key", "")
+                stt_model = settings.get("stt_model", "").strip()
+                if not stt_model:
+                    self._send_message(
+                        token, telegram_chat_id,
+                        "Kein STT-Modell konfiguriert. Bitte in den Einstellungen ein "
+                        "Audio-fähiges Modell eintragen (z.B. google/gemini-2.5-flash) "
+                        "oder OpenAI Whisper aktivieren."
+                    )
+                    return
+                logger.info(f"STT via OpenRouter: model={stt_model} format={audio_format} bytes={len(audio_bytes)}")
+                transcript = transcribe_audio(audio_bytes, audio_format, or_key, stt_model)
+
+            logger.info(f"STT result: {repr(transcript)}")
             if not transcript:
                 self._send_message(
                     token, telegram_chat_id,

@@ -9,13 +9,17 @@ settings_bp = Blueprint('settings', __name__)
 def get_settings_route():
     settings = get_settings()
     masked = settings.copy()
-    key = masked.get('openrouter_api_key', '')
-    if key and len(key) > 12:
-        masked['openrouter_api_key_masked'] = key[:8] + '...' + key[-4:]
-    elif key:
-        masked['openrouter_api_key_masked'] = '***'
-    else:
-        masked['openrouter_api_key_masked'] = ''
+    for field, masked_field in [
+        ('openrouter_api_key', 'openrouter_api_key_masked'),
+        ('openai_api_key', 'openai_api_key_masked'),
+    ]:
+        key = masked.get(field, '')
+        if key and len(key) > 12:
+            masked[masked_field] = key[:8] + '...' + key[-4:]
+        elif key:
+            masked[masked_field] = '***'
+        else:
+            masked[masked_field] = ''
     return jsonify(masked)
 
 
@@ -26,9 +30,11 @@ def update_settings():
 
     if 'openrouter_api_key' in data:
         settings['openrouter_api_key'] = data['openrouter_api_key']
-    for key in ('model', 'stt_model', 'tts_model', 'image_gen_model'):
+    for key in ('model', 'stt_model', 'tts_model', 'image_gen_model', 'openai_api_key'):
         if key in data:
             settings[key] = data[key]
+    if 'use_openai_whisper' in data:
+        settings['use_openai_whisper'] = bool(data['use_openai_whisper'])
 
     save_settings(settings)
     return jsonify({'success': True})

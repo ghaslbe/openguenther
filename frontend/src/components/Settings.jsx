@@ -15,6 +15,10 @@ export default function Settings({ onClose }) {
   const [sttModel, setSttModel] = useState('');
   const [ttsModel, setTtsModel] = useState('');
   const [imageGenModel, setImageGenModel] = useState('');
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [openaiKeyMasked, setOpenaiKeyMasked] = useState('');
+  const [useWhisper, setUseWhisper] = useState(false);
+  const [showOpenaiKey, setShowOpenaiKey] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [mcpServers, setMcpServers] = useState([]);
   const [mcpTools, setMcpTools] = useState([]);
@@ -50,6 +54,8 @@ export default function Settings({ onClose }) {
     setSttModel(s.stt_model || '');
     setTtsModel(s.tts_model || '');
     setImageGenModel(s.image_gen_model || '');
+    setOpenaiKeyMasked(s.openai_api_key_masked || '');
+    setUseWhisper(s.use_openai_whisper || false);
   }
 
   async function loadMcpServers() {
@@ -64,10 +70,12 @@ export default function Settings({ onClose }) {
 
   async function handleSave() {
     setSaving(true);
-    const data = { model, stt_model: sttModel, tts_model: ttsModel, image_gen_model: imageGenModel };
-    if (apiKey && apiKey !== '') {
-      data.openrouter_api_key = apiKey;
-    }
+    const data = {
+      model, stt_model: sttModel, tts_model: ttsModel, image_gen_model: imageGenModel,
+      use_openai_whisper: useWhisper,
+    };
+    if (apiKey && apiKey !== '') data.openrouter_api_key = apiKey;
+    if (openaiKey && openaiKey !== '') data.openai_api_key = openaiKey;
     await updateSettings(data);
     setMessage('Einstellungen gespeichert!');
     setSaving(false);
@@ -196,16 +204,47 @@ export default function Settings({ onClose }) {
               />
               <small>z.B. openai/gpt-4o, anthropic/claude-3.5-sonnet, google/gemini-pro — <a href="https://openrouter.ai/models" target="_blank" rel="noopener noreferrer" style={{color: 'var(--accent)'}}>Alle Modelle ansehen</a></small>
             </label>
-            <label>
-              Speech-to-Text Modell (STT)
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
               <input
-                type="text"
-                value={sttModel}
-                onChange={(e) => setSttModel(e.target.value)}
-                placeholder={`leer = Chat-Modell (${model}) verwenden`}
+                type="checkbox"
+                checked={useWhisper}
+                onChange={(e) => setUseWhisper(e.target.checked)}
+                style={{ width: 'auto', margin: 0 }}
               />
-              <small>Für Sprachnachrichten in Telegram. Empfohlen: <code>google/gemini-2.5-flash</code></small>
+              OpenAI Whisper für Spracherkennung (STT) verwenden
             </label>
+            {useWhisper ? (
+              <label>
+                OpenAI API Key
+                <div className="input-group">
+                  <input
+                    type={showOpenaiKey ? 'text' : 'password'}
+                    value={openaiKey}
+                    onChange={(e) => setOpenaiKey(e.target.value)}
+                    placeholder={openaiKeyMasked || 'sk-...'}
+                  />
+                  <button
+                    type="button"
+                    className="btn-toggle-key"
+                    onClick={() => setShowOpenaiKey(!showOpenaiKey)}
+                  >
+                    {showOpenaiKey ? 'Verbergen' : 'Anzeigen'}
+                  </button>
+                </div>
+                <small>Verwendet <code>whisper-1</code> — zuverlässiger als OpenRouter für Audio</small>
+              </label>
+            ) : (
+              <label>
+                Speech-to-Text Modell via OpenRouter
+                <input
+                  type="text"
+                  value={sttModel}
+                  onChange={(e) => setSttModel(e.target.value)}
+                  placeholder={`leer = Chat-Modell (${model}) verwenden`}
+                />
+                <small>Für Sprachnachrichten in Telegram. Empfohlen: <code>google/gemini-2.5-flash</code></small>
+              </label>
+            )}
             <label>
               Text-to-Speech Modell (TTS)
               <input
