@@ -96,19 +96,19 @@ Das aktualisiert alle vorinstallierten Programme. Kann 1–2 Minuten dauern.
 
 #### Schritt 4 — Docker installieren
 
-Docker ist das System, das OPENguenther in einer isolierten Umgebung ausführt. Installiere es mit einem einzigen Befehl:
+Docker ist das System, das OPENguenther in einer isolierten Umgebung ausführt. Installiere es mit:
 
 ```bash
-curl -fsSL https://get.docker.com | sh
+apt install -y docker.io
 ```
 
-Warte bis die Installation abgeschlossen ist, dann überprüfe ob Docker läuft:
+Überprüfe ob Docker läuft:
 
 ```bash
 docker --version
 ```
 
-Es sollte etwas wie `Docker version 26.x.x` erscheinen.
+Es sollte etwas wie `Docker version 20.x.x` erscheinen.
 
 #### Schritt 5 — Git installieren und Code herunterladen
 
@@ -338,19 +338,19 @@ This updates all pre-installed packages. May take 1–2 minutes.
 
 #### Step 4 — Install Docker
 
-Docker runs OPENguenther in an isolated environment. Install it with a single command:
+Docker runs OPENguenther in an isolated environment. Install it with:
 
 ```bash
-curl -fsSL https://get.docker.com | sh
+apt install -y docker.io
 ```
 
-Wait for the installation to finish, then verify Docker is running:
+Verify Docker is running:
 
 ```bash
 docker --version
 ```
 
-You should see something like `Docker version 26.x.x`.
+You should see something like `Docker version 20.x.x`.
 
 #### Step 5 — Install Git and download the code
 
