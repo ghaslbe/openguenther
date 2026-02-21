@@ -11,6 +11,7 @@ import requests as http_requests
 from models import create_chat, add_message, get_chat, update_chat_title
 from services.agent import run_agent
 from services import image_store
+from services.openrouter import transcribe_audio
 from config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -182,13 +183,39 @@ class TelegramGateway:
             )
             return
 
-        # Reject unsupported media types (but allow photos)
-        unsupported = ("audio", "voice", "video", "document", "sticker", "animation")
+        # Reject unsupported media types (but allow photos + voice/audio)
+        unsupported = ("video", "document", "sticker", "animation")
         if any(k in msg for k in unsupported):
             self._send_message(
                 token, telegram_chat_id,
-                "Aktuell werden nur Text-Nachrichten und Fotos unterstützt."
+                "Aktuell werden nur Text-Nachrichten, Fotos und Sprachnachrichten unterstützt."
             )
+            return
+
+        # ── Voice / Audio message → STT → treat as text ──
+        if "voice" in msg or "audio" in msg:
+            file_info = msg.get("voice") or msg.get("audio")
+            file_id = file_info["file_id"]
+            # Telegram voice = ogg/opus, audio = varies (use mime_type if available)
+            mime_type = file_info.get("mime_type", "audio/ogg")
+            audio_format = mime_type.split("/")[-1].split(";")[0]  # e.g. 'ogg', 'mpeg', 'mp4'
+            if audio_format == "mpeg":
+                audio_format = "mp3"
+
+            if username not in self._user_sessions:
+                title = f"Telegram: @{username}"
+                chat_id = create_chat(title)
+                self._user_sessions[username] = chat_id
+                self.socketio.emit("chat_created", {"chat_id": chat_id, "title": title})
+
+            chat_id = self._user_sessions[username]
+
+            t = threading.Thread(
+                target=self._process_voice,
+                args=(token, telegram_chat_id, username, chat_id, file_id, audio_format),
+                daemon=True
+            )
+            t.start()
             return
 
         # ── Photo message ──
@@ -270,6 +297,42 @@ class TelegramGateway:
             daemon=True
         )
         t.start()
+
+    def _process_voice(self, token, telegram_chat_id, username, chat_id, file_id, audio_format):
+        """Download a voice/audio message, transcribe it via STT, then process as text."""
+        typing_stop = self._start_typing_loop(token, telegram_chat_id)
+        try:
+            audio_bytes, _ = self._download_telegram_photo(token, file_id)
+            if audio_bytes is None:
+                self._send_message(
+                    token, telegram_chat_id,
+                    "Fehler: Sprachnachricht konnte nicht heruntergeladen werden."
+                )
+                return
+
+            settings = get_settings()
+            api_key = settings.get("openrouter_api_key", "")
+            stt_model = settings.get("stt_model") or settings.get("model", "openai/gpt-4o-mini")
+
+            transcript = transcribe_audio(audio_bytes, audio_format, api_key, stt_model)
+            if not transcript:
+                self._send_message(
+                    token, telegram_chat_id,
+                    "Konnte die Sprachnachricht nicht transkribieren."
+                )
+                return
+
+            self._send_message(token, telegram_chat_id, f"[Sprache erkannt]: {transcript}")
+
+        except Exception as e:
+            logger.error(f"Voice processing error: {e}", exc_info=True)
+            self._send_message(token, telegram_chat_id, f"Fehler bei Spracherkennung: {e}")
+            return
+        finally:
+            typing_stop.set()
+
+        # Process the transcript exactly like a regular text message
+        self._process_message(token, telegram_chat_id, username, chat_id, transcript)
 
     def _process_message(self, token, telegram_chat_id, username, chat_id, text,
                          image_b64=None, image_mime=None):

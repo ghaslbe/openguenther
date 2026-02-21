@@ -12,6 +12,9 @@ export default function Settings({ onClose }) {
   const [apiKey, setApiKey] = useState('');
   const [apiKeyMasked, setApiKeyMasked] = useState('');
   const [model, setModel] = useState('openai/gpt-4o-mini');
+  const [sttModel, setSttModel] = useState('');
+  const [ttsModel, setTtsModel] = useState('');
+  const [imageGenModel, setImageGenModel] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [mcpServers, setMcpServers] = useState([]);
   const [mcpTools, setMcpTools] = useState([]);
@@ -44,6 +47,9 @@ export default function Settings({ onClose }) {
     setApiKey(s.openrouter_api_key || '');
     setApiKeyMasked(s.openrouter_api_key_masked || '');
     setModel(s.model || 'openai/gpt-4o-mini');
+    setSttModel(s.stt_model || '');
+    setTtsModel(s.tts_model || '');
+    setImageGenModel(s.image_gen_model || '');
   }
 
   async function loadMcpServers() {
@@ -58,7 +64,7 @@ export default function Settings({ onClose }) {
 
   async function handleSave() {
     setSaving(true);
-    const data = { model };
+    const data = { model, stt_model: sttModel, tts_model: ttsModel, image_gen_model: imageGenModel };
     if (apiKey && apiKey !== '') {
       data.openrouter_api_key = apiKey;
     }
@@ -181,7 +187,7 @@ export default function Settings({ onClose }) {
               </div>
             </label>
             <label>
-              Modell
+              Chat-Modell
               <input
                 type="text"
                 value={model}
@@ -189,6 +195,36 @@ export default function Settings({ onClose }) {
                 placeholder="openai/gpt-4o-mini"
               />
               <small>z.B. openai/gpt-4o, anthropic/claude-3.5-sonnet, google/gemini-pro — <a href="https://openrouter.ai/models" target="_blank" rel="noopener noreferrer" style={{color: 'var(--accent)'}}>Alle Modelle ansehen</a></small>
+            </label>
+            <label>
+              Speech-to-Text Modell (STT)
+              <input
+                type="text"
+                value={sttModel}
+                onChange={(e) => setSttModel(e.target.value)}
+                placeholder={`leer = Chat-Modell (${model}) verwenden`}
+              />
+              <small>Für Sprachnachrichten in Telegram. Empfohlen: <code>google/gemini-2.5-flash</code></small>
+            </label>
+            <label>
+              Text-to-Speech Modell (TTS)
+              <input
+                type="text"
+                value={ttsModel}
+                onChange={(e) => setTtsModel(e.target.value)}
+                placeholder={`leer = Chat-Modell (${model}) verwenden`}
+              />
+              <small>Für Sprachausgabe (zukünftige Funktion)</small>
+            </label>
+            <label>
+              Bildgenerierungs-Modell
+              <input
+                type="text"
+                value={imageGenModel}
+                onChange={(e) => setImageGenModel(e.target.value)}
+                placeholder={`leer = Chat-Modell (${model}) verwenden`}
+              />
+              <small>Empfohlen: <code>google/gemini-2.5-flash-image-preview</code> oder <code>black-forest-labs/flux-1.1-pro</code></small>
             </label>
             <button className="btn-save" onClick={handleSave} disabled={saving}>
               {saving ? 'Speichere...' : 'Speichern'}

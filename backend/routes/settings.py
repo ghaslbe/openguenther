@@ -26,8 +26,9 @@ def update_settings():
 
     if 'openrouter_api_key' in data:
         settings['openrouter_api_key'] = data['openrouter_api_key']
-    if 'model' in data:
-        settings['model'] = data['model']
+    for key in ('model', 'stt_model', 'tts_model', 'image_gen_model'):
+        if key in data:
+            settings[key] = data[key]
 
     save_settings(settings)
     return jsonify({'success': True})

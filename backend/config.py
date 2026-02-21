@@ -8,6 +8,9 @@ DB_FILE = os.path.join(DATA_DIR, 'guenther.db')
 DEFAULT_SETTINGS = {
     'openrouter_api_key': '',
     'model': 'openai/gpt-4o-mini',
+    'stt_model': '',        # Speech-to-Text model (leer = Hauptmodell verwenden)
+    'tts_model': '',        # Text-to-Speech model (leer = Hauptmodell verwenden)
+    'image_gen_model': '',  # Bildgenerierungs-Modell (leer = Hauptmodell verwenden)
     'mcp_servers': [],
     'tool_settings': {},
     'telegram': {
