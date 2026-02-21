@@ -3,8 +3,11 @@
 **🌐 [openguenther.de](https://www.openguenther.de)**
 
 > ⚠️ **Die Nutzung dieser Software geschieht vollständig auf eigenes Risiko. Der Autor übernimmt keinerlei Haftung.** Siehe [Disclaimer](#disclaimer--haftungsausschluss) unten.
+>
+> ⚠️ **Use of this software is entirely at your own risk. The author accepts no liability whatsoever.** See [Disclaimer](#disclaimer--haftungsausschluss) below.
 
 Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und Telegram-Integration.
+A self-hosted AI agent with chat interface, MCP tool support and Telegram integration.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
@@ -16,86 +19,88 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 
 ## Features
 
-- **Chat-Interface** mit Markdown-Rendering und Bilddarstellung
-- **MCP-Tools** (Model Context Protocol): Wetter, Bildgenerierung, Bildbearbeitung, QR-Codes, Passwörter, Rechner, E-Mail, Webseiten-Info u.v.m.
-- **Guenther-Terminal**: Live-Ansicht aller API-Kommunikation im DOS-Stil
-- **Telegram-Gateway**: Chatten via Telegram, inkl. Foto- und Sprachnachrichten
-- **Spracherkennung**: OpenAI Whisper oder OpenRouter-kompatible Modelle
-- **Bildgenerierung**: via OpenRouter (Flux, Gemini Image, etc.)
-- **Externe MCP-Server**: beliebige stdio-basierte MCP-Server anbindbar
-- **Tool-Router**: automatische Vorauswahl relevanter Tools pro Anfrage
+- **Chat interface** with Markdown rendering and image display
+- **MCP Tools** (Model Context Protocol): weather, image generation, image editing, QR codes, passwords, calculator, email, website info and more
+- **Guenther Terminal**: live view of all API communication in DOS style
+- **Telegram Gateway**: chat via Telegram, including photos and voice messages
+- **Speech recognition**: OpenAI Whisper or OpenRouter-compatible models
+- **Image generation**: via OpenRouter (Flux, Gemini Image, etc.)
+- **External MCP servers**: connect any stdio-based MCP server
+- **Tool router**: automatic pre-selection of relevant tools per request
 
-## Tech-Stack
+---
+
+## Tech Stack
 
 - **Backend**: Flask 3, Flask-SocketIO, SQLite, Python 3.12
 - **Frontend**: React 18, Vite 6, Socket.IO-Client
 - **Container**: Docker (Multi-Stage Build)
-- **LLM**: OpenRouter API (beliebiges Modell wählbar)
-
-## Installation auf einem Hetzner VPS (Schritt-für-Schritt für Einsteiger)
-
-Diese Anleitung zeigt, wie du OPENguenther auf einem günstigen virtuellen Server bei Hetzner zum Laufen bringst. Du brauchst keine Linux-Vorkenntnisse — alles wird erklärt.
+- **LLM**: OpenRouter API (any model selectable)
 
 ---
 
-### Schritt 1 — Hetzner-Account und Server erstellen
+## Installation on a Hetzner VPS (Step-by-Step for Beginners)
 
-1. Registriere dich unter **[hetzner.com/cloud](https://www.hetzner.com/cloud)**
-2. Erstelle ein neues Projekt (z.B. „openguenther")
-3. Klicke auf **„Server hinzufügen"** und wähle:
-   - **Standort**: Frankfurt oder Nürnberg
+This guide shows how to get OPENguenther running on an affordable virtual server at Hetzner. No Linux knowledge required — everything is explained.
+
+---
+
+### Step 1 — Create a Hetzner account and server
+
+1. Register at **[hetzner.com/cloud](https://www.hetzner.com/cloud)**
+2. Create a new project (e.g. "openguenther")
+3. Click **"Add Server"** and choose:
+   - **Location**: Frankfurt or Nuremberg
    - **Image**: Debian 12
-   - **Typ**: CX22 (2 vCPU, 4 GB RAM) reicht völlig — ca. 4 €/Monat
-   - **SSH-Key**: Füge deinen öffentlichen SSH-Key ein (empfohlen) **oder** aktiviere die Root-Passwort-Option
-4. Klicke auf **„Server erstellen"** — nach wenigen Sekunden hat der Server eine IP-Adresse (z.B. `123.456.789.0`)
+   - **Type**: CX22 (2 vCPU, 4 GB RAM) is sufficient — approx. €4/month
+   - **SSH Key**: paste your public SSH key (recommended) **or** enable the root password option
+4. Click **"Create Server"** — within a few seconds the server will have an IP address (e.g. `123.456.789.0`)
 
-> 💡 **SSH-Key erstellen** (falls du noch keinen hast): Auf dem Mac/Linux öffne ein Terminal und tippe `ssh-keygen -t ed25519`. Den Inhalt der Datei `~/.ssh/id_ed25519.pub` fügst du bei Hetzner ein.
+> 💡 **Create an SSH key** (if you don't have one yet): On Mac/Linux open a terminal and type `ssh-keygen -t ed25519`. Paste the contents of `~/.ssh/id_ed25519.pub` into Hetzner.
 
 ---
 
-### Schritt 2 — Mit dem Server verbinden
+### Step 2 — Connect to the server
 
-Öffne ein Terminal (Mac: Programme → Terminal, Windows: PowerShell oder [PuTTY](https://putty.org)) und verbinde dich:
+Open a terminal (Mac: Applications → Terminal, Windows: PowerShell or [PuTTY](https://putty.org)) and connect:
 
 ```bash
 ssh root@123.456.789.0
 ```
 
-Ersetze `123.456.789.0` mit der IP-Adresse deines Servers. Beim ersten Verbinden erscheint eine Sicherheitsfrage — tippe `yes` und drücke Enter.
+Replace `123.456.789.0` with your server's IP address. On first connection a security prompt appears — type `yes` and press Enter.
 
 ---
 
-### Schritt 3 — System aktualisieren
-
-Führe diese Befehle nacheinander aus:
+### Step 3 — Update the system
 
 ```bash
 apt update && apt upgrade -y
 ```
 
-Das aktualisiert alle vorinstallierten Programme. Kann 1–2 Minuten dauern.
+This updates all pre-installed packages. May take 1–2 minutes.
 
 ---
 
-### Schritt 4 — Docker installieren
+### Step 4 — Install Docker
 
-Docker ist das System, das OPENguenther in einer isolierten Umgebung ausführt. Installiere es mit einem einzigen Befehl:
+Docker runs OPENguenther in an isolated environment. Install it with a single command:
 
 ```bash
 curl -fsSL https://get.docker.com | sh
 ```
 
-Warte bis die Installation abgeschlossen ist, dann überprüfe ob Docker läuft:
+Wait for the installation to finish, then verify Docker is running:
 
 ```bash
 docker --version
 ```
 
-Es sollte etwas wie `Docker version 26.x.x` erscheinen.
+You should see something like `Docker version 26.x.x`.
 
 ---
 
-### Schritt 5 — Git installieren und Code herunterladen
+### Step 5 — Install Git and download the code
 
 ```bash
 apt install -y git
@@ -103,23 +108,23 @@ git clone https://github.com/ghaslbe/openguenther.git
 cd openguenther
 ```
 
-Jetzt befindest du dich im Projektordner.
+You are now in the project folder.
 
 ---
 
-### Schritt 6 — Docker-Image bauen
+### Step 6 — Build the Docker image
 
-Dieser Befehl baut OPENguenther (dauert beim ersten Mal 3–5 Minuten):
+This command builds OPENguenther (takes 3–5 minutes the first time):
 
 ```bash
 docker build -t openguenther .
 ```
 
-Du siehst viele Zeilen — das ist normal. Wenn am Ende `Successfully tagged openguenther:latest` erscheint, hat es geklappt.
+You will see many lines — that is normal. When `Successfully tagged openguenther:latest` appears at the end, it worked.
 
 ---
 
-### Schritt 7 — OPENguenther starten
+### Step 7 — Start OPENguenther
 
 ```bash
 docker run -d \
@@ -130,61 +135,61 @@ docker run -d \
   openguenther
 ```
 
-Das startet OPENguenther im Hintergrund. Mit `--restart unless-stopped` startet es auch nach einem Server-Neustart automatisch wieder.
+This starts OPENguenther in the background. With `--restart unless-stopped` it also restarts automatically after a server reboot.
 
-Überprüfe ob es läuft:
+Check that it is running:
 
 ```bash
 docker logs openguenther
 ```
 
-Du solltest `Running on all addresses (0.0.0.0)` sehen.
+You should see `Running on all addresses (0.0.0.0)`.
 
 ---
 
-### Schritt 8 — Im Browser öffnen
+### Step 8 — Open in the browser
 
-Öffne deinen Browser und rufe auf:
+Open your browser and go to:
 
 ```
 http://123.456.789.0:3333
 ```
 
-(Ersetze `123.456.789.0` durch deine Server-IP.)
+(Replace `123.456.789.0` with your server IP.)
 
-Du solltest jetzt das OPENguenther-Interface sehen! 🎉
-
----
-
-### Schritt 9 — OpenRouter API Key einrichten
-
-OPENguenther braucht einen API-Key um mit einem KI-Modell zu kommunizieren.
-
-1. Registriere dich kostenlos unter **[openrouter.ai](https://openrouter.ai)**
-2. Gehe zu **Keys** → **Create Key**
-3. Kopiere den Key (beginnt mit `sk-or-v1-...`)
-4. In OPENguenther: Klicke auf das **Zahnrad-Icon** (⚙️) oben links
-5. Füge den Key bei **„API Key"** ein und klicke **Speichern**
-6. Wähle ein Modell, z.B. `openai/gpt-4o-mini` (günstig) oder `google/gemini-2.0-flash-001` (schnell)
-
-> 💡 **Tipp**: Bei OpenRouter kannst du ein Ausgaben-Limit setzen, damit keine unerwarteten Kosten entstehen.
+You should now see the OPENguenther interface! 🎉
 
 ---
 
-### Schritt 10 — Fertig!
+### Step 9 — Set up the OpenRouter API key
 
-Du kannst jetzt mit OPENguenther chatten. Probiere zum Beispiel:
-- *„Wie ist das Wetter in Berlin?"*
-- *„Generiere ein Passwort mit 20 Zeichen"*
-- *„Erstelle einen QR-Code für https://example.com"*
+OPENguenther needs an API key to communicate with an AI model.
+
+1. Register for free at **[openrouter.ai](https://openrouter.ai)**
+2. Go to **Keys** → **Create Key**
+3. Copy the key (starts with `sk-or-v1-...`)
+4. In OPENguenther: click the **gear icon** (⚙️) in the top left
+5. Paste the key in the **"API Key"** field and click **Save**
+6. Choose a model, e.g. `openai/gpt-4o-mini` (affordable) or `google/gemini-2.0-flash-001` (fast)
+
+> 💡 **Tip**: In OpenRouter you can set a spending limit to avoid unexpected costs.
 
 ---
 
-### Optionale Schritte
+### Step 10 — Done!
 
-#### Firewall einrichten (empfohlen)
+You can now chat with OPENguenther. Try for example:
+- *"What is the weather in Berlin?"*
+- *"Generate a password with 20 characters"*
+- *"Create a QR code for https://example.com"*
 
-Nur Port 3333 nach außen öffnen, alles andere sperren:
+---
+
+### Optional steps
+
+#### Set up a firewall (recommended)
+
+Only expose port 3333, block everything else:
 
 ```bash
 apt install -y ufw
@@ -193,9 +198,9 @@ ufw allow 3333
 ufw enable
 ```
 
-#### OPENguenther aktualisieren
+#### Update OPENguenther
 
-Wenn es eine neue Version gibt:
+When a new version is available:
 
 ```bash
 cd openguenther
@@ -210,17 +215,17 @@ docker run -d \
   openguenther
 ```
 
-Deine Chats und Einstellungen bleiben erhalten (sie liegen im Docker-Volume `openguenther-data`).
+Your chats and settings are preserved (they are stored in the Docker volume `openguenther-data`).
 
-#### Telegram-Bot einrichten (optional)
+#### Set up a Telegram bot (optional)
 
-1. Schreibe in Telegram mit **[@BotFather](https://t.me/BotFather)**: `/newbot`
-2. Folge den Anweisungen und kopiere den Bot-Token
-3. In OPENguenther-Einstellungen: Token eintragen, deinen Telegram-Username in die Whitelist und auf **„Gateway starten"** klicken
+1. Message **[@BotFather](https://t.me/BotFather)** on Telegram: `/newbot`
+2. Follow the instructions and copy the bot token
+3. In OPENguenther settings: enter the token, add your Telegram username to the whitelist and click **"Start Gateway"**
 
 ---
 
-## Schnellstart (für Erfahrene)
+## Quick Start (for experienced users)
 
 ```bash
 git clone https://github.com/ghaslbe/openguenther.git && cd openguenther
@@ -228,57 +233,61 @@ docker build -t openguenther .
 docker run -d --name openguenther -p 3333:5000 -v openguenther-data:/app/data --restart unless-stopped openguenther
 ```
 
-Aufruf: `http://localhost:3333` — API Key in den Einstellungen eintragen.
+Open `http://localhost:3333` — enter your API key in the settings.
 
 ---
 
-### Konfiguration
+### Configuration
 
-Alle Einstellungen werden über das Web-Interface vorgenommen (Zahnrad-Icon ⚙️):
+All settings are managed through the web interface (gear icon ⚙️):
 
-- **OpenRouter API Key** + Modell
-- **Telegram Bot Token** + erlaubte Nutzer
-- **OpenAI API Key** (optional, für Whisper Spracherkennung)
-- **Bildgenerierungs-Modell** (optional, z.B. `black-forest-labs/flux-1.1-pro`)
-- **STT-Modell** (optional, z.B. `google/gemini-2.5-flash`)
+- **OpenRouter API Key** + model
+- **Telegram Bot Token** + allowed users
+- **OpenAI API Key** (optional, for Whisper speech recognition)
+- **Image generation model** (optional, e.g. `black-forest-labs/flux-1.1-pro`)
+- **STT model** (optional, e.g. `google/gemini-2.5-flash`)
 
-Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
+Data is stored persistently in a Docker volume (`/app/data`).
+
+---
 
 ## Built-in Tools
 
-| Tool | Beschreibung |
+| Tool | Description |
 |------|-------------|
-| `get_weather` | Wetter & Vorhersage via Open-Meteo (kein API-Key) |
-| `generate_image` | Bildgenerierung via OpenRouter |
-| `process_image` | Bildbearbeitung via ImageMagick (blur, grayscale, rotate, …) |
-| `text_to_image` | Text als PNG rendern |
-| `generate_qr_code` | QR-Code generieren |
-| `fetch_website_info` | Website-Titel & Description abrufen |
-| `send_email` | E-Mail via SMTP senden |
-| `generate_password` | Sichere Passwörter generieren |
-| `calculate` | Mathematische Ausdrücke auswerten |
-| `roll_dice` | Würfeln |
-| `get_current_time` | Aktuelle Uhrzeit |
+| `get_weather` | Weather & forecast via Open-Meteo (no API key needed) |
+| `generate_image` | Image generation via OpenRouter |
+| `process_image` | Image editing via ImageMagick (blur, grayscale, rotate, …) |
+| `text_to_image` | Render text as PNG |
+| `generate_qr_code` | Generate QR codes |
+| `fetch_website_info` | Fetch website title & description |
+| `send_email` | Send email via SMTP |
+| `generate_password` | Generate secure passwords |
+| `calculate` | Evaluate mathematical expressions |
+| `roll_dice` | Roll dice |
+| `get_current_time` | Get current time |
 
 ---
 
 ## Disclaimer / Haftungsausschluss
 
-> **DIE NUTZUNG DIESER SOFTWARE GESCHIEHT VOLLSTÄNDIG AUF EIGENES RISIKO.**
+> **USE OF THIS SOFTWARE IS ENTIRELY AT YOUR OWN RISK. / DIE NUTZUNG DIESER SOFTWARE GESCHIEHT VOLLSTÄNDIG AUF EIGENES RISIKO.**
+
+This software is provided **"as is"** without any express or implied warranty of any kind. The author accepts **no liability** for any direct, indirect, incidental, special or consequential damages arising from the use or inability to use this software — regardless of whether based on contract, tort or any other legal basis.
 
 Diese Software wird **„wie besehen"** (as-is) ohne jegliche ausdrückliche oder stillschweigende Gewährleistung bereitgestellt. Der Autor übernimmt **keinerlei Haftung** für direkte, indirekte, zufällige, besondere oder Folgeschäden, die aus der Nutzung oder Nichtnutzung dieser Software entstehen – gleichgültig, ob diese auf Vertrag, unerlaubter Handlung oder einem anderen Rechtsgrund beruhen.
 
-Dies umfasst insbesondere, aber nicht ausschließlich:
+This includes but is not limited to / Dies umfasst insbesondere, aber nicht ausschließlich:
 
-- Schäden durch KI-generierte Inhalte
-- Kosten durch API-Nutzung bei Drittanbietern (OpenRouter, OpenAI, etc.)
-- Datenverlust oder Sicherheitsvorfälle
-- Schäden durch fehlerhafte Tool-Ausführungen
+- Damages caused by AI-generated content / Schäden durch KI-generierte Inhalte
+- Costs incurred through third-party API usage (OpenRouter, OpenAI, etc.) / Kosten durch API-Nutzung bei Drittanbietern
+- Data loss or security incidents / Datenverlust oder Sicherheitsvorfälle
+- Damages caused by faulty tool executions / Schäden durch fehlerhafte Tool-Ausführungen
 
-**Der Autor empfiehlt ausdrücklich:**
-- API-Keys mit minimalen Berechtigungen und Ausgabelimits zu versehen
-- Die Software nicht ohne Authentifizierung öffentlich zugänglich zu machen
-- Keine sensiblen Daten in Chats einzugeben
+**The author strongly recommends / Der Autor empfiehlt ausdrücklich:**
+- Setting spending limits on API keys / API-Keys mit Ausgabelimits versehen
+- Not exposing the software publicly without authentication / Software nicht ohne Authentifizierung öffentlich zugänglich machen
+- Not entering sensitive data in chats / Keine sensiblen Daten in Chats eingeben
 
 ---
 
@@ -294,4 +303,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 ---
 
-> ⚠️ **Nochmals zur Erinnerung: Die Nutzung dieser Software geschieht vollständig auf eigenes Risiko. Es wird keinerlei Haftung übernommen — weder für entstehende Kosten, Datenverlust, Sicherheitsvorfälle noch für sonstige Schäden jeglicher Art.**
+> ⚠️ **Use of this software is entirely at your own risk. No liability is accepted — not for costs incurred, data loss, security incidents or any other damages of any kind.**
+>
+> ⚠️ **Die Nutzung dieser Software geschieht vollständig auf eigenes Risiko. Es wird keinerlei Haftung übernommen — weder für entstehende Kosten, Datenverlust, Sicherheitsvorfälle noch für sonstige Schäden jeglicher Art.**
