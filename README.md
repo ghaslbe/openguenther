@@ -184,20 +184,14 @@ ufw enable
 
 **OPENguenther aktualisieren**
 
+Im Projektordner einfach das Update-Script ausführen:
+
 ```bash
 cd openguenther
-git pull
-docker stop openguenther && docker rm openguenther
-docker build -t openguenther .
-docker run -d \
-  --name openguenther \
-  -p 3333:5000 \
-  -v openguenther-data:/app/data \
-  --restart unless-stopped \
-  openguenther
+bash update.sh
 ```
 
-Deine Chats und Einstellungen bleiben erhalten (Docker-Volume `openguenther-data`).
+Das Script holt automatisch den neuesten Code von GitHub, baut das Docker-Image neu und startet den Container. Deine Chats und Einstellungen bleiben erhalten (Docker-Volume `openguenther-data`).
 
 **Telegram-Bot einrichten**
 
@@ -426,20 +420,14 @@ ufw enable
 
 **Update OPENguenther**
 
+Simply run the update script from the project folder:
+
 ```bash
 cd openguenther
-git pull
-docker stop openguenther && docker rm openguenther
-docker build -t openguenther .
-docker run -d \
-  --name openguenther \
-  -p 3333:5000 \
-  -v openguenther-data:/app/data \
-  --restart unless-stopped \
-  openguenther
+bash update.sh
 ```
 
-Your chats and settings are preserved (Docker volume `openguenther-data`).
+The script automatically pulls the latest code from GitHub, rebuilds the Docker image and restarts the container. Your chats and settings are preserved (Docker volume `openguenther-data`).
 
 **Set up a Telegram bot**
 
