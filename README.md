@@ -1,5 +1,7 @@
 # OPENguenther
 
+**🌐 [openguenther.de](https://www.openguenther.de)**
+
 Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und Telegram-Integration.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
