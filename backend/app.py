@@ -21,6 +21,7 @@ from mcp.tools.email_tool import send_email, TOOL_DEFINITION as EMAIL_TOOL_DEF, 
 from mcp.tools.help_tool import list_available_tools, get_help, LIST_TOOLS_DEFINITION, HELP_DEFINITION
 from mcp.tools.image_process_tool import process_image, TOOL_DEFINITION as IMG_PROCESS_TOOL_DEF
 from mcp.tools.image_gen_tool import generate_image, TOOL_DEFINITION as IMG_GEN_TOOL_DEF
+from mcp.tools.weather_tool import get_weather, TOOL_DEFINITION as WEATHER_TOOL_DEF
 from mcp.manager import load_external_tools
 from services.agent import run_agent
 from services.telegram_gateway import TelegramGateway
@@ -122,6 +123,13 @@ registry.register(MCPTool(
     description=IMG_GEN_TOOL_DEF['description'],
     input_schema=IMG_GEN_TOOL_DEF['input_schema'],
     handler=generate_image
+))
+
+registry.register(MCPTool(
+    name=WEATHER_TOOL_DEF['name'],
+    description=WEATHER_TOOL_DEF['description'],
+    input_schema=WEATHER_TOOL_DEF['input_schema'],
+    handler=get_weather
 ))
 
 
