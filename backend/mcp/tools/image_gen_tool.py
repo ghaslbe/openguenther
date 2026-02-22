@@ -5,7 +5,7 @@ from services.openrouter import generate_image as _generate_image
 
 SETTINGS_SCHEMA = [
     {
-        "key": "model",
+        "key": "image_model",
         "label": "Bildgenerierungs-Modell",
         "type": "text",
         "placeholder": "leer = Standard-Modell verwenden",
@@ -49,8 +49,8 @@ def generate_image(prompt, aspect_ratio="1:1"):
         return {"error": "Kein OpenRouter API-Key konfiguriert."}
 
     tool_cfg = get_tool_settings("generate_image")
-    # Prefer tool-specific model, fall back to legacy image_gen_model, then default model
-    model = (tool_cfg.get("model") or "").strip() \
+    # Prefer tool-specific image_model, fall back to legacy image_gen_model, then default model
+    model = (tool_cfg.get("image_model") or tool_cfg.get("model") or "").strip() \
             or settings.get("image_gen_model", "") \
             or settings.get("model", "openai/gpt-4o-mini")
 
