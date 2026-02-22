@@ -5,3 +5,6 @@ __pycache__/
 data/
 .env
 *.db
+.DS_Store
+CLAUDE.md
+.claude/
