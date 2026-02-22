@@ -63,6 +63,16 @@ html, body, #root {
   text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
 }
 
+.topbar-version {
+  margin-left: 10px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: var(--guenther-dim);
+  letter-spacing: 0.5px;
+  align-self: flex-end;
+  padding-bottom: 2px;
+}
+
 .app {
   display: flex;
   flex: 1;
