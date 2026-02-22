@@ -231,7 +231,7 @@ export default function Settings({ onClose }) {
                     {showOpenaiKey ? 'Verbergen' : 'Anzeigen'}
                   </button>
                 </div>
-                <small>Verwendet <code>whisper-1</code> — zuverlässiger als OpenRouter für Audio</small>
+                <small>Verwendet <code>whisper-1</code> — zuverlässiger als OpenRouter für Audio. <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style={{color: 'var(--accent)'}}>API Key erstellen</a></small>
               </label>
             ) : (
               <label>

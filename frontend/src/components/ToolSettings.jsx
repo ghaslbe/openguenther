@@ -53,10 +53,6 @@ export default function ToolSettings({ toolName, onClose }) {
         <div className="settings-body">
           {message && <div className="settings-message">{message}</div>}
 
-          {schema.length === 0 && (
-            <p style={{ color: 'var(--text-secondary)' }}>Dieses Tool hat keine Einstellungen.</p>
-          )}
-
           {schema.map(field => (
             <label key={field.key}>
               {field.label}
@@ -84,14 +80,17 @@ export default function ToolSettings({ toolName, onClose }) {
                   placeholder={field.placeholder || ''}
                 />
               )}
+              {field.description && (
+                <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>
+                  {field.description}
+                </small>
+              )}
             </label>
           ))}
 
-          {schema.length > 0 && (
-            <button className="btn-save" onClick={handleSave} disabled={saving}>
-              {saving ? 'Speichere...' : 'Speichern'}
-            </button>
-          )}
+          <button className="btn-save" onClick={handleSave} disabled={saving}>
+            {saving ? 'Speichere...' : 'Speichern'}
+          </button>
         </div>
       </div>
     </div>

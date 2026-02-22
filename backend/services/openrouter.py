@@ -1,5 +1,8 @@
 import base64
+import logging
 import requests
+
+logger = logging.getLogger(__name__)
 
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -87,6 +90,7 @@ def transcribe_audio(audio_bytes, audio_format, api_key, model):
         }
     ]
     response = call_openrouter(messages, None, api_key, model)
+    logger.info(f"STT raw response: {response}")
     return response.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
 
 

@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from services.openrouter import call_openrouter, SYSTEM_PROMPT
 from mcp.registry import registry
+from config import get_tool_settings
 
 TOOL_ROUTER_PROMPT = """Du bist ein Tool-Router. Deine Aufgabe ist es, aus einer Liste verfuegbarer Tools diejenigen auszuwaehlen, die fuer die Benutzeranfrage relevant sind.
 
@@ -94,6 +95,25 @@ def _select_tools(all_tools, chat_messages, api_key, model, emit_log):
         return all_tools
 
 
+def _pick_model_for_tools(selected_tools, default_model):
+    """
+    Check if all selected tools agree on a model override.
+    If all non-empty overrides are identical, use that model.
+    Otherwise fall back to the default model.
+    """
+    models = set()
+    for t in selected_tools:
+        name = t.get("function", {}).get("name", "")
+        if name:
+            ts = get_tool_settings(name)
+            m = (ts.get("model") or "").strip()
+            if m:
+                models.add(m)
+    if len(models) == 1:
+        return models.pop()
+    return default_model
+
+
 def run_agent(chat_messages, settings, emit_log):
     """
     Run the agent loop: send messages to LLM, handle tool calls, iterate.
@@ -126,6 +146,12 @@ def run_agent(chat_messages, settings, emit_log):
 
     # ── Tool Router: Pre-filter ──
     tools = _select_tools(all_tools, chat_messages, api_key, model, emit_log)
+
+    # ── Model override: use tool-specific model if all selected tools agree ──
+    effective_model = _pick_model_for_tools(tools, model)
+    if effective_model != model:
+        emit_log({"type": "text", "message": f"[{_ts()}] Modell-Override aktiv: {effective_model}"})
+        model = effective_model
 
     # ── Log: Gefilterte Tools ──
     emit_log({"type": "header", "message": f"AKTIVE TOOLS FUER DIESEN REQUEST ({len(tools)})"})
