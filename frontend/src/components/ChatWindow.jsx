@@ -91,7 +91,7 @@ function MessageContent({ content }) {
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-export default function ChatWindow({ messages, onSendMessage, isLoading, activeChatId, agents, selectedAgentId, onAgentChange }) {
+export default function ChatWindow({ messages, onSendMessage, isLoading, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef(null);
@@ -170,7 +170,7 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
         {messages.map((msg, idx) => (
           <div key={idx} className={`message message-${msg.role}`}>
             <div className="message-role">
-              {msg.role === 'user' ? 'Du' : 'Guenther'}
+              {msg.role === 'user' ? 'Du' : (activeAgentName || 'Guenther')}
             </div>
             <div className="message-content">
               <MessageContent content={msg.content} />
@@ -179,7 +179,7 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
         ))}
         {isLoading && (
           <div className="message message-assistant">
-            <div className="message-role">Guenther</div>
+            <div className="message-role">{activeAgentName || 'Guenther'}</div>
             <div className="message-content">
               <div className="typing-indicator">
                 <span></span><span></span><span></span>

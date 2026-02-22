@@ -134,6 +134,22 @@ export default function App() {
     loadChats();
   }
 
+  // Determine which agent name to show in ChatWindow
+  function getActiveAgentName() {
+    if (!activeChatId) {
+      // New chat: use the selected agent
+      if (!selectedAgentId) return null;
+      const a = agents.find(a => a.id === selectedAgentId);
+      return a ? a.name : null;
+    } else {
+      // Existing chat: look up agent_id from chats list
+      const chat = chats.find(c => c.id === activeChatId);
+      if (!chat || !chat.agent_id) return null;
+      const a = agents.find(a => a.id === chat.agent_id);
+      return a ? a.name : null;
+    }
+  }
+
   function handleSendMessage(content) {
     setMessages(prev => [...prev, { role: 'user', content }]);
     socket.emit('send_message', {
@@ -167,6 +183,7 @@ export default function App() {
         agents={agents}
         selectedAgentId={selectedAgentId}
         onAgentChange={setSelectedAgentId}
+        activeAgentName={getActiveAgentName()}
       />
       <GuentherBox
         logs={guentherLogs}
