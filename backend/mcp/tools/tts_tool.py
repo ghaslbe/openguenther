@@ -60,14 +60,11 @@ def text_to_speech(text):
         method="POST"
     )
 
+    preview = text if len(text) <= 60 else text[:57] + "..."
     if emit_log:
-        emit_log({"type": "header", "message": "TTS API REQUEST"})
-        emit_log({"type": "json", "label": "request", "data": {
-            "url": url,
-            "voice_id": voice_id,
-            "model_id": model_id,
-            "text_length": len(text),
-        }})
+        emit_log({"type": "text", "message": f"[TTS] Spreche vor: \"{preview}\""})
+        emit_log({"type": "text", "message": f"[TTS] Modell: {model_id} | Voice: {voice_id}"})
+        emit_log({"type": "text", "message": f"[TTS] Sende Anfrage an ElevenLabs..."})
 
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
@@ -75,11 +72,12 @@ def text_to_speech(text):
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8", errors="replace")
         if emit_log:
-            emit_log({"type": "text", "message": f"TTS API Fehler {e.code}: {error_body}"})
+            emit_log({"type": "text", "message": f"[TTS] FEHLER {e.code}: {error_body}"})
         return {"error": f"ElevenLabs API Fehler {e.code}: {error_body}"}
 
     if emit_log:
-        emit_log({"type": "text", "message": f"TTS API Response: {len(audio_bytes)} Bytes MP3"})
+        kb = len(audio_bytes) / 1024
+        emit_log({"type": "text", "message": f"[TTS] Audio empfangen: {kb:.1f} KB — fertig!"})
 
     return {
         "audio_base64": base64.b64encode(audio_bytes).decode(),
