@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 /**
@@ -89,10 +89,14 @@ function MessageContent({ content }) {
   );
 }
 
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
 export default function ChatWindow({ messages, onSendMessage, isLoading, activeChatId }) {
   const [input, setInput] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -109,6 +113,43 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
     onSendMessage(text);
     setInput('');
   };
+
+  const toggleRecording = useCallback(() => {
+    if (!SpeechRecognition) return;
+
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'de-DE';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.onstart = () => setIsRecording(true);
+
+    recognition.onresult = (e) => {
+      const transcript = Array.from(e.results)
+        .map(r => r[0].transcript)
+        .join('');
+      setInput(transcript);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+      recognitionRef.current = null;
+      inputRef.current?.focus();
+    };
+
+    recognition.onerror = () => {
+      setIsRecording(false);
+      recognitionRef.current = null;
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  }, [isRecording]);
 
   return (
     <div className="chat-window">
@@ -152,6 +193,25 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
           onChange={(e) => setInput(e.target.value)}
           disabled={isLoading}
         />
+        {SpeechRecognition && (
+          <button
+            type="button"
+            className={`btn-mic${isRecording ? ' btn-mic--active' : ''}`}
+            onClick={toggleRecording}
+            title={isRecording ? 'Aufnahme stoppen' : 'Spracheingabe starten'}
+            disabled={isLoading}
+          >
+            {isRecording ? (
+              <span className="mic-recording-dots">
+                <span /><span /><span />
+              </span>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V20H9v2h6v-2h-2v-2.08A7 7 0 0 0 19 11h-2z"/>
+              </svg>
+            )}
+          </button>
+        )}
         <button type="submit" className="btn-send" disabled={isLoading || !input.trim()}>
           Senden
         </button>
