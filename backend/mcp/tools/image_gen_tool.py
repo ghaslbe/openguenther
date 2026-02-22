@@ -2,6 +2,7 @@ import base64
 
 from config import get_settings, get_tool_settings
 from services.openrouter import generate_image as _generate_image
+from services.tool_context import get_emit_log
 
 SETTINGS_SCHEMA = [
     {
@@ -55,11 +56,12 @@ def generate_image(prompt, aspect_ratio="1:1"):
             or settings.get("model", "openai/gpt-4o-mini")
 
     timeout = int(tool_cfg.get("timeout") or 120)
+    emit_log = get_emit_log()
 
     try:
-        img_bytes, mime = _generate_image(prompt, api_key, model, aspect_ratio, timeout=timeout)
+        img_bytes, mime = _generate_image(prompt, api_key, model, aspect_ratio, timeout=timeout, emit_log=emit_log)
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": str(e), "model_used": model, "hint": "Bildgenerierungs-Modell in MCP Tools > generate_image > Timeout/Modell einstellen."}
 
     return {
         "image_base64": base64.b64encode(img_bytes).decode(),

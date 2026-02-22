@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from services.openrouter import call_openrouter, SYSTEM_PROMPT
+from services.tool_context import set_emit_log
 from mcp.registry import registry
 from config import get_tool_settings
 
@@ -200,6 +201,9 @@ def run_agent(chat_messages, settings, emit_log):
         else:
             display = content
         emit_log({"type": "text", "message": f"[{role}] {display}"})
+
+    # Make emit_log available to tool handlers (e.g. generate_image)
+    set_emit_log(emit_log)
 
     collected_images = []
     max_iterations = 10
