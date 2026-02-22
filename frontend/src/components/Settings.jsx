@@ -12,6 +12,8 @@ const NAV_ITEMS = [
   { id: 'tools',     label: 'Tools' },
   { id: 'mcp',       label: 'MCP Server' },
   { id: 'telegram',  label: 'Telegram' },
+  { id: 'hilfe',     label: 'Hilfe' },
+  { id: 'info',      label: 'Info' },
 ];
 
 const SECTION_TITLES = {
@@ -20,6 +22,8 @@ const SECTION_TITLES = {
   tools:     'Tool-Einstellungen',
   mcp:       'Externe MCP Server',
   telegram:  'Telegram Gateway',
+  hilfe:     'Hilfe',
+  info:      'Info',
 };
 
 export default function Settings({ onClose }) {
@@ -47,6 +51,39 @@ export default function Settings({ onClose }) {
         return <SettingsMcp />;
       case 'telegram':
         return <SettingsTelegram />;
+      case 'hilfe':
+        return (
+          <div style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: '1.7' }}>
+            <p>Frag einfach <strong style={{ color: 'var(--accent)', fontFamily: 'monospace' }}>Guenther</strong> direkt im Chat was er kann!</p>
+            <p style={{ marginTop: '12px' }}>Zum Beispiel:</p>
+            <ul style={{ marginTop: '8px', paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <li><em>„Was kannst du alles?"</em></li>
+              <li><em>„Welche Tools hast du?"</em></li>
+              <li><em>„Hilf mir mit ..."</em></li>
+            </ul>
+          </div>
+        );
+      case 'info':
+        return (
+          <div style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.8' }}>
+            <p style={{ fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
+              <span style={{ color: 'var(--accent)' }}>OPEN</span>
+              <span style={{ color: 'var(--guenther-text)', fontFamily: 'monospace' }}>guenther</span>
+            </p>
+            <p style={{ marginBottom: '16px' }}>Version <code style={{ color: 'var(--accent)' }}>v{__APP_VERSION__}</code></p>
+            <p>Open-Source KI-Agent mit MCP-Tool-Unterstützung, selbst gehostet via Docker.</p>
+            <p style={{ marginTop: '16px' }}>
+              <a
+                href="https://github.com/ghaslbe/openguenther"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}
+              >
+                github.com/ghaslbe/openguenther
+              </a>
+            </p>
+          </div>
+        );
       default:
         return null;
     }
