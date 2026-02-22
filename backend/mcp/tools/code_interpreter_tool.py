@@ -64,10 +64,23 @@ def run_code(task: str, input_data: str = "") -> dict:
         if emit_log:
             emit_log({"type": "text", "message": msg})
 
-    log(f"[Code-Interpreter] Aufgabe: {task[:120]}")
-    log(f"[Code-Interpreter] Modell: {model} | Input: {len(input_data)} Zeichen")
+    def header(msg: str):
+        if emit_log:
+            emit_log({"type": "header", "message": msg})
+
+    def log_json(label: str, data):
+        if emit_log:
+            emit_log({"type": "json", "label": label, "data": data})
+
+    header("CODE-INTERPRETER GESTARTET")
+    log(f"Aufgabe: {task}")
+    log(f"Modell: {model} | Eingabedaten: {len(input_data)} Zeichen")
 
     prompt = _build_prompt(task, input_data)
+
+    header("CODE-INTERPRETER: LLM-ANFRAGE")
+    log(prompt)
+
     messages = [{"role": "user", "content": prompt}]
 
     try:
@@ -76,21 +89,31 @@ def run_code(task: str, input_data: str = "") -> dict:
             temperature=0.1, base_url=base_url
         )
     except Exception as e:
+        log(f"FEHLER LLM-Anfrage: {str(e)}")
         return {"success": False, "output": "", "error": f"LLM-Fehler: {str(e)}"}
 
     raw = response.get("choices", [{}])[0].get("message", {}).get("content", "")
+    usage = response.get("usage", {})
+    if usage:
+        log(f"Tokens: prompt={usage.get('prompt_tokens','?')} completion={usage.get('completion_tokens','?')}")
+
     code = _extract_code(raw)
 
     if not code:
+        log("FEHLER: Kein ausfuehrbarer Code in LLM-Antwort gefunden")
         return {"success": False, "output": "", "error": "LLM hat keinen ausfuehrbaren Code generiert"}
 
-    log(f"[Code-Interpreter] Code generiert ({len(code)} Zeichen) — führe aus...")
+    header("CODE-INTERPRETER: GENERIERTER CODE")
+    log(code)
 
     tmpdir = tempfile.mkdtemp()
     try:
         script_path = os.path.join(tmpdir, "script.py")
         with open(script_path, "w", encoding="utf-8") as f:
             f.write(code)
+
+        header("CODE-INTERPRETER: AUSFUEHRUNG")
+        log(f"Starte script.py (timeout=30s, stdin={len(input_data)} Zeichen)...")
 
         result = subprocess.run(
             ["python", "script.py"],
@@ -105,10 +128,14 @@ def run_code(task: str, input_data: str = "") -> dict:
         stderr = result.stderr.strip()
 
         if result.returncode != 0:
-            log(f"[Code-Interpreter] Fehler bei Ausführung: {stderr[:200]}")
+            header("CODE-INTERPRETER: FEHLER")
+            log(f"returncode={result.returncode}")
+            log(stderr)
             return {"success": False, "output": stdout, "error": stderr}
 
-        log(f"[Code-Interpreter] Erfolgreich. Output: {len(stdout)} Zeichen")
+        header("CODE-INTERPRETER: ERGEBNIS")
+        log(stdout[:2000] + (" …[gekuerzt]" if len(stdout) > 2000 else ""))
+        log(f"Fertig — {len(stdout)} Zeichen Output")
         return {"success": True, "output": stdout, "error": ""}
 
     except subprocess.TimeoutExpired:
