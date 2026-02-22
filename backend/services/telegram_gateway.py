@@ -65,6 +65,19 @@ class TelegramGateway:
             text = text[:4090] + "\n[...]"
         self._api_post(token, "sendMessage", chat_id=chat_id, text=text)
 
+    def _send_audio(self, token, chat_id, audio_bytes, caption=None):
+        url = TELEGRAM_API.format(token=token, method="sendAudio")
+        try:
+            files = {"audio": ("voice.mp3", io.BytesIO(audio_bytes), "audio/mpeg")}
+            data = {"chat_id": chat_id}
+            if caption:
+                data["caption"] = caption[:1024]
+            r = http_requests.post(url, files=files, data=data, timeout=30)
+            return r.json()
+        except Exception as e:
+            logger.error(f"Telegram sendAudio error: {e}")
+            return None
+
     def _send_photo(self, token, chat_id, image_bytes, caption=None):
         url = TELEGRAM_API.format(token=token, method="sendPhoto")
         try:
@@ -412,11 +425,14 @@ class TelegramGateway:
             self.socketio.emit("agent_end", {"chat_id": chat_id})
 
             text_part, images = self._extract_images(response)
+            text_part, audio_clips = self._extract_audio(text_part)
             clean = self._clean_text_for_telegram(text_part)
             if clean:
                 self._send_message(token, telegram_chat_id, clean)
             for img_bytes in images:
                 self._send_photo(token, telegram_chat_id, img_bytes)
+            for audio_bytes in audio_clips:
+                self._send_audio(token, telegram_chat_id, audio_bytes)
 
         except Exception as e:
             logger.error(f"Error processing Telegram message: {e}", exc_info=True)
@@ -445,6 +461,23 @@ class TelegramGateway:
         clean = re.sub(r'!\[.*?\]\((data:image/[^)]+)\)', replace_image, text)
         clean = clean.strip()
         return clean, images
+
+    def _extract_audio(self, text):
+        """Extract base64 audio embeds from markdown, return (clean_text, [audio_bytes])."""
+        clips = []
+
+        def replace_audio(m):
+            data_uri = m.group(1)
+            try:
+                b64_part = data_uri.split(",", 1)[1]
+                clips.append(base64.b64decode(b64_part))
+            except Exception as e:
+                logger.warning(f"Could not decode base64 audio: {e}")
+            return ""
+
+        clean = re.sub(r'!\[audio\]\((data:audio/[^)]+)\)', replace_audio, text)
+        clean = clean.strip()
+        return clean, clips
 
     def _clean_text_for_telegram(self, text):
         if len(text) > 4096:
