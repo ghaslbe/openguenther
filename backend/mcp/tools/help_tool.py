@@ -68,7 +68,7 @@ def get_help(topic="general"):
             "- generate_image: Bild per KI generieren (Bildgenerierungs-Modell konfigurieren)\n"
             "- process_image: Bild analysieren oder bearbeiten (Vision-Modell)\n"
             "- get_weather: Aktuelles Wetter und Vorhersage abrufen\n"
-            "- wikipedia_search: Wikipedia durchsuchen und Artikel-Einleitung abrufen (de/en/...)\n"
+            "- wikipedia_search: Wikipedia durchsuchen — findet auch Ortsteile & Weiterleitungen (de/en/...)\n"
             "- list_available_tools: Alle Tools auflisten\n"
             "- get_help: Diese Hilfe anzeigen\n\n"
             "PRO-TOOL MODELL-OVERRIDE:\n"
@@ -129,6 +129,32 @@ def get_help(topic="general"):
             "- Polling-basiert (kein Webhook noetig)\n"
             "- Nachrichten auf 4096 Zeichen gekuerzt (Telegram-Limit)"
         ),
+        "wikipedia": (
+            "Das wikipedia_search Tool sucht Wikipedia-Artikel und liefert deren Inhalt.\n\n"
+            "FUNKTIONSWEISE:\n"
+            "1. Direkter Titel-Lookup: Prueft ob ein Artikel mit dem exakten Begriff existiert\n"
+            "2. Weiterleitungen werden automatisch verfolgt (z.B. 'Thannenmais' -> 'Reisbach')\n"
+            "3. Falls der Begriff nur im Artikeltext (nicht in der Einleitung) vorkommt,\n"
+            "   wird der vollstaendige Artikel durchsucht und die relevante Textstelle\n"
+            "   als 'erwaehnung_im_artikel' zurueckgegeben\n"
+            "4. Fallback: Volltextsuche mit Relevanz-Scoring wenn kein direkter Artikel gefunden\n"
+            "5. Automatischer Fallback auf Englisch wenn keine deutschen Ergebnisse\n\n"
+            "PARAMETER:\n"
+            "- query: Suchbegriff (Pflicht)\n"
+            "- language: Sprache, Standard 'de' (auch 'en', 'fr', 'es', etc.)\n"
+            "- results: 1-5 Ergebnisse, Standard 1\n\n"
+            "RUECKGABEFELDER:\n"
+            "- titel: Artikeltitel\n"
+            "- zusammenfassung: Artikel-Einleitung (bis 3000 Zeichen)\n"
+            "- erwaehnung_im_artikel: Textstelle wo der Suchbegriff vorkommt (bei Weiterleitungen)\n"
+            "- weiterleitung_von: Original-Suchbegriff wenn Weiterleitung gefolgt wurde\n"
+            "- hinweis: Erklaerung wenn kein direkter Artikel gefunden\n"
+            "- url: Link zum Wikipedia-Artikel\n\n"
+            "BEISPIELE:\n"
+            "- 'Albert Einstein' -> direkter Artikel\n"
+            "- 'Thannenmais' -> Weiterleitung zu 'Reisbach' + Erwaehnung im Artikeltext\n"
+            "- 'Quantenverschraenkung' -> Artikel mit Einleitung"
+        ),
         "voice": (
             "Guenther unterstuetzt Spracheingabe (STT) fuer Telegram-Sprachnachrichten.\n\n"
             "STT-OPTIONEN:\n"
@@ -160,13 +186,13 @@ LIST_TOOLS_DEFINITION = {
 
 HELP_DEFINITION = {
     "name": "get_help",
-    "description": "Gibt Hilfe und Erklaerungen zu Guenther und seinen Funktionen. Themen: general, tools, settings, mcp, telegram, voice.",
+    "description": "Gibt Hilfe und Erklaerungen zu Guenther und seinen Funktionen. Themen: general, tools, settings, mcp, telegram, voice, wikipedia.",
     "input_schema": {
         "type": "object",
         "properties": {
             "topic": {
                 "type": "string",
-                "description": "Hilfe-Thema: 'general', 'tools', 'settings', 'mcp', 'telegram' oder 'voice'",
+                "description": "Hilfe-Thema: 'general', 'tools', 'settings', 'mcp', 'telegram', 'voice' oder 'wikipedia'",
                 "default": "general"
             }
         },
