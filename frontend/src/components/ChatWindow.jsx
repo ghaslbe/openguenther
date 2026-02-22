@@ -70,7 +70,7 @@ function MessageContent({ content }) {
         }
         if (part.type === 'audio') {
           return (
-            <audio key={i} controls style={{ maxWidth: '100%', marginTop: '8px', display: 'block' }}>
+            <audio key={i} controls autoPlay style={{ maxWidth: '100%', marginTop: '8px', display: 'block' }}>
               <source src={part.src} type="audio/mpeg" />
             </audio>
           );
