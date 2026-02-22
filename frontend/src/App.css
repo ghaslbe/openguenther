@@ -560,61 +560,87 @@ html, body, #root {
   z-index: 1;
 }
 
-/* ── Settings Modal ── */
-.settings-overlay {
+/* ── Settings Panel (Fullscreen) ── */
+.settings-panel {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  inset: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 100;
+  background: var(--bg-dark);
 }
 
-.settings-modal {
+.settings-nav {
+  width: 190px;
+  min-width: 190px;
   background: var(--bg-sidebar);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  width: 600px;
-  max-height: 80vh;
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  padding: 12px 0;
 }
 
-.settings-header {
+.settings-nav-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 8px 16px 16px;
   border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
 }
 
-.settings-header h2 {
-  font-size: 18px;
-}
-
-.btn-close {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px 8px;
-}
-
-.btn-close:hover {
+.settings-nav-header h2 {
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
-.settings-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
+.settings-nav-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
 }
 
+.settings-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.settings-nav-item.active {
+  background: rgba(79, 195, 247, 0.1);
+  border-left-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.settings-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 32px;
+  min-width: 0;
+}
+
+.settings-content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.settings-content-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Reused Settings UI Helpers ── */
 .settings-message {
   background: rgba(79, 195, 247, 0.15);
   border: 1px solid var(--accent);
@@ -626,16 +652,16 @@ html, body, #root {
 }
 
 .settings-section {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .settings-section h3 {
-  font-size: 15px;
-  margin-bottom: 12px;
+  font-size: 13px;
+  margin-bottom: 14px;
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .settings-section h4 {
@@ -709,6 +735,20 @@ html, body, #root {
   white-space: nowrap;
 }
 
+.btn-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+.btn-close:hover {
+  color: var(--text-primary);
+}
+
 .btn-save,
 .btn-add-server,
 .btn-reload-mcp {
@@ -732,6 +772,7 @@ html, body, #root {
 
 .btn-save:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-reload-mcp {
@@ -746,6 +787,241 @@ html, body, #root {
   background: rgba(79, 195, 247, 0.1);
 }
 
+/* ── Provider Cards ── */
+.provider-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.provider-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.provider-card-header:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.provider-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.provider-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.provider-badge.active {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
+.provider-badge.inactive {
+  background: rgba(239, 83, 80, 0.15);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.provider-toggle {
+  position: relative;
+  width: 38px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.provider-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.provider-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #333;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.provider-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 3px;
+  top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.provider-toggle input:checked + .provider-toggle-slider {
+  background: var(--accent);
+}
+
+.provider-toggle input:checked + .provider-toggle-slider::before {
+  transform: translateX(18px);
+}
+
+.provider-expand-icon {
+  color: var(--text-secondary);
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.provider-expand-icon.open {
+  transform: rotate(180deg);
+}
+
+.provider-card-body {
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Tool Accordion ── */
+.tool-accordion-item {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.tool-accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tool-accordion-header:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.tool-accordion-name {
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--accent);
+  flex: 1;
+}
+
+.tool-accordion-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(79, 195, 247, 0.15);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tool-accordion-badge.override {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.tool-accordion-chevron {
+  color: var(--text-secondary);
+  font-size: 11px;
+  transition: transform 0.2s;
+}
+
+.tool-accordion-chevron.open {
+  transform: rotate(180deg);
+}
+
+.tool-accordion-body {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tool-accordion-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 4px 12px 6px;
+  border-top: 1px solid var(--border);
+}
+
+.tool-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tool-field-row label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+
+.tool-field-row input[type="text"],
+.tool-field-row select {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.tool-field-row select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238888aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+.tool-field-row input:focus,
+.tool-field-row select:focus {
+  border-color: var(--accent);
+}
+
+.btn-tool-save {
+  align-self: flex-start;
+  padding: 6px 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 4px;
+  color: #000;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 4px;
+}
+
+.btn-tool-save:hover {
+  background: var(--accent-hover);
+}
+
+/* ── MCP Server list ── */
 .mcp-servers-list {
   margin-bottom: 12px;
 }
@@ -807,29 +1083,58 @@ html, body, #root {
   margin-bottom: 8px;
 }
 
-.mcp-tools-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.mcp-tool-item {
+/* ── Legacy modal (for ToolSettings popup) ── */
+.settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: var(--bg-input);
-  border-radius: 6px;
-  flex-wrap: wrap;
+  justify-content: center;
+  z-index: 200;
 }
 
-.mcp-tool-name {
-  font-family: monospace;
-  font-size: 13px;
-  font-weight: bold;
+.settings-modal {
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-header h2 {
+  font-size: 18px;
+}
+
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.tool-settings-modal {
+  width: 520px;
+}
+
+.tool-settings-icon {
   color: var(--accent);
+  margin-right: 8px;
 }
 
+/* ── Misc tool items ── */
 .mcp-tool-badge {
   font-size: 10px;
   padding: 2px 6px;
@@ -838,12 +1143,6 @@ html, body, #root {
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.mcp-tool-desc {
-  font-size: 12px;
-  color: var(--text-secondary);
-  width: 100%;
 }
 
 .btn-tool-settings {
@@ -859,22 +1158,6 @@ html, body, #root {
 
 .btn-tool-settings:hover {
   background: rgba(79, 195, 247, 0.15);
-}
-
-.tool-settings-modal {
-  width: 520px;
-}
-
-.tool-settings-icon {
-  color: var(--accent);
-  margin-right: 8px;
-}
-
-/* Divider before first tool-specific field (after injected model field) */
-label.tool-settings-divider {
-  padding-top: 16px;
-  margin-top: 4px;
-  border-top: 1px solid var(--border);
 }
 
 /* ── Scrollbar Styling ── */

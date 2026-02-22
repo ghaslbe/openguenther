@@ -107,3 +107,17 @@ export async function stopTelegram() {
   const res = await fetch(`${BASE}/api/telegram/stop`, { method: 'POST' });
   return res.json();
 }
+
+export async function fetchProviders() {
+  const res = await fetch(`${BASE}/api/providers`);
+  return res.json();
+}
+
+export async function updateProvider(providerId, data) {
+  const res = await fetch(`${BASE}/api/providers/${providerId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}

@@ -20,7 +20,14 @@ Antworte auf Deutsch, es sei denn, der Benutzer schreibt in einer anderen Sprach
 Sei praezise und hilfreich."""
 
 
-def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini', temperature=0.5):
+def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini', temperature=0.5, base_url=None):
+    if base_url is None:
+        url = OPENROUTER_API_URL
+    elif base_url.endswith('/chat/completions'):
+        url = base_url
+    else:
+        url = base_url.rstrip('/') + '/chat/completions'
+
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -39,7 +46,7 @@ def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'
         payload["tool_choice"] = "auto"
 
     response = requests.post(
-        OPENROUTER_API_URL,
+        url,
         headers=headers,
         json=payload,
         timeout=120

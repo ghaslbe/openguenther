@@ -165,28 +165,23 @@ def reload_mcp():
     return {"success": True, "logs": logs}
 
 
-_MODEL_OVERRIDE_FIELD = {
-    "key": "model",
-    "label": "OpenRouter Modell",
-    "type": "text",
-    "placeholder": "leer = Standard-Modell verwenden",
-    "description": "Überschreibt das Standard-Modell wenn dieses Tool ausgewählt wird. z.B. mistralai/ministral-8b"
-}
-
-
 @app.route('/api/mcp/tools', methods=['GET'])
 def list_mcp_tools():
     tools = registry.list_tools()
-    return [
-        {
+    result = []
+    for t in tools:
+        ts = get_tool_settings(t.name)
+        result.append({
             "name": t.name,
             "description": t.description,
             "server_id": t.server_id,
             "builtin": t.server_id is None,
-            "has_settings": True  # All tools have at least the model override setting
-        }
-        for t in tools
-    ]
+            "has_settings": bool(t.settings_schema),
+            "settings_schema": t.settings_schema or [],
+            "current_provider": ts.get("provider", ""),
+            "current_model": ts.get("model", ""),
+        })
+    return result
 
 
 @app.route('/api/mcp/tools/<tool_name>/settings', methods=['GET'])
@@ -194,10 +189,9 @@ def get_tool_settings_route(tool_name):
     tool = registry.get_tool(tool_name)
     if not tool:
         return {"error": "Tool nicht gefunden"}, 404
-    schema = [_MODEL_OVERRIDE_FIELD] + (tool.settings_schema or [])
     return {
         "name": tool_name,
-        "schema": schema,
+        "schema": tool.settings_schema or [],
         "values": get_tool_settings(tool_name)
     }
 

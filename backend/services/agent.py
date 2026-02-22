@@ -17,7 +17,7 @@ def _ts():
     return datetime.now().strftime("%H:%M:%S")
 
 
-def _select_tools(all_tools, chat_messages, api_key, model, emit_log):
+def _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=None):
     """
     Pre-filter: Ask LLM which tools are relevant for this request.
     Uses only tool names + descriptions (no full schemas) to save tokens.
@@ -60,7 +60,7 @@ def _select_tools(all_tools, chat_messages, api_key, model, emit_log):
     }})
 
     try:
-        response = call_openrouter(router_messages, None, api_key, model, temperature=0.1)
+        response = call_openrouter(router_messages, None, api_key, model, temperature=0.1, base_url=base_url)
         content = response.get("choices", [{}])[0].get("message", {}).get("content", "[]")
 
         emit_log({"type": "json", "label": "router_response_raw", "data": response})
@@ -95,23 +95,38 @@ def _select_tools(all_tools, chat_messages, api_key, model, emit_log):
         return all_tools
 
 
-def _pick_model_for_tools(selected_tools, default_model):
+def _pick_provider_and_model_for_tools(selected_tools, settings):
     """
-    Check if all selected tools agree on a model override.
-    If all non-empty overrides are identical, use that model.
-    Otherwise fall back to the default model.
+    Check if all selected tools agree on a provider+model override.
+    Returns (provider_cfg, model).
+    If tools disagree or have no override, falls back to the default provider+model.
     """
+    default_provider_id = settings.get('default_provider', 'openrouter')
+    providers = settings.get('providers', {})
+    default_provider_cfg = providers.get(default_provider_id, {})
+    default_model = settings.get('model', 'openai/gpt-4o-mini')
+
+    provider_ids = set()
     models = set()
+
     for t in selected_tools:
         name = t.get("function", {}).get("name", "")
         if name:
             ts = get_tool_settings(name)
+            p = (ts.get("provider") or "").strip()
             m = (ts.get("model") or "").strip()
+            if p:
+                provider_ids.add(p)
             if m:
                 models.add(m)
-    if len(models) == 1:
-        return models.pop()
-    return default_model
+
+    override_provider_cfg = None
+    if len(provider_ids) == 1:
+        pid = provider_ids.pop()
+        override_provider_cfg = providers.get(pid, default_provider_cfg)
+
+    override_model = models.pop() if len(models) == 1 else default_model
+    return override_provider_cfg or default_provider_cfg, override_model
 
 
 def run_agent(chat_messages, settings, emit_log):
@@ -120,11 +135,19 @@ def run_agent(chat_messages, settings, emit_log):
     Logs ALL communication to Guenther terminal.
     Returns the final assistant response.
     """
-    api_key = settings.get('openrouter_api_key', '')
+    # Resolve provider
+    provider_id = settings.get('default_provider', 'openrouter')
+    providers = settings.get('providers', {})
+    provider_cfg = providers.get(provider_id, {})
+
+    # Backward compat: fall back to legacy openrouter_api_key
+    api_key = provider_cfg.get('api_key', '') or settings.get('openrouter_api_key', '')
+    base_url = provider_cfg.get('base_url', 'https://openrouter.ai/api/v1')
+
     model = settings.get('model', 'openai/gpt-4o-mini')
     temperature = float(settings.get('temperature', 0.5))
 
-    if not api_key:
+    if not api_key and provider_id == 'openrouter':
         return "Fehler: Kein OpenRouter API-Key konfiguriert. Bitte in den Einstellungen hinterlegen."
 
     # Build messages
@@ -146,13 +169,15 @@ def run_agent(chat_messages, settings, emit_log):
     emit_log({"type": "json", "label": "all_tools", "data": all_tools})
 
     # ── Tool Router: Pre-filter ──
-    tools = _select_tools(all_tools, chat_messages, api_key, model, emit_log)
+    tools = _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=base_url)
 
-    # ── Model override: use tool-specific model if all selected tools agree ──
-    effective_model = _pick_model_for_tools(tools, model)
-    if effective_model != model:
-        emit_log({"type": "text", "message": f"[{_ts()}] Modell-Override aktiv: {effective_model}"})
+    # ── Provider+Model override: use tool-specific overrides if all tools agree ──
+    effective_provider_cfg, effective_model = _pick_provider_and_model_for_tools(tools, settings)
+    if effective_model != model or effective_provider_cfg.get('base_url', base_url) != base_url:
+        emit_log({"type": "text", "message": f"[{_ts()}] Override aktiv: Provider={effective_provider_cfg.get('name', provider_id)} Modell={effective_model}"})
         model = effective_model
+        api_key = effective_provider_cfg.get('api_key', '') or api_key
+        base_url = effective_provider_cfg.get('base_url', base_url)
 
     # ── Log: Gefilterte Tools ──
     emit_log({"type": "header", "message": f"AKTIVE TOOLS FUER DIESEN REQUEST ({len(tools)})"})
@@ -193,11 +218,11 @@ def run_agent(chat_messages, settings, emit_log):
             request_payload["tool_choice"] = "auto"
 
         emit_log({"type": "header", "message": "API REQUEST"})
-        emit_log({"type": "text", "message": f"POST https://openrouter.ai/api/v1/chat/completions"})
+        emit_log({"type": "text", "message": f"POST {base_url.rstrip('/')}/chat/completions"})
         emit_log({"type": "json", "label": "payload", "data": request_payload})
 
         try:
-            response = call_openrouter(messages, tools if tools else None, api_key, model, temperature)
+            response = call_openrouter(messages, tools if tools else None, api_key, model, temperature, base_url=base_url)
         except Exception as e:
             error_msg = f"Fehler bei LLM-Anfrage: {str(e)}"
             emit_log({"type": "text", "message": f"[{_ts()}] FEHLER: {error_msg}"})

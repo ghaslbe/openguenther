@@ -5,6 +5,14 @@ import uuid
 settings_bp = Blueprint('settings', __name__)
 
 
+def _mask_key(key):
+    if key and len(key) > 12:
+        return key[:8] + '...' + key[-4:]
+    elif key:
+        return '***'
+    return ''
+
+
 @settings_bp.route('/api/settings', methods=['GET'])
 def get_settings_route():
     settings = get_settings()
@@ -13,13 +21,13 @@ def get_settings_route():
         ('openrouter_api_key', 'openrouter_api_key_masked'),
         ('openai_api_key', 'openai_api_key_masked'),
     ]:
-        key = masked.get(field, '')
-        if key and len(key) > 12:
-            masked[masked_field] = key[:8] + '...' + key[-4:]
-        elif key:
-            masked[masked_field] = '***'
-        else:
-            masked[masked_field] = ''
+        masked[masked_field] = _mask_key(masked.get(field, ''))
+    # Mask provider api_keys
+    if 'providers' in masked:
+        import copy
+        masked['providers'] = copy.deepcopy(masked['providers'])
+        for pcfg in masked['providers'].values():
+            pcfg['api_key_masked'] = _mask_key(pcfg.get('api_key', ''))
     return jsonify(masked)
 
 
@@ -30,13 +38,49 @@ def update_settings():
 
     if 'openrouter_api_key' in data:
         settings['openrouter_api_key'] = data['openrouter_api_key']
-    for key in ('model', 'stt_model', 'tts_model', 'image_gen_model', 'openai_api_key'):
+    for key in ('model', 'stt_model', 'tts_model', 'image_gen_model', 'openai_api_key', 'default_provider'):
         if key in data:
             settings[key] = data[key]
     if 'temperature' in data:
         settings['temperature'] = float(data['temperature'])
     if 'use_openai_whisper' in data:
         settings['use_openai_whisper'] = bool(data['use_openai_whisper'])
+
+    save_settings(settings)
+    return jsonify({'success': True})
+
+
+@settings_bp.route('/api/providers', methods=['GET'])
+def get_providers():
+    settings = get_settings()
+    providers = settings.get('providers', {})
+    result = {}
+    for pid, pcfg in providers.items():
+        import copy
+        masked = copy.deepcopy(pcfg)
+        masked['api_key_masked'] = _mask_key(pcfg.get('api_key', ''))
+        result[pid] = masked
+    return jsonify(result)
+
+
+@settings_bp.route('/api/providers/<provider_id>', methods=['PUT'])
+def update_provider(provider_id):
+    data = request.get_json()
+    settings = get_settings()
+    if 'providers' not in settings:
+        settings['providers'] = {}
+    if provider_id not in settings['providers']:
+        settings['providers'][provider_id] = {}
+
+    pcfg = settings['providers'][provider_id]
+    for field in ('name', 'base_url', 'enabled'):
+        if field in data:
+            pcfg[field] = data[field]
+    if data.get('api_key'):
+        pcfg['api_key'] = data['api_key']
+        # Sync to legacy field for OpenRouter
+        if provider_id == 'openrouter':
+            settings['openrouter_api_key'] = data['api_key']
 
     save_settings(settings)
     return jsonify({'success': True})
