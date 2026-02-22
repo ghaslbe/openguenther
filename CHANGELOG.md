@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.2.0] — 2026-02-22
+
+### ElevenLabs Text-to-Speech
+- Neues `text_to_speech` MCP-Tool: wandelt Text in Sprache um via ElevenLabs API
+- Konfigurierbar in Settings → Tools: API Key, Voice ID, Modell (z.B. `eleven_multilingual_v2`)
+- Audio wird als Base64 data-URI in die Antwort eingebettet und direkt im Chat abgespielt
+- `<audio>`-Player mit `autoplay` — startet automatisch nach Tool-Aufruf
+
+### Spracheingabe per Mikrofon (Web GUI)
+- Mikrofon-Button neben dem Senden-Button (nur in Browsern mit Web Speech API, z.B. Chrome/Edge)
+- Pulsierender roter Ring + springende Punkte als Aufnahme-Visualisierung
+- Transkript fließt live ins Eingabefeld; nach Ende der Aufnahme springt Fokus ins Textfeld
+- Sprache: `de-DE`; funktioniert nur auf `https://` oder `localhost` (Browser-Einschränkung)
+
+### Bildgenerierung verbessert
+- Fix: API-Response-Parsing korrigiert (`image_url.url` statt `url`)
+- Bildgenerierungs-Request und Response-Größe werden im Terminal geloggt
+- `agent_overridable=False` für `generate_image`: Provider/Modell-Override wird in der UI ausgeblendet
+- Tool-Schema-Key umbenannt: `model` → `image_model`
+
+### Konfigurierbarer Timeout
+- Globaler LLM-Timeout in Settings konfigurierbar (`llm_timeout`, Standard: 120s)
+- Jedes Tool kann eigenen Timeout setzen (Feld `timeout` im Tool-Settings-Schema)
+
+---
+
 ## [1.1.0] — 2026-02-22
 
 ### Settings-Redesign + Multi-Provider Support
