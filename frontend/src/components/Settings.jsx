@@ -6,9 +6,11 @@ import SettingsTools from './settings/SettingsTools';
 import SettingsMcp from './settings/SettingsMcp';
 import SettingsTelegram from './settings/SettingsTelegram';
 import SettingsHilfe from './settings/SettingsHilfe';
+import SettingsAgents from './settings/SettingsAgents';
 
 const NAV_ITEMS = [
   { id: 'general',   label: 'Allgemein' },
+  { id: 'agents',    label: 'Agenten' },
   { id: 'providers', label: 'Provider' },
   { id: 'tools',     label: 'MCP Tools' },
   { id: 'mcp',       label: 'MCP Server' },
@@ -19,6 +21,7 @@ const NAV_ITEMS = [
 
 const SECTION_TITLES = {
   general:   'Allgemein',
+  agents:    'Agenten',
   providers: 'LLM Provider',
   tools:     'Enthaltene MCP Tools',
   mcp:       'Externe MCP Server',
@@ -27,7 +30,7 @@ const SECTION_TITLES = {
   info:      'Info',
 };
 
-export default function Settings({ onClose }) {
+export default function Settings({ onClose, onAgentsChange }) {
   const [activeSection, setActiveSection] = useState('general');
   const [providers, setProviders] = useState({});
 
@@ -42,6 +45,8 @@ export default function Settings({ onClose }) {
 
   function renderSection() {
     switch (activeSection) {
+      case 'agents':
+        return <SettingsAgents onAgentsChange={onAgentsChange} />;
       case 'general':
         return <SettingsGeneral providers={providers} />;
       case 'providers':

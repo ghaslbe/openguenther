@@ -4,6 +4,7 @@ import json
 DATA_DIR = os.environ.get('DATA_DIR', '/app/data')
 SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
 DB_FILE = os.path.join(DATA_DIR, 'guenther.db')
+AGENTS_FILE = os.path.join(DATA_DIR, 'agents.json')
 
 DEFAULT_SETTINGS = {
     'openrouter_api_key': '',
@@ -62,6 +63,23 @@ def save_settings(settings):
     os.makedirs(DATA_DIR, exist_ok=True)
     with open(SETTINGS_FILE, 'w') as f:
         json.dump(settings, f, indent=2)
+
+
+def get_agents():
+    if not os.path.exists(AGENTS_FILE):
+        return []
+    with open(AGENTS_FILE) as f:
+        return json.load(f)
+
+
+def save_agents(agents):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(AGENTS_FILE, 'w') as f:
+        json.dump(agents, f, ensure_ascii=False, indent=2)
+
+
+def get_agent(agent_id):
+    return next((a for a in get_agents() if a['id'] == agent_id), None)
 
 
 def get_tool_settings(tool_name):

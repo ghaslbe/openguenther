@@ -130,7 +130,7 @@ def _pick_provider_and_model_for_tools(selected_tools, settings):
     return override_provider_cfg or default_provider_cfg, override_model
 
 
-def run_agent(chat_messages, settings, emit_log):
+def run_agent(chat_messages, settings, emit_log, system_prompt=None):
     """
     Run the agent loop: send messages to LLM, handle tool calls, iterate.
     Logs ALL communication to Guenther terminal.
@@ -153,7 +153,8 @@ def run_agent(chat_messages, settings, emit_log):
         return "Fehler: Kein OpenRouter API-Key konfiguriert. Bitte in den Einstellungen hinterlegen."
 
     # Build messages
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    active_prompt = system_prompt if system_prompt else SYSTEM_PROMPT
+    messages = [{"role": "system", "content": active_prompt}]
     messages.extend(chat_messages)
 
     all_tools = registry.get_openai_tools()
@@ -164,7 +165,7 @@ def run_agent(chat_messages, settings, emit_log):
 
     # ── Log: System Prompt ──
     emit_log({"type": "header", "message": "SYSTEM PROMPT"})
-    emit_log({"type": "text", "message": SYSTEM_PROMPT})
+    emit_log({"type": "text", "message": active_prompt})
 
     # ── Log: Alle Tool Definitions ──
     emit_log({"type": "header", "message": f"ALLE TOOLS ({len(all_tools)})"})

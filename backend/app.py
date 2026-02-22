@@ -5,10 +5,11 @@ from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 
 from flask import request as flask_request
-from config import get_settings, get_tool_settings, save_tool_settings, DATA_DIR
+from config import get_settings, get_tool_settings, save_tool_settings, DATA_DIR, get_agent
 from models import init_db, get_chat, add_message, create_chat, update_chat_title
 from routes.chat import chat_bp
 from routes.settings import settings_bp
+from routes.agents import agents_bp
 from mcp.registry import registry, MCPTool
 from mcp.tools.time_tool import get_current_time, TOOL_DEFINITION as TIME_TOOL_DEF
 from mcp.tools.text_to_image import text_to_image, TOOL_DEFINITION as IMAGE_TOOL_DEF, SETTINGS_SCHEMA as IMAGE_SETTINGS
@@ -35,6 +36,7 @@ telegram_gateway = TelegramGateway(socketio)
 
 app.register_blueprint(chat_bp)
 app.register_blueprint(settings_bp)
+app.register_blueprint(agents_bp)
 
 # Initialize database
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -240,6 +242,7 @@ def handle_connect():
 def handle_message(data):
     chat_id = data.get('chat_id')
     content = data.get('content', '').strip()
+    agent_id = data.get('agent_id') or None
 
     if not content:
         return
@@ -247,8 +250,10 @@ def handle_message(data):
     # Create new chat if needed
     if not chat_id:
         title = content[:50] + ('...' if len(content) > 50 else '')
-        chat_id = create_chat(title)
-        emit('chat_created', {'chat_id': chat_id, 'title': title})
+        chat_id = create_chat(title, agent_id=agent_id)
+        emit('chat_created', {'chat_id': chat_id, 'title': title, 'agent_id': agent_id})
+    else:
+        agent_id = None  # will be loaded from existing chat below
 
     # Save user message
     add_message(chat_id, 'user', content)
@@ -262,6 +267,10 @@ def handle_message(data):
                 'role': msg['role'],
                 'content': msg['content']
             })
+
+    # For existing chats, read agent_id from DB
+    if agent_id is None:
+        agent_id = chat.get('agent_id')
 
     # Update title on first message
     if len(messages) == 1:
@@ -280,8 +289,15 @@ def handle_message(data):
 
     emit('agent_start', {'chat_id': chat_id})
 
+    # Resolve optional agent system_prompt
+    agent_system_prompt = None
+    if agent_id:
+        agent_cfg = get_agent(agent_id)
+        if agent_cfg:
+            agent_system_prompt = agent_cfg.get('system_prompt') or None
+
     try:
-        response = run_agent(messages, settings, emit_log)
+        response = run_agent(messages, settings, emit_log, system_prompt=agent_system_prompt)
         add_message(chat_id, 'assistant', response)
         emit('agent_response', {
             'chat_id': chat_id,

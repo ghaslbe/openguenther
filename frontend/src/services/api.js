@@ -108,6 +108,33 @@ export async function stopTelegram() {
   return res.json();
 }
 
+export async function fetchAgents() {
+  const res = await fetch(`${BASE}/api/agents`);
+  return res.json();
+}
+
+export async function createAgent(data) {
+  const res = await fetch(`${BASE}/api/agents`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+export async function updateAgent(id, data) {
+  const res = await fetch(`${BASE}/api/agents/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+export async function deleteAgent(id) {
+  await fetch(`${BASE}/api/agents/${id}`, { method: 'DELETE' });
+}
+
 export async function fetchProviders() {
   const res = await fetch(`${BASE}/api/providers`);
   return res.json();

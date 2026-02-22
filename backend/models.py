@@ -22,6 +22,13 @@ def init_db():
             updated_at TEXT NOT NULL
         )
     ''')
+    # Migration: add agent_id column if missing
+    try:
+        conn.execute("ALTER TABLE chats ADD COLUMN agent_id TEXT")
+        conn.commit()
+    except Exception:
+        pass  # column already exists
+
     conn.execute('''
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,12 +44,12 @@ def init_db():
     conn.close()
 
 
-def create_chat(title="Neuer Chat"):
+def create_chat(title="Neuer Chat", agent_id=None):
     conn = get_db()
     now = datetime.utcnow().isoformat()
     cursor = conn.execute(
-        'INSERT INTO chats (title, created_at, updated_at) VALUES (?, ?, ?)',
-        (title, now, now)
+        'INSERT INTO chats (title, created_at, updated_at, agent_id) VALUES (?, ?, ?, ?)',
+        (title, now, now, agent_id)
     )
     chat_id = cursor.lastrowid
     conn.commit()

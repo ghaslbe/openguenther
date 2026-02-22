@@ -91,7 +91,7 @@ function MessageContent({ content }) {
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-export default function ChatWindow({ messages, onSendMessage, isLoading, activeChatId }) {
+export default function ChatWindow({ messages, onSendMessage, isLoading, activeChatId, agents, selectedAgentId, onAgentChange }) {
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef(null);
@@ -189,6 +189,21 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
         )}
         <div ref={messagesEndRef} />
       </div>
+      {!activeChatId && agents && agents.length > 0 && (
+        <div className="agent-picker">
+          <label htmlFor="agent-select">Agent:</label>
+          <select
+            id="agent-select"
+            value={selectedAgentId}
+            onChange={e => onAgentChange(e.target.value)}
+          >
+            <option value="">Kein Agent (Standard)</option>
+            {agents.map(a => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <form className="chat-input-form" onSubmit={handleSubmit}>
         <input
           ref={inputRef}

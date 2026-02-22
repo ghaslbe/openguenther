@@ -1,6 +1,12 @@
 import React from 'react';
 
-export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat, onDeleteChat, onOpenSettings }) {
+export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat, onDeleteChat, onOpenSettings, agents }) {
+  function getAgentName(agentId) {
+    if (!agentId || !agents) return null;
+    const agent = agents.find(a => a.id === agentId);
+    return agent ? agent.name : null;
+  }
+
   return (
     <div className="chat-list">
       <div className="chat-list-header">
@@ -14,7 +20,12 @@ export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat,
             className={`chat-list-item ${chat.id === activeChatId ? 'active' : ''}`}
             onClick={() => onSelectChat(chat.id)}
           >
-            <span className="chat-title">{chat.title}</span>
+            <div className="chat-item-body">
+              <span className="chat-title">{chat.title}</span>
+              {getAgentName(chat.agent_id) && (
+                <span className="chat-agent-badge">{getAgentName(chat.agent_id)}</span>
+              )}
+            </div>
             <button
               className="btn-delete-chat"
               onClick={(e) => { e.stopPropagation(); onDeleteChat(chat.id); }}

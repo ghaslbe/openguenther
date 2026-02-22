@@ -1253,3 +1253,184 @@ html, body, #root {
 .guenther-terminal::-webkit-scrollbar-thumb {
   background: var(--guenther-dim);
 }
+
+/* ── Agent Picker ── */
+.agent-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: var(--bg-input);
+  border-top: 1px solid var(--border);
+}
+
+.agent-picker label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.agent-picker select {
+  flex: 1;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  max-width: 280px;
+}
+
+.agent-picker select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ── Chat Agent Badge ── */
+.chat-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-agent-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(79, 195, 247, 0.1);
+  border: 1px solid rgba(79, 195, 247, 0.3);
+  border-radius: 3px;
+  padding: 1px 5px;
+  width: fit-content;
+  letter-spacing: 0.3px;
+}
+
+/* ── Agent Settings ── */
+.agents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.agent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.agent-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-item-info strong {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.agent-item-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.agent-item-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-edit-agent,
+.btn-delete-agent,
+.btn-cancel-agent {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.btn-edit-agent:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-delete-agent:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.btn-cancel-agent:hover {
+  background: var(--bg-dark);
+}
+
+.agents-empty {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 8px 0;
+}
+
+.agent-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.agent-prompt-textarea {
+  width: 100%;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.agent-prompt-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.agent-form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-save-agent {
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-save-agent:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-save-agent:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

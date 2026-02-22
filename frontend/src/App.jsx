@@ -3,7 +3,7 @@ import ChatList from './components/ChatList';
 import ChatWindow from './components/ChatWindow';
 import GuentherBox from './components/GuentherBox';
 import Settings from './components/Settings';
-import { fetchChats, fetchChat, deleteChat } from './services/api';
+import { fetchChats, fetchChat, deleteChat, fetchAgents } from './services/api';
 import { getSocket } from './services/socket';
 
 export default function App() {
@@ -14,14 +14,22 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [guentherWidth, setGuentherWidth] = useState(480);
+  const [agents, setAgents] = useState([]);
+  const [selectedAgentId, setSelectedAgentId] = useState('');
 
   const isResizing = useRef(false);
   const socket = getSocket();
 
-  // Load chats on mount
+  // Load chats and agents on mount
   useEffect(() => {
     loadChats();
+    loadAgents();
   }, []);
+
+  async function loadAgents() {
+    const data = await fetchAgents();
+    setAgents(data);
+  }
 
   // Socket event listeners
   useEffect(() => {
@@ -31,6 +39,7 @@ export default function App() {
 
     socket.on('chat_created', (data) => {
       setActiveChatId(data.chat_id);
+      setSelectedAgentId('');
       loadChats();
     });
 
@@ -129,7 +138,8 @@ export default function App() {
     setMessages(prev => [...prev, { role: 'user', content }]);
     socket.emit('send_message', {
       chat_id: activeChatId,
-      content
+      content,
+      agent_id: activeChatId ? '' : selectedAgentId
     });
   }
 
@@ -147,12 +157,16 @@ export default function App() {
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
         onOpenSettings={() => setShowSettings(true)}
+        agents={agents}
       />
       <ChatWindow
         messages={messages}
         onSendMessage={handleSendMessage}
         isLoading={isLoading}
         activeChatId={activeChatId}
+        agents={agents}
+        selectedAgentId={selectedAgentId}
+        onAgentChange={setSelectedAgentId}
       />
       <GuentherBox
         logs={guentherLogs}
@@ -160,7 +174,7 @@ export default function App() {
         onResizeStart={handleResizeStart}
         onClear={handleClearLogs}
       />
-      {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+      {showSettings && <Settings onClose={() => setShowSettings(false)} onAgentsChange={loadAgents} />}
       </div>
     </div>
   );
