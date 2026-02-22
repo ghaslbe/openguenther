@@ -8,22 +8,38 @@ import ReactMarkdown from 'react-markdown';
 function parseContent(content) {
   if (!content) return [{ type: 'text', value: '' }];
 
-  const regex = /!\[([^\]]*)\]\((data:image\/[^)]+)\)/g;
+  const imageRegex = /!\[([^\]]*)\]\((data:image\/[^)]+)\)/g;
+  const audioRegex = /!\[audio\]\((data:audio\/[^)]+)\)/g;
+
+  // Collect all matches with their positions
+  const matches = [];
+  let m;
+
+  while ((m = imageRegex.exec(content)) !== null) {
+    matches.push({ index: m.index, end: m.index + m[0].length, type: 'image', alt: m[1], src: m[2] });
+  }
+  while ((m = audioRegex.exec(content)) !== null) {
+    matches.push({ index: m.index, end: m.index + m[0].length, type: 'audio', src: m[1] });
+  }
+
+  matches.sort((a, b) => a.index - b.index);
+
   const parts = [];
   let lastIndex = 0;
-  let match;
 
-  while ((match = regex.exec(content)) !== null) {
-    // Text before the image
+  for (const match of matches) {
     if (match.index > lastIndex) {
       const text = content.slice(lastIndex, match.index).trim();
       if (text) parts.push({ type: 'text', value: text });
     }
-    parts.push({ type: 'image', alt: match[1], src: match[2] });
-    lastIndex = match.index + match[0].length;
+    if (match.type === 'image') {
+      parts.push({ type: 'image', alt: match.alt, src: match.src });
+    } else {
+      parts.push({ type: 'audio', src: match.src });
+    }
+    lastIndex = match.end;
   }
 
-  // Remaining text after last image
   if (lastIndex < content.length) {
     const text = content.slice(lastIndex).trim();
     if (text) parts.push({ type: 'text', value: text });
@@ -50,6 +66,13 @@ function MessageContent({ content }) {
               alt={part.alt || 'Generiertes Bild'}
               style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '8px', display: 'block' }}
             />
+          );
+        }
+        if (part.type === 'audio') {
+          return (
+            <audio key={i} controls style={{ maxWidth: '100%', marginTop: '8px', display: 'block' }}>
+              <source src={part.src} type="audio/mpeg" />
+            </audio>
           );
         }
         return (

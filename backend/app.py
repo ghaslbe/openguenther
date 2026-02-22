@@ -23,6 +23,7 @@ from mcp.tools.image_process_tool import process_image, TOOL_DEFINITION as IMG_P
 from mcp.tools.image_gen_tool import generate_image, TOOL_DEFINITION as IMG_GEN_TOOL_DEF, SETTINGS_SCHEMA as IMG_GEN_SETTINGS
 from mcp.tools.weather_tool import get_weather, TOOL_DEFINITION as WEATHER_TOOL_DEF
 from mcp.tools.wikipedia_tool import wikipedia_search, TOOL_DEFINITION as WIKI_TOOL_DEF
+from mcp.tools.tts_tool import text_to_speech, TOOL_DEFINITION as TTS_DEF, SETTINGS_SCHEMA as TTS_SETTINGS
 from mcp.manager import load_external_tools
 from services.agent import run_agent
 from services.telegram_gateway import TelegramGateway
@@ -140,6 +141,15 @@ registry.register(MCPTool(
     description=WIKI_TOOL_DEF['description'],
     input_schema=WIKI_TOOL_DEF['input_schema'],
     handler=wikipedia_search
+))
+
+registry.register(MCPTool(
+    name=TTS_DEF['name'],
+    description=TTS_DEF['description'],
+    input_schema=TTS_DEF['input_schema'],
+    handler=text_to_speech,
+    settings_schema=TTS_SETTINGS,
+    agent_overridable=False
 ))
 
 

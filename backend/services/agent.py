@@ -206,6 +206,7 @@ def run_agent(chat_messages, settings, emit_log):
     set_emit_log(emit_log)
 
     collected_images = []
+    collected_audio = []
     max_iterations = 10
     iteration = 0
 
@@ -288,6 +289,17 @@ def run_agent(chat_messages, settings, emit_log):
                             emit_log({"type": "header", "message": f"TOOL RESULT: {tool_name}"})
                             emit_log({"type": "json", "label": "result", "data": simplified})
                             emit_log({"type": "text", "message": f"[{_ts()}] (Bild-Daten: {len(result['image_base64'])} Bytes Base64)"})
+                        elif isinstance(result, dict) and 'audio_base64' in result:
+                            collected_audio.append(result)
+                            simplified = {
+                                "success": True,
+                                "message": "Audio wurde erfolgreich erstellt",
+                            }
+                            result_str = json.dumps(simplified, ensure_ascii=False)
+
+                            emit_log({"type": "header", "message": f"TOOL RESULT: {tool_name}"})
+                            emit_log({"type": "json", "label": "result", "data": simplified})
+                            emit_log({"type": "text", "message": f"[{_ts()}] (Audio-Daten: {len(result['audio_base64'])} Bytes Base64)"})
                         else:
                             result_str = json.dumps(result, ensure_ascii=False)
                             emit_log({"type": "header", "message": f"TOOL RESULT: {tool_name}"})
@@ -324,6 +336,12 @@ def run_agent(chat_messages, settings, emit_log):
                 mime = img.get('mime_type', 'image/png')
                 b64 = img.get('image_base64', '')
                 content += f"\n\n![Generiertes Bild](data:{mime};base64,{b64})"
+
+            # Append collected audio
+            for audio in collected_audio:
+                mime = audio.get('mime_type', 'audio/mpeg')
+                b64 = audio.get('audio_base64', '')
+                content += f"\n\n![audio](data:{mime};base64,{b64})"
 
             emit_log({"type": "header", "message": "GUENTHER AGENT BEENDET"})
             return content
