@@ -105,30 +105,34 @@ export default function SettingsTools({ providers }) {
 
             {isOpen && (
               <div className="tool-accordion-body">
-                <div className="tool-field-row">
-                  <label>Provider Override</label>
-                  <select
-                    value={edit.provider || ''}
-                    onChange={(e) => setField(tool.name, 'provider', e.target.value)}
-                  >
-                    <option value="">Standard verwenden</option>
-                    {activeProviders.map(([pid, p]) => (
-                      <option key={pid} value={pid}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="tool-field-row">
-                  <label>Modell Override</label>
-                  <input
-                    type="text"
-                    value={edit.model || ''}
-                    onChange={(e) => setField(tool.name, 'model', e.target.value)}
-                    placeholder="leer = Standard-Modell verwenden"
-                  />
-                </div>
+                {tool.agent_overridable !== false && (
+                  <>
+                    <div className="tool-field-row">
+                      <label>Provider Override</label>
+                      <select
+                        value={edit.provider || ''}
+                        onChange={(e) => setField(tool.name, 'provider', e.target.value)}
+                      >
+                        <option value="">Standard verwenden</option>
+                        {activeProviders.map(([pid, p]) => (
+                          <option key={pid} value={pid}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="tool-field-row">
+                      <label>Modell Override</label>
+                      <input
+                        type="text"
+                        value={edit.model || ''}
+                        onChange={(e) => setField(tool.name, 'model', e.target.value)}
+                        placeholder="leer = Standard-Modell verwenden"
+                      />
+                    </div>
+                  </>
+                )}
 
                 {schema.length > 0 && (
-                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: '10px', marginTop: '2px' }}>
+                  <div style={tool.agent_overridable !== false ? { borderTop: '1px solid var(--border)', paddingTop: '10px', marginTop: '2px' } : {}}>
                     {schema.map((field) => (
                       <div key={field.key} className="tool-field-row" style={{ marginBottom: '8px' }}>
                         <label>{field.label}</label>
