@@ -53,44 +53,44 @@ export default function ToolSettings({ toolName, onClose }) {
         <div className="settings-body">
           {message && <div className="settings-message">{message}</div>}
 
-          {schema.map(field => (
-            <label key={field.key}>
-              {field.label}
-              {field.type === 'password' ? (
-                <div className="input-group">
+          <div className="settings-section">
+            {schema.map((field, idx) => (
+              <label key={field.key} className={idx > 0 && schema[0].key === 'model' && idx === 1 ? 'tool-settings-divider' : ''}>
+                {field.label}
+                {field.type === 'password' ? (
+                  <div className="input-group">
+                    <input
+                      type={showPasswords[field.key] ? 'text' : 'password'}
+                      value={values[field.key] || ''}
+                      onChange={(e) => handleChange(field.key, e.target.value)}
+                      placeholder={field.placeholder || ''}
+                    />
+                    <button
+                      type="button"
+                      className="btn-toggle-key"
+                      onClick={() => togglePassword(field.key)}
+                    >
+                      {showPasswords[field.key] ? 'Verbergen' : 'Anzeigen'}
+                    </button>
+                  </div>
+                ) : (
                   <input
-                    type={showPasswords[field.key] ? 'text' : 'password'}
+                    type="text"
                     value={values[field.key] || ''}
                     onChange={(e) => handleChange(field.key, e.target.value)}
                     placeholder={field.placeholder || ''}
                   />
-                  <button
-                    type="button"
-                    className="btn-toggle-key"
-                    onClick={() => togglePassword(field.key)}
-                  >
-                    {showPasswords[field.key] ? 'Verbergen' : 'Anzeigen'}
-                  </button>
-                </div>
-              ) : (
-                <input
-                  type="text"
-                  value={values[field.key] || ''}
-                  onChange={(e) => handleChange(field.key, e.target.value)}
-                  placeholder={field.placeholder || ''}
-                />
-              )}
-              {field.description && (
-                <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>
-                  {field.description}
-                </small>
-              )}
-            </label>
-          ))}
+                )}
+                {field.description && (
+                  <small>{field.description}</small>
+                )}
+              </label>
+            ))}
 
-          <button className="btn-save" onClick={handleSave} disabled={saving}>
-            {saving ? 'Speichere...' : 'Speichern'}
-          </button>
+            <button className="btn-save" onClick={handleSave} disabled={saving}>
+              {saving ? 'Speichere...' : 'Speichern'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

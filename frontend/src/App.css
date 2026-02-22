@@ -831,12 +831,19 @@ html, body, #root {
 }
 
 .tool-settings-modal {
-  width: 500px;
+  width: 520px;
 }
 
 .tool-settings-icon {
   color: var(--accent);
   margin-right: 8px;
+}
+
+/* Divider before first tool-specific field (after injected model field) */
+label.tool-settings-divider {
+  padding-top: 16px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
 }
 
 /* ── Scrollbar Styling ── */
