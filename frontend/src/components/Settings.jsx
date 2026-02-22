@@ -10,7 +10,7 @@ import SettingsHilfe from './settings/SettingsHilfe';
 const NAV_ITEMS = [
   { id: 'general',   label: 'Allgemein' },
   { id: 'providers', label: 'Provider' },
-  { id: 'tools',     label: 'Tools' },
+  { id: 'tools',     label: 'MCP Tools' },
   { id: 'mcp',       label: 'MCP Server' },
   { id: 'telegram',  label: 'Telegram' },
   { id: 'hilfe',     label: 'Hilfe' },
@@ -20,7 +20,7 @@ const NAV_ITEMS = [
 const SECTION_TITLES = {
   general:   'Allgemein',
   providers: 'LLM Provider',
-  tools:     'Tool-Einstellungen',
+  tools:     'Enthaltene MCP Tools',
   mcp:       'Externe MCP Server',
   telegram:  'Telegram Gateway',
   hilfe:     'Hilfe',
