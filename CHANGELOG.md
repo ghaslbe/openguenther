@@ -13,6 +13,11 @@
 - Pulsierender roter Ring + springende Punkte als Aufnahme-Visualisierung
 - Transkript fließt live ins Eingabefeld; nach Ende der Aufnahme springt Fokus ins Textfeld
 - Sprache: `de-DE`; funktioniert nur auf `https://` oder `localhost` (Browser-Einschränkung)
+- Fix: Recognition wird beim Absenden gestoppt, damit das Eingabefeld leer bleibt
+
+### TTS via Telegram
+- Wenn `text_to_speech` von Telegram aus aufgerufen wird, schickt der Bot das Audio via `sendAudio` zurück
+- Erscheint als abspielbares MP3 direkt in der Telegram-App
 
 ### Bildgenerierung verbessert
 - Fix: API-Response-Parsing korrigiert (`image_url.url` statt `url`)
