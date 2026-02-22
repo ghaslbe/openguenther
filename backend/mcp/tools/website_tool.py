@@ -1,5 +1,6 @@
 import requests
 import re
+from config import get_tool_settings
 
 
 def fetch_website_info(url):
@@ -7,8 +8,10 @@ def fetch_website_info(url):
     if not url.startswith(('http://', 'https://')):
         url = 'https://' + url
 
+    timeout = int(get_tool_settings('fetch_website_info').get('timeout') or 10)
+
     try:
-        response = requests.get(url, timeout=10, headers={
+        response = requests.get(url, timeout=timeout, headers={
             'User-Agent': 'Guenther-Bot/1.0'
         })
         response.raise_for_status()

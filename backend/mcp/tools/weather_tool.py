@@ -1,4 +1,5 @@
 import requests
+from config import get_tool_settings
 
 GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search"
 WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
@@ -42,13 +43,14 @@ WMO_CODES = {
 
 def get_weather(location, days=1):
     days = max(1, min(7, int(days)))
+    timeout = int(get_tool_settings('get_weather').get('timeout') or 10)
 
     # Step 1: Geocoding
     try:
         geo = requests.get(
             GEOCODING_URL,
             params={"name": location, "count": 1, "language": "de", "format": "json"},
-            timeout=10
+            timeout=timeout
         ).json()
     except Exception as e:
         return {"error": f"Geocoding-Fehler: {e}"}
@@ -67,6 +69,7 @@ def get_weather(location, days=1):
     try:
         weather = requests.get(
             WEATHER_URL,
+            timeout=timeout,
             params={
                 "latitude": lat,
                 "longitude": lon,
@@ -83,7 +86,6 @@ def get_weather(location, days=1):
                 "forecast_days": days,
                 "wind_speed_unit": "kmh",
             },
-            timeout=10
         ).json()
     except Exception as e:
         return {"error": f"Wetter-API-Fehler: {e}"}

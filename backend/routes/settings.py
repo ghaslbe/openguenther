@@ -45,6 +45,8 @@ def update_settings():
         settings['temperature'] = float(data['temperature'])
     if 'use_openai_whisper' in data:
         settings['use_openai_whisper'] = bool(data['use_openai_whisper'])
+    if 'llm_timeout' in data:
+        settings['llm_timeout'] = int(data['llm_timeout'])
 
     save_settings(settings)
     return jsonify({'success': True})

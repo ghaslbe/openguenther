@@ -1,5 +1,6 @@
 import requests
 import urllib.parse
+from config import get_tool_settings
 
 WIKI_API = "https://{lang}.wikipedia.org/w/api.php"
 WIKI_URL = "https://{lang}.wikipedia.org/wiki/{title}"
@@ -37,12 +38,12 @@ TOOL_DEFINITION = {
 }
 
 
-def _api_get(api_url, params):
+def _api_get(api_url, params, timeout=10):
     return requests.get(api_url, params={**params, "format": "json", "utf8": 1},
-                        headers=HEADERS, timeout=10).json()
+                        headers=HEADERS, timeout=timeout).json()
 
 
-def _fetch_page(api_url, titles, intro_only=True):
+def _fetch_page(api_url, titles, intro_only=True, timeout=10):
     """Fetch page extract(s). Returns (pages_list, redirects_dict)."""
     params = {
         "action": "query",
@@ -54,7 +55,7 @@ def _fetch_page(api_url, titles, intro_only=True):
     if intro_only:
         params["exintro"] = True
     try:
-        resp = _api_get(api_url, params)
+        resp = _api_get(api_url, params, timeout=timeout)
     except Exception:
         return [], {}
     qdata = resp.get("query", {})
@@ -128,9 +129,10 @@ def wikipedia_search(query, language="de", results=1):
     lang = (language or "de").strip().lower()
     num_results = max(1, min(5, int(results) if results else 1))
     api_url = WIKI_API.format(lang=lang)
+    timeout = int(get_tool_settings('wikipedia_search').get('timeout') or 10)
 
     # ── Step 1: Direct title lookup with redirect following ──
-    pages, redirects = _fetch_page(api_url, [query], intro_only=True)
+    pages, redirects = _fetch_page(api_url, [query], intro_only=True, timeout=timeout)
     valid = [p for p in pages if not p.get("missing") and p.get("extract")]
 
     if valid:
@@ -141,7 +143,7 @@ def wikipedia_search(query, language="de", results=1):
         # Query not found in intro → dig into the full article text
         snippet = None
         if score < 40:
-            full_pages, _ = _fetch_page(api_url, [page.get("title", query)], intro_only=False)
+            full_pages, _ = _fetch_page(api_url, [page.get("title", query)], intro_only=False, timeout=timeout)
             if full_pages and full_pages[0].get("extract"):
                 snippet = _find_snippet(full_pages[0]["extract"], query)
 
@@ -170,7 +172,7 @@ def wikipedia_search(query, language="de", results=1):
             "list": "search",
             "srsearch": query,
             "srlimit": max(num_results + 2, 5),
-        })
+        }, timeout=timeout)
     except Exception as e:
         return {"error": f"Wikipedia-Suche fehlgeschlagen: {e}"}
 
@@ -182,7 +184,7 @@ def wikipedia_search(query, language="de", results=1):
 
     # ── Step 3: Fetch intros, score, enrich weak matches with full-text snippet ──
     titles = [h["title"] for h in hits[:5]]
-    pages, redirects = _fetch_page(api_url, titles, intro_only=True)
+    pages, redirects = _fetch_page(api_url, titles, intro_only=True, timeout=timeout)
     valid = [p for p in pages if p.get("extract")]
     if not valid:
         if lang != "en":
@@ -195,7 +197,7 @@ def wikipedia_search(query, language="de", results=1):
         score = _score(page, query)
         snippet = None
         if score < 40:
-            full_pages, _ = _fetch_page(api_url, [page.get("title", "")], intro_only=False)
+            full_pages, _ = _fetch_page(api_url, [page.get("title", "")], intro_only=False, timeout=timeout)
             if full_pages and full_pages[0].get("extract"):
                 snippet = _find_snippet(full_pages[0]["extract"], query)
         r = _build_result(page, query, lang, redirects.get(page.get("title")), snippet)

@@ -12,6 +12,7 @@ def send_email(to, subject, body, html=False):
     smtp_user = cfg.get('smtp_user', '')
     smtp_password = cfg.get('smtp_password', '')
     from_name = cfg.get('smtp_from_name', 'Guenther')
+    smtp_timeout = int(cfg.get('timeout') or 30)
 
     if not all([smtp_server, smtp_user, smtp_password]):
         return {
@@ -29,7 +30,7 @@ def send_email(to, subject, body, html=False):
         else:
             msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
+        with smtplib.SMTP(smtp_server, smtp_port, timeout=smtp_timeout) as server:
             server.ehlo()
             if smtp_port != 25:
                 server.starttls()

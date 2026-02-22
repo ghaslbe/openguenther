@@ -11,6 +11,7 @@ export default function SettingsGeneral({ providers }) {
   const [openaiKeyMasked, setOpenaiKeyMasked] = useState('');
   const [showOpenaiKey, setShowOpenaiKey] = useState(false);
   const [useWhisper, setUseWhisper] = useState(false);
+  const [llmTimeout, setLlmTimeout] = useState('120');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -27,6 +28,7 @@ export default function SettingsGeneral({ providers }) {
     setTtsModel(s.tts_model || '');
     setOpenaiKeyMasked(s.openai_api_key_masked || '');
     setUseWhisper(s.use_openai_whisper || false);
+    setLlmTimeout(String(s.llm_timeout ?? 120));
   }
 
   async function handleSave() {
@@ -35,6 +37,7 @@ export default function SettingsGeneral({ providers }) {
       model, temperature, default_provider: defaultProvider,
       stt_model: sttModel, tts_model: ttsModel,
       use_openai_whisper: useWhisper,
+      llm_timeout: parseInt(llmTimeout) || 120,
     };
     if (openaiKey) data.openai_api_key = openaiKey;
     await updateSettings(data);
@@ -89,6 +92,18 @@ export default function SettingsGeneral({ providers }) {
             <option value={0.8}>Frei (0.8) — kreativ, variabel</option>
           </select>
           <small>Bestimmt wie kreativ / unvorhersehbar die Antworten sind</small>
+        </label>
+        <label>
+          LLM Timeout (Sekunden)
+          <input
+            type="number"
+            value={llmTimeout}
+            onChange={(e) => setLlmTimeout(e.target.value)}
+            placeholder="120"
+            min="10"
+            max="600"
+          />
+          <small>Maximale Wartezeit für LLM-Antworten — bei langsamen lokalen Modellen erhöhen (Standard: 120s)</small>
         </label>
       </div>
 

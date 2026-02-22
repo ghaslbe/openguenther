@@ -17,7 +17,7 @@ def _ts():
     return datetime.now().strftime("%H:%M:%S")
 
 
-def _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=None):
+def _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=None, timeout=120):
     """
     Pre-filter: Ask LLM which tools are relevant for this request.
     Uses only tool names + descriptions (no full schemas) to save tokens.
@@ -60,7 +60,7 @@ def _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=N
     }})
 
     try:
-        response = call_openrouter(router_messages, None, api_key, model, temperature=0.1, base_url=base_url)
+        response = call_openrouter(router_messages, None, api_key, model, temperature=0.1, base_url=base_url, timeout=timeout)
         content = response.get("choices", [{}])[0].get("message", {}).get("content", "[]")
 
         emit_log({"type": "json", "label": "router_response_raw", "data": response})
@@ -146,6 +146,7 @@ def run_agent(chat_messages, settings, emit_log):
 
     model = settings.get('model', 'openai/gpt-4o-mini')
     temperature = float(settings.get('temperature', 0.5))
+    llm_timeout = int(settings.get('llm_timeout', 120))
 
     if not api_key and provider_id == 'openrouter':
         return "Fehler: Kein OpenRouter API-Key konfiguriert. Bitte in den Einstellungen hinterlegen."
@@ -168,8 +169,10 @@ def run_agent(chat_messages, settings, emit_log):
     emit_log({"type": "header", "message": f"ALLE TOOLS ({len(all_tools)})"})
     emit_log({"type": "json", "label": "all_tools", "data": all_tools})
 
+    emit_log({"type": "text", "message": f"[{_ts()}] LLM Timeout: {llm_timeout}s"})
+
     # ── Tool Router: Pre-filter ──
-    tools = _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=base_url)
+    tools = _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=base_url, timeout=llm_timeout)
 
     # ── Provider+Model override: use tool-specific overrides if all tools agree ──
     effective_provider_cfg, effective_model = _pick_provider_and_model_for_tools(tools, settings)
@@ -222,7 +225,7 @@ def run_agent(chat_messages, settings, emit_log):
         emit_log({"type": "json", "label": "payload", "data": request_payload})
 
         try:
-            response = call_openrouter(messages, tools if tools else None, api_key, model, temperature, base_url=base_url)
+            response = call_openrouter(messages, tools if tools else None, api_key, model, temperature, base_url=base_url, timeout=llm_timeout)
         except Exception as e:
             error_msg = f"Fehler bei LLM-Anfrage: {str(e)}"
             emit_log({"type": "text", "message": f"[{_ts()}] FEHLER: {error_msg}"})

@@ -20,7 +20,7 @@ Antworte auf Deutsch, es sei denn, der Benutzer schreibt in einer anderen Sprach
 Sei praezise und hilfreich."""
 
 
-def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini', temperature=0.5, base_url=None):
+def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini', temperature=0.5, base_url=None, timeout=120):
     if base_url is None:
         url = OPENROUTER_API_URL
     elif base_url.endswith('/chat/completions'):
@@ -49,7 +49,7 @@ def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'
         url,
         headers=headers,
         json=payload,
-        timeout=120
+        timeout=timeout
     )
 
     if not response.ok:
@@ -102,7 +102,7 @@ def transcribe_audio(audio_bytes, audio_format, api_key, model):
     return response.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
 
 
-def generate_image(prompt, api_key, model, aspect_ratio="1:1"):
+def generate_image(prompt, api_key, model, aspect_ratio="1:1", timeout=120):
     """
     Generiert ein Bild via OpenRouter image generation API.
     Gibt (image_bytes, mime_type) zurück oder wirft eine Exception.
@@ -121,7 +121,7 @@ def generate_image(prompt, api_key, model, aspect_ratio="1:1"):
     if aspect_ratio and aspect_ratio != "1:1":
         payload["image_config"] = {"aspect_ratio": aspect_ratio}
 
-    response = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=120)
+    response = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=timeout)
 
     if not response.ok:
         try:

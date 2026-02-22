@@ -23,6 +23,7 @@ export default function SettingsTools({ providers }) {
       edits[t.name] = {
         provider: t.current_provider || '',
         model: t.current_model || '',
+        timeout: '',
       };
       // Add schema fields
       for (const field of (t.settings_schema || [])) {
@@ -39,7 +40,11 @@ export default function SettingsTools({ providers }) {
     if (!isOpen) {
       // Load full tool settings when opening
       const data = await fetchToolSettings(name);
-      const vals = { provider: tool.current_provider || '', model: tool.current_model || '' };
+      const vals = {
+        provider: tool.current_provider || '',
+        model: tool.current_model || '',
+        timeout: data.values?.timeout ? String(data.values.timeout) : '',
+      };
       for (const field of (data.schema || [])) {
         vals[field.key] = data.values?.[field.key] ?? field.default ?? '';
       }
@@ -130,6 +135,18 @@ export default function SettingsTools({ providers }) {
                     </div>
                   </>
                 )}
+
+                <div className="tool-field-row">
+                  <label>Timeout (Sekunden)</label>
+                  <input
+                    type="number"
+                    value={edit.timeout || ''}
+                    onChange={(e) => setField(tool.name, 'timeout', e.target.value)}
+                    placeholder="leer = Standard"
+                    min="1"
+                    max="600"
+                  />
+                </div>
 
                 {schema.length > 0 && (
                   <div style={tool.agent_overridable !== false ? { borderTop: '1px solid var(--border)', paddingTop: '10px', marginTop: '2px' } : {}}>

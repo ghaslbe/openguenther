@@ -54,8 +54,10 @@ def generate_image(prompt, aspect_ratio="1:1"):
             or settings.get("image_gen_model", "") \
             or settings.get("model", "openai/gpt-4o-mini")
 
+    timeout = int(tool_cfg.get("timeout") or 120)
+
     try:
-        img_bytes, mime = _generate_image(prompt, api_key, model, aspect_ratio)
+        img_bytes, mime = _generate_image(prompt, api_key, model, aspect_ratio, timeout=timeout)
     except Exception as e:
         return {"error": str(e)}
 
