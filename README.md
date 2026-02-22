@@ -509,6 +509,18 @@ This includes but is not limited to:
 
 ---
 
+## Video
+
+[![OPENguenther Demo](https://img.youtube.com/vi/aRXGuXdUk0A/maxresdefault.jpg)](https://www.youtube.com/watch?v=aRXGuXdUk0A)
+
+---
+
+## Author
+
+**Günther Haslbeck** — [LinkedIn](https://www.linkedin.com/in/guentherhaslbeck/)
+
+---
+
 ## License
 
 MIT License — Copyright (c) 2025
