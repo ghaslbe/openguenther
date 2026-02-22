@@ -20,7 +20,7 @@ Antworte auf Deutsch, es sei denn, der Benutzer schreibt in einer anderen Sprach
 Sei praezise und hilfreich."""
 
 
-def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'):
+def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini', temperature=0.5):
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -31,6 +31,7 @@ def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'
     payload = {
         "model": model,
         "messages": messages,
+        "temperature": temperature,
     }
 
     if tools:

@@ -60,7 +60,7 @@ def _select_tools(all_tools, chat_messages, api_key, model, emit_log):
     }})
 
     try:
-        response = call_openrouter(router_messages, None, api_key, model)
+        response = call_openrouter(router_messages, None, api_key, model, temperature=0.1)
         content = response.get("choices", [{}])[0].get("message", {}).get("content", "[]")
 
         emit_log({"type": "json", "label": "router_response_raw", "data": response})
@@ -122,6 +122,7 @@ def run_agent(chat_messages, settings, emit_log):
     """
     api_key = settings.get('openrouter_api_key', '')
     model = settings.get('model', 'openai/gpt-4o-mini')
+    temperature = float(settings.get('temperature', 0.5))
 
     if not api_key:
         return "Fehler: Kein OpenRouter API-Key konfiguriert. Bitte in den Einstellungen hinterlegen."
@@ -134,7 +135,7 @@ def run_agent(chat_messages, settings, emit_log):
 
     # ── Log: Start ──
     emit_log({"type": "header", "message": "GUENTHER AGENT GESTARTET"})
-    emit_log({"type": "text", "message": f"[{_ts()}] Modell: {model}"})
+    emit_log({"type": "text", "message": f"[{_ts()}] Modell: {model} | Temperatur: {temperature}"})
 
     # ── Log: System Prompt ──
     emit_log({"type": "header", "message": "SYSTEM PROMPT"})
@@ -196,7 +197,7 @@ def run_agent(chat_messages, settings, emit_log):
         emit_log({"type": "json", "label": "payload", "data": request_payload})
 
         try:
-            response = call_openrouter(messages, tools if tools else None, api_key, model)
+            response = call_openrouter(messages, tools if tools else None, api_key, model, temperature)
         except Exception as e:
             error_msg = f"Fehler bei LLM-Anfrage: {str(e)}"
             emit_log({"type": "text", "message": f"[{_ts()}] FEHLER: {error_msg}"})

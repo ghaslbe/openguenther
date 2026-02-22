@@ -426,6 +426,26 @@ html, body, #root {
   font-family: 'Courier New', monospace;
   font-size: 11px;
   color: var(--guenther-dim);
+  display: block;
+}
+
+.btn-guenther-clear {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--guenther-dim);
+  border-radius: 3px;
+  color: var(--guenther-dim);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-guenther-clear:hover {
+  border-color: var(--guenther-text);
+  color: var(--guenther-text);
 }
 
 .guenther-terminal {
@@ -639,7 +659,8 @@ html, body, #root {
 }
 
 .settings-section input[type="text"],
-.settings-section input[type="password"] {
+.settings-section input[type="password"],
+.settings-select {
   display: block;
   width: 100%;
   padding: 10px 12px;
@@ -652,7 +673,17 @@ html, body, #root {
   outline: none;
 }
 
-.settings-section input:focus {
+.settings-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238888aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.settings-section input:focus,
+.settings-select:focus {
   border-color: var(--accent);
 }
 

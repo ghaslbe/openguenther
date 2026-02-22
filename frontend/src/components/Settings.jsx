@@ -12,6 +12,7 @@ export default function Settings({ onClose }) {
   const [apiKey, setApiKey] = useState('');
   const [apiKeyMasked, setApiKeyMasked] = useState('');
   const [model, setModel] = useState('openai/gpt-4o-mini');
+  const [temperature, setTemperature] = useState(0.5);
   const [sttModel, setSttModel] = useState('');
   const [ttsModel, setTtsModel] = useState('');
   const [imageGenModel, setImageGenModel] = useState('');
@@ -51,6 +52,7 @@ export default function Settings({ onClose }) {
     setApiKey(s.openrouter_api_key || '');
     setApiKeyMasked(s.openrouter_api_key_masked || '');
     setModel(s.model || 'openai/gpt-4o-mini');
+    setTemperature(s.temperature ?? 0.5);
     setSttModel(s.stt_model || '');
     setTtsModel(s.tts_model || '');
     setImageGenModel(s.image_gen_model || '');
@@ -71,7 +73,7 @@ export default function Settings({ onClose }) {
   async function handleSave() {
     setSaving(true);
     const data = {
-      model, stt_model: sttModel, tts_model: ttsModel, image_gen_model: imageGenModel,
+      model, temperature, stt_model: sttModel, tts_model: ttsModel, image_gen_model: imageGenModel,
       use_openai_whisper: useWhisper,
     };
     if (apiKey && apiKey !== '') data.openrouter_api_key = apiKey;
@@ -203,6 +205,19 @@ export default function Settings({ onClose }) {
                 placeholder="openai/gpt-4o-mini"
               />
               <small>z.B. openai/gpt-4o, anthropic/claude-3.5-sonnet, google/gemini-pro — <a href="https://openrouter.ai/models" target="_blank" rel="noopener noreferrer" style={{color: 'var(--accent)'}}>Alle Modelle ansehen</a></small>
+            </label>
+            <label>
+              Kreativität (Temperatur)
+              <select
+                value={temperature}
+                onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                className="settings-select"
+              >
+                <option value={0.1}>Genau (0.1) — präzise, deterministisch</option>
+                <option value={0.5}>Mittel (0.5) — ausgewogen</option>
+                <option value={0.8}>Frei (0.8) — kreativ, variabel</option>
+              </select>
+              <small>Bestimmt wie kreativ / unvorhersehbar die Antworten sind</small>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
               <input

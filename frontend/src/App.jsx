@@ -112,6 +112,10 @@ export default function App() {
     setMessages([]);
   }
 
+  function handleClearLogs() {
+    setGuentherLogs([]);
+  }
+
   async function handleDeleteChat(chatId) {
     await deleteChat(chatId);
     if (activeChatId === chatId) {
@@ -153,6 +157,7 @@ export default function App() {
         logs={guentherLogs}
         width={guentherWidth}
         onResizeStart={handleResizeStart}
+        onClear={handleClearLogs}
       />
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
       </div>

@@ -33,6 +33,8 @@ def update_settings():
     for key in ('model', 'stt_model', 'tts_model', 'image_gen_model', 'openai_api_key'):
         if key in data:
             settings[key] = data[key]
+    if 'temperature' in data:
+        settings['temperature'] = float(data['temperature'])
     if 'use_openai_whisper' in data:
         settings['use_openai_whisper'] = bool(data['use_openai_whisper'])
 

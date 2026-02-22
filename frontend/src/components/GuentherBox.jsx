@@ -81,7 +81,7 @@ function LogEntry({ entry }) {
   return <div className="guenther-line">{entry.message}</div>;
 }
 
-export default function GuentherBox({ logs, width, onResizeStart }) {
+export default function GuentherBox({ logs, width, onResizeStart, onClear }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -92,8 +92,11 @@ export default function GuentherBox({ logs, width, onResizeStart }) {
     <div className="guenther-box" style={{ width: `${width}px`, minWidth: `${width}px` }}>
       <div className="guenther-resize-handle" onMouseDown={onResizeStart} />
       <div className="guenther-header">
-        <span className="guenther-title">GUENTHER</span>
-        <span className="guenther-subtitle">MCP Terminal</span>
+        <div>
+          <span className="guenther-title">GUENTHER</span>
+          <span className="guenther-subtitle">MCP Terminal</span>
+        </div>
+        <button className="btn-guenther-clear" onClick={onClear} title="Terminal leeren">CLR</button>
       </div>
       <div className="guenther-terminal">
         {logs.map((log, idx) => (
