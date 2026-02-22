@@ -110,6 +110,12 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
     e.preventDefault();
     const text = input.trim();
     if (!text || isLoading) return;
+    if (recognitionRef.current) {
+      recognitionRef.current.onresult = null;
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsRecording(false);
+    }
     onSendMessage(text);
     setInput('');
   };
