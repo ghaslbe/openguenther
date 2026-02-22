@@ -94,9 +94,11 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 export default function ChatWindow({ messages, onSendMessage, isLoading, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [attachedFile, setAttachedFile] = useState(null); // {name, content}
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -109,15 +111,28 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
   const handleSubmit = (e) => {
     e.preventDefault();
     const text = input.trim();
-    if (!text || isLoading) return;
+    if (!text && !attachedFile) return;
+    if (isLoading) return;
     if (recognitionRef.current) {
       recognitionRef.current.onresult = null;
       recognitionRef.current.stop();
       recognitionRef.current = null;
       setIsRecording(false);
     }
-    onSendMessage(text);
+    onSendMessage(text, attachedFile);
     setInput('');
+    setAttachedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setAttachedFile({ name: file.name, content: ev.target.result });
+    };
+    reader.readAsText(file, 'utf-8');
   };
 
   const toggleRecording = useCallback(() => {
@@ -204,7 +219,33 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
           </select>
         </div>
       )}
+      {attachedFile && (
+        <div className="file-attachment-bar">
+          <span className="file-attachment-name">📎 {attachedFile.name}</span>
+          <button
+            type="button"
+            className="file-attachment-remove"
+            onClick={() => { setAttachedFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+          >✕</button>
+        </div>
+      )}
       <form className="chat-input-form" onSubmit={handleSubmit}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+          accept=".csv,.json,.xml,.txt,.tsv,.yaml,.yml,.log"
+        />
+        <button
+          type="button"
+          className="btn-upload"
+          onClick={() => fileInputRef.current?.click()}
+          title="Datei hochladen"
+          disabled={isLoading}
+        >
+          📎
+        </button>
         <input
           ref={inputRef}
           type="text"
@@ -233,7 +274,7 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
             )}
           </button>
         )}
-        <button type="submit" className="btn-send" disabled={isLoading || !input.trim()}>
+        <button type="submit" className="btn-send" disabled={isLoading || (!input.trim() && !attachedFile)}>
           Senden
         </button>
       </form>

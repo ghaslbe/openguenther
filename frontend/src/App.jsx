@@ -150,12 +150,17 @@ export default function App() {
     }
   }
 
-  function handleSendMessage(content) {
-    setMessages(prev => [...prev, { role: 'user', content }]);
+  function handleSendMessage(content, file = null) {
+    const displayContent = file
+      ? `📎 ${file.name}${content ? `\n${content}` : ''}`
+      : content;
+    setMessages(prev => [...prev, { role: 'user', content: displayContent }]);
     socket.emit('send_message', {
       chat_id: activeChatId,
       content,
-      agent_id: activeChatId ? '' : selectedAgentId
+      agent_id: activeChatId ? '' : selectedAgentId,
+      file_name: file ? file.name : '',
+      file_content: file ? file.content : ''
     });
   }
 

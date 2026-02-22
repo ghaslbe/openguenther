@@ -25,6 +25,7 @@ from mcp.tools.image_gen_tool import generate_image, TOOL_DEFINITION as IMG_GEN_
 from mcp.tools.weather_tool import get_weather, TOOL_DEFINITION as WEATHER_TOOL_DEF
 from mcp.tools.wikipedia_tool import wikipedia_search, TOOL_DEFINITION as WIKI_TOOL_DEF
 from mcp.tools.tts_tool import text_to_speech, TOOL_DEFINITION as TTS_DEF, SETTINGS_SCHEMA as TTS_SETTINGS
+from mcp.tools.code_interpreter_tool import run_code, TOOL_DEFINITION as CODE_TOOL_DEF, SETTINGS_SCHEMA as CODE_SETTINGS
 from mcp.manager import load_external_tools
 from services.agent import run_agent
 from services.telegram_gateway import TelegramGateway
@@ -154,6 +155,14 @@ registry.register(MCPTool(
     agent_overridable=False
 ))
 
+registry.register(MCPTool(
+    name=CODE_TOOL_DEF['name'],
+    description=CODE_TOOL_DEF['description'],
+    input_schema=CODE_TOOL_DEF['input_schema'],
+    handler=run_code,
+    settings_schema=CODE_SETTINGS
+))
+
 
 # ── Static file serving ──
 
@@ -243,9 +252,15 @@ def handle_message(data):
     chat_id = data.get('chat_id')
     content = data.get('content', '').strip()
     agent_id = data.get('agent_id') or None
+    file_name = data.get('file_name', '')
+    file_content = data.get('file_content', '')
 
-    if not content:
+    if not content and not file_content:
         return
+
+    # Prepend file content to message so the LLM can work with it
+    if file_name and file_content:
+        content = f"[Datei: {file_name}]\n```\n{file_content}\n```\n\n{content}" if content else f"[Datei: {file_name}]\n```\n{file_content}\n```"
 
     # Create new chat if needed
     if not chat_id:
