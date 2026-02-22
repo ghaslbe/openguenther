@@ -177,7 +177,7 @@ def generate_image(prompt, api_key, model, aspect_ratio="1:1", timeout=120, emit
 
     images = message.get("images", [])
     if images:
-        url = images[0].get("url", "")
+        url = images[0].get("image_url", {}).get("url", "") or images[0].get("url", "")
 
     if not url:
         content = message.get("content", "")
