@@ -91,7 +91,7 @@ export default function SettingsHilfe() {
         <P><strong style={{ color: 'var(--text-primary)' }}>Standard-Provider</strong> — welcher LLM-Provider standardmäßig für den Chat verwendet wird. Muss unter <em>Provider</em> aktiviert und konfiguriert sein.</P>
         <P><strong style={{ color: 'var(--text-primary)' }}>Standard-Modell</strong> — das Modell das beim gewählten Provider läuft, z.B. <Code>openai/gpt-4o-mini</Code> für OpenRouter oder <Code>llama3.2</Code> für Ollama.</P>
         <P><strong style={{ color: 'var(--text-primary)' }}>Temperatur</strong> — wie kreativ/unvorhersehbar die Antworten sind. <Code>0.1</Code> = präzise, <Code>0.5</Code> = ausgewogen, <Code>0.8</Code> = kreativ.</P>
-        <P><strong style={{ color: 'var(--text-primary)' }}>Bildgenerierungs-Modell</strong> — separates Modell für das <Code>generate_image</Code> Tool. Empfohlen: <Code>google/gemini-2.5-flash-image-preview</Code> oder <Code>black-forest-labs/flux-1.1-pro</Code>.</P>
+        <P><strong style={{ color: 'var(--text-primary)' }}>Bildgenerierungs-Modell</strong> — wird direkt beim Tool <Code>generate_image</Code> unter <em>Tools</em> konfiguriert. Empfohlen: <Code>google/gemini-2.5-flash-image-preview</Code> oder <Code>black-forest-labs/flux-1.1-pro</Code>.</P>
         <P><strong style={{ color: 'var(--text-primary)' }}>STT-Modell</strong> — für Sprachnachrichten via Telegram. Empfohlen: <Code>google/gemini-2.5-flash</Code>. Alternativ: OpenAI Whisper aktivieren.</P>
       </Section>
 

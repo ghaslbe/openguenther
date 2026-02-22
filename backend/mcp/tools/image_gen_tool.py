@@ -1,7 +1,17 @@
 import base64
 
-from config import get_settings
+from config import get_settings, get_tool_settings
 from services.openrouter import generate_image as _generate_image
+
+SETTINGS_SCHEMA = [
+    {
+        "key": "model",
+        "label": "Bildgenerierungs-Modell",
+        "type": "text",
+        "placeholder": "leer = Standard-Modell verwenden",
+        "description": "z.B. google/gemini-2.5-flash-image-preview oder black-forest-labs/flux-1.1-pro"
+    }
+]
 
 TOOL_DEFINITION = {
     "name": "generate_image",
@@ -33,11 +43,16 @@ TOOL_DEFINITION = {
 
 def generate_image(prompt, aspect_ratio="1:1"):
     settings = get_settings()
-    api_key = settings.get("openrouter_api_key", "")
+    api_key = settings.get("providers", {}).get("openrouter", {}).get("api_key", "") \
+              or settings.get("openrouter_api_key", "")
     if not api_key:
         return {"error": "Kein OpenRouter API-Key konfiguriert."}
 
-    model = settings.get("image_gen_model") or settings.get("model", "openai/gpt-4o-mini")
+    tool_cfg = get_tool_settings("generate_image")
+    # Prefer tool-specific model, fall back to legacy image_gen_model, then default model
+    model = (tool_cfg.get("model") or "").strip() \
+            or settings.get("image_gen_model", "") \
+            or settings.get("model", "openai/gpt-4o-mini")
 
     try:
         img_bytes, mime = _generate_image(prompt, api_key, model, aspect_ratio)

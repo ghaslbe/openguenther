@@ -20,7 +20,7 @@ from mcp.tools.website_tool import fetch_website_info, TOOL_DEFINITION as WEB_TO
 from mcp.tools.email_tool import send_email, TOOL_DEFINITION as EMAIL_TOOL_DEF, SETTINGS_SCHEMA as EMAIL_SETTINGS
 from mcp.tools.help_tool import list_available_tools, get_help, LIST_TOOLS_DEFINITION, HELP_DEFINITION
 from mcp.tools.image_process_tool import process_image, TOOL_DEFINITION as IMG_PROCESS_TOOL_DEF
-from mcp.tools.image_gen_tool import generate_image, TOOL_DEFINITION as IMG_GEN_TOOL_DEF
+from mcp.tools.image_gen_tool import generate_image, TOOL_DEFINITION as IMG_GEN_TOOL_DEF, SETTINGS_SCHEMA as IMG_GEN_SETTINGS
 from mcp.tools.weather_tool import get_weather, TOOL_DEFINITION as WEATHER_TOOL_DEF
 from mcp.tools.wikipedia_tool import wikipedia_search, TOOL_DEFINITION as WIKI_TOOL_DEF
 from mcp.manager import load_external_tools
@@ -123,7 +123,8 @@ registry.register(MCPTool(
     name=IMG_GEN_TOOL_DEF['name'],
     description=IMG_GEN_TOOL_DEF['description'],
     input_schema=IMG_GEN_TOOL_DEF['input_schema'],
-    handler=generate_image
+    handler=generate_image,
+    settings_schema=IMG_GEN_SETTINGS
 ))
 
 registry.register(MCPTool(

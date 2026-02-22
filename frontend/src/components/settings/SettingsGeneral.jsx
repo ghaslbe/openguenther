@@ -7,7 +7,6 @@ export default function SettingsGeneral({ providers }) {
   const [defaultProvider, setDefaultProvider] = useState('openrouter');
   const [sttModel, setSttModel] = useState('');
   const [ttsModel, setTtsModel] = useState('');
-  const [imageGenModel, setImageGenModel] = useState('');
   const [openaiKey, setOpenaiKey] = useState('');
   const [openaiKeyMasked, setOpenaiKeyMasked] = useState('');
   const [showOpenaiKey, setShowOpenaiKey] = useState(false);
@@ -26,7 +25,6 @@ export default function SettingsGeneral({ providers }) {
     setDefaultProvider(s.default_provider || 'openrouter');
     setSttModel(s.stt_model || '');
     setTtsModel(s.tts_model || '');
-    setImageGenModel(s.image_gen_model || '');
     setOpenaiKeyMasked(s.openai_api_key_masked || '');
     setUseWhisper(s.use_openai_whisper || false);
   }
@@ -35,7 +33,7 @@ export default function SettingsGeneral({ providers }) {
     setSaving(true);
     const data = {
       model, temperature, default_provider: defaultProvider,
-      stt_model: sttModel, tts_model: ttsModel, image_gen_model: imageGenModel,
+      stt_model: sttModel, tts_model: ttsModel,
       use_openai_whisper: useWhisper,
     };
     if (openaiKey) data.openai_api_key = openaiKey;
@@ -142,16 +140,6 @@ export default function SettingsGeneral({ providers }) {
             placeholder={`leer = Chat-Modell (${model}) verwenden`}
           />
           <small>Für Sprachausgabe (zukünftige Funktion)</small>
-        </label>
-        <label>
-          Bildgenerierungs-Modell
-          <input
-            type="text"
-            value={imageGenModel}
-            onChange={(e) => setImageGenModel(e.target.value)}
-            placeholder={`leer = Chat-Modell (${model}) verwenden`}
-          />
-          <small>Empfohlen: <code>google/gemini-2.5-flash-image-preview</code> oder <code>black-forest-labs/flux-1.1-pro</code></small>
         </label>
       </div>
 
