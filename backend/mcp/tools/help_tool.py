@@ -35,7 +35,17 @@ def get_help(topic="general"):
             "- 'Analysiere dieses Bild ...' -> process_image (Vision-Modell noetig)\n"
             "- 'Wie ist das Wetter in Berlin?' -> get_weather\n"
             "- 'Was ist ein Schwarzes Loch?' -> wikipedia_search\n"
-            "- 'Welche Tools hast du?' -> list_available_tools\n\n"
+            "- 'Welche Tools hast du?' -> list_available_tools\n"
+            "- 'Konvertiere diese CSV zu JSON' -> run_code (Code-Interpreter)\n\n"
+            "AGENTEN-SYSTEM:\n"
+            "In Einstellungen -> Agenten kannst du eigene Agenten mit individuellem System-Prompt "
+            "erstellen. Beim Start eines neuen Chats waehle einen Agenten aus — er bestimmt dann "
+            "das Verhalten fuer den gesamten Chat. Der Agenten-Name erscheint statt 'Guenther' "
+            "in den Nachrichten.\n\n"
+            "DATEI-UPLOAD:\n"
+            "Das Bueroklammer-Symbol (📎) neben dem Eingabefeld erlaubt das Hochladen von "
+            "Textdateien (CSV, JSON, XML, TXT usw.). Der Inhalt wird dem LLM als Kontext "
+            "mitgegeben — es kann die Daten dann direkt an run_code uebergeben.\n\n"
             "TOOL-ROUTER:\n"
             "Vor jedem Agent-Lauf filtert ein leichtgewichtiger LLM-Call die relevanten Tools "
             "heraus (spart Tokens). Im Guenther-Terminal als 'TOOL-ROUTER' sichtbar.\n\n"
@@ -69,6 +79,8 @@ def get_help(topic="general"):
             "- process_image: Bild analysieren oder bearbeiten (Vision-Modell)\n"
             "- get_weather: Aktuelles Wetter und Vorhersage abrufen\n"
             "- wikipedia_search: Wikipedia durchsuchen — findet auch Ortsteile & Weiterleitungen (de/en/...)\n"
+            "- text_to_speech: Text vorlesen via ElevenLabs (API Key in Tool-Einstellungen)\n"
+            "- run_code: Python-Code via LLM generieren und ausfuehren (Datenverarbeitung, Konvertierung)\n"
             "- list_available_tools: Alle Tools auflisten\n"
             "- get_help: Diese Hilfe anzeigen\n\n"
             "PRO-TOOL MODELL-OVERRIDE:\n"
@@ -155,6 +167,49 @@ def get_help(topic="general"):
             "- 'Thannenmais' -> Weiterleitung zu 'Reisbach' + Erwaehnung im Artikeltext\n"
             "- 'Quantenverschraenkung' -> Artikel mit Einleitung"
         ),
+        "code": (
+            "Das run_code Tool generiert Python-Code via LLM und fuehrt ihn aus.\n\n"
+            "ANWENDUNGSFAELLE:\n"
+            "- Dateikonvertierung: CSV -> JSON, JSON -> XML, usw.\n"
+            "- Datenanalyse: Statistiken, Duplikate finden, Felder extrahieren\n"
+            "- Textverarbeitung: Formatierung, Bereinigung, Umstrukturierung\n"
+            "- Berechnungen mit komplexeren Daten\n\n"
+            "ABLAUF:\n"
+            "1. LLM-Anfrage: Das Tool beschreibt dem LLM die Aufgabe und die Eingabedaten\n"
+            "2. Code-Generierung: LLM liefert Python-Skript (nur Standardbibliothek)\n"
+            "3. Ausfuehrung: Skript laeuft in isoliertem Temp-Verzeichnis (Timeout: 30s)\n"
+            "4. Rueckgabe: stdout als Ergebnis\n\n"
+            "PARAMETER:\n"
+            "- task: Was der Code tun soll (Pflicht)\n"
+            "- input_data: Eingabedaten als String, z.B. CSV-Inhalt (optional)\n"
+            "  Das Skript liest diese via sys.stdin\n\n"
+            "DATEI-UPLOAD:\n"
+            "Lade eine Datei per 📎 hoch, beschreibe die gewuenschte Konvertierung — "
+            "das LLM ruft run_code automatisch mit dem Dateiinhalt als input_data auf.\n\n"
+            "TERMINAL-LOGGING:\n"
+            "Im Guenther-Terminal sieht man: LLM-Prompt, generierten Code, "
+            "Ausfuehrungs-Output und eventuelle Fehler.\n\n"
+            "EIGENES MODELL:\n"
+            "In Einstellungen -> MCP Tools -> run_code -> Einstellungen kann ein "
+            "separates Modell fuer die Code-Generierung festgelegt werden."
+        ),
+        "agents": (
+            "Das Agenten-System erlaubt eigene KI-Persoenlichkeiten mit individuellem System-Prompt.\n\n"
+            "ANLEGEN:\n"
+            "Einstellungen -> Agenten -> 'Neuen Agenten erstellen'\n"
+            "- Name: z.B. 'Poet', 'Analyst', 'Code-Reviewer'\n"
+            "- Beschreibung: Kurzzusammenfassung (optional)\n"
+            "- System-Prompt: Die eigentliche Anweisung ans LLM\n\n"
+            "VERWENDEN:\n"
+            "Beim '+' (neuer Chat) erscheint ein Dropdown 'Agent:' wenn mindestens "
+            "ein Agent angelegt ist. Ausgewaehlt oder leer (= Standard-Guenther).\n\n"
+            "ANZEIGE:\n"
+            "- Der Agenten-Name erscheint statt 'Guenther' in den Chat-Nachrichten\n"
+            "- In der Chat-Liste wird ein farbiges Badge mit dem Agenten-Namen angezeigt\n\n"
+            "WICHTIG:\n"
+            "Der Agent-Prompt gilt fuer den gesamten Chat. Tools und Modell bleiben unveraendert — "
+            "nur der System-Prompt wird ersetzt. Ohne Agent gilt der Standard-Guenther-Prompt."
+        ),
         "voice": (
             "Guenther unterstuetzt Spracheingabe (STT) fuer Telegram-Sprachnachrichten.\n\n"
             "STT-OPTIONEN:\n"
@@ -186,13 +241,13 @@ LIST_TOOLS_DEFINITION = {
 
 HELP_DEFINITION = {
     "name": "get_help",
-    "description": "Gibt Hilfe und Erklaerungen zu Guenther und seinen Funktionen. Themen: general, tools, settings, mcp, telegram, voice, wikipedia.",
+    "description": "Gibt Hilfe und Erklaerungen zu Guenther und seinen Funktionen. Themen: general, tools, settings, mcp, telegram, voice, wikipedia, code, agents.",
     "input_schema": {
         "type": "object",
         "properties": {
             "topic": {
                 "type": "string",
-                "description": "Hilfe-Thema: 'general', 'tools', 'settings', 'mcp', 'telegram', 'voice' oder 'wikipedia'",
+                "description": "Hilfe-Thema: 'general', 'tools', 'settings', 'mcp', 'telegram', 'voice', 'wikipedia', 'code' oder 'agents'",
                 "default": "general"
             }
         },

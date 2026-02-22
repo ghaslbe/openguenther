@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.3.0] — 2026-02-22
+
+### Agenten-System
+- Neue Sektion in Einstellungen → **Agenten**: Agenten mit eigenem System-Prompt anlegen, bearbeiten, löschen
+- Beim Start eines neuen Chats erscheint ein **Agent-Picker-Dropdown** (nur wenn Agenten vorhanden)
+- Der Agenten-Name wird im Chat statt "Guenther" angezeigt (Nachrichten + Typing-Indicator)
+- Chat-Liste zeigt **farbiges Badge** mit Agenten-Namen beim jeweiligen Chat
+- `agent_id` wird in der SQLite-Tabelle `chats` gespeichert (Auto-Migration)
+- Backend: `GET/POST /api/agents`, `PUT/DELETE /api/agents/<id>`, Agenten-Config in `agents.json`
+
+### Code-Interpreter Tool (`run_code`)
+- Neues Built-in MCP Tool: generiert Python-Code via LLM, führt ihn in isoliertem Temp-Verzeichnis aus
+- Ideal für Datenkonvertierung (CSV→JSON, JSON→XML usw.), Analysen und Berechnungen
+- Eingabedaten werden via stdin übergeben; nur Python-Standardbibliothek erlaubt
+- Timeout: 30 Sekunden; Temp-Verzeichnis wird immer aufgeräumt (try/finally)
+- Optional: separates Code-Generierungs-Modell in Tool-Einstellungen konfigurierbar
+- Vollständiges Terminal-Logging: LLM-Prompt, generierter Code, Ausführungs-Output, Fehler
+
+### Datei-Upload im Chat
+- **📎 Button** neben dem Eingabefeld öffnet Datei-Auswahl (CSV, JSON, XML, TXT, TSV, YAML, LOG)
+- FileReader liest Inhalt client-seitig; blauer Badge zeigt Dateiname (mit ✕ zum Entfernen)
+- Dateiinhalt wird beim Senden in den Message-Kontext eingefügt — LLM kann ihn an `run_code` übergeben
+- Senden-Button auch ohne Text aktiv wenn Datei angehängt
+
+### Hilfe-System erweitert
+- `get_help` kennt zwei neue Topics: `code` (run_code-Tool-Doku) und `agents` (Agenten-System)
+- `general`-Hilfe ergänzt um: Agenten-System, Datei-Upload, `run_code`-Hinweis
+- `tools`-Hilfe: `text_to_speech` und `run_code` ergänzt
+
+---
+
 ## [1.2.0] — 2026-02-22
 
 ### ElevenLabs Text-to-Speech
