@@ -5,6 +5,7 @@ import SettingsProviders from './settings/SettingsProviders';
 import SettingsTools from './settings/SettingsTools';
 import SettingsMcp from './settings/SettingsMcp';
 import SettingsTelegram from './settings/SettingsTelegram';
+import SettingsHilfe from './settings/SettingsHilfe';
 
 const NAV_ITEMS = [
   { id: 'general',   label: 'Allgemein' },
@@ -52,17 +53,7 @@ export default function Settings({ onClose }) {
       case 'telegram':
         return <SettingsTelegram />;
       case 'hilfe':
-        return (
-          <div style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: '1.7' }}>
-            <p>Frag einfach <strong style={{ color: 'var(--accent)', fontFamily: 'monospace' }}>Guenther</strong> direkt im Chat was er kann!</p>
-            <p style={{ marginTop: '12px' }}>Zum Beispiel:</p>
-            <ul style={{ marginTop: '8px', paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <li><em>„Was kannst du alles?"</em></li>
-              <li><em>„Welche Tools hast du?"</em></li>
-              <li><em>„Hilf mir mit ..."</em></li>
-            </ul>
-          </div>
-        );
+        return <SettingsHilfe />;
       case 'info':
         return (
           <div style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.8' }}>
