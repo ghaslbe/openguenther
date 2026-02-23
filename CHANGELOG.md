@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1] — 2026-02-23
+
+### Light/Dark Theme
+- **Theme-Toggle** in der Titelleiste: kleiner `LIGHT`/`DARK`-Button oben rechts
+- Auswahl wird in `localStorage` gespeichert und nach Reload wiederhergestellt
+- **Light-Theme**: heller Grau-Blau-Hintergrund, dunkler Text, tieferes Blau als Akzent
+- **Dark-Theme**: wie gehabt (dunkles Blau/Violett)
+- Titelleiste und Sidebar folgen dem gewählten Theme
+- Guenther-Terminal bleibt in beiden Themes schwarz mit grünem Text
+
+---
+
 ## [1.3.0] — 2026-02-22
 
 ### Agenten-System

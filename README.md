@@ -47,6 +47,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **Bildgenerierung**: via OpenRouter (Flux, Gemini Image, etc.)
 - **Externe MCP-Server**: beliebige stdio-basierte MCP-Server anbindbar
 - **Tool-Router**: automatische Vorauswahl relevanter Tools pro Anfrage
+- **Light/Dark Theme**: umschaltbar per Button in der Titelleiste, Auswahl wird gespeichert
 
 ---
 
@@ -286,6 +287,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **Image generation**: via OpenRouter (Flux, Gemini Image, etc.)
 - **External MCP servers**: connect any stdio-based MCP server
 - **Tool router**: automatic pre-selection of relevant tools per request
+- **Light/Dark Theme**: toggle via button in the title bar, preference is saved
 
 ---
 
