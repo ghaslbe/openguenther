@@ -12,9 +12,12 @@
 
 ### Code-Interpreter Tool (`run_code`)
 - Neues Built-in MCP Tool: generiert Python-Code via LLM, führt ihn in isoliertem Temp-Verzeichnis aus
-- Ideal für Datenkonvertierung (CSV→JSON, JSON→XML usw.), Analysen und Berechnungen
-- Eingabedaten werden via stdin übergeben; nur Python-Standardbibliothek erlaubt
-- Timeout: 30 Sekunden; Temp-Verzeichnis wird immer aufgeräumt (try/finally)
+- Ideal für Datenkonvertierung (CSV→JSON, JSON→XML usw.), Web-Scraping, Analysen und Berechnungen
+- Eingabedaten werden via stdin übergeben; beliebige pip-Pakete erlaubt (requests, pandas, bs4 usw.)
+- **venv-Isolation**: Abhängigkeiten werden automatisch in einer temporären venv installiert
+- **Selbstkorrektur-Loop**: Bei leerem oder fehlerhaftem Output schickt das Tool Code + Problem zurück ans LLM (bis zu 2 Korrekturversuche)
+- **User-Agent**: LLM wird explizit angewiesen, bei HTTP-Anfragen immer einen realistischen Browser-User-Agent zu setzen
+- Timeout: 60 Sekunden; Temp-Verzeichnis wird immer aufgeräumt (try/finally)
 - Optional: separates Code-Generierungs-Modell in Tool-Einstellungen konfigurierbar
 - Vollständiges Terminal-Logging: LLM-Prompt, generierter Code, Ausführungs-Output, Fehler
 
