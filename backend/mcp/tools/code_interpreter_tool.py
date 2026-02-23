@@ -1,3 +1,4 @@
+import json
 import subprocess
 import tempfile
 import shutil
@@ -23,7 +24,8 @@ TOOL_DEFINITION = {
         "Generiert Python-Code via LLM und führt ihn aus. "
         "Ideal für Datenverarbeitung, Konvertierung (CSV→JSON, JSON→XML usw.), "
         "Berechnungen oder Textanalysen. "
-        "Eingabedaten (z.B. Dateiinhalt) werden dem Skript via stdin übergeben."
+        "Eingabedaten (z.B. Dateiinhalt) werden dem Skript via stdin übergeben. "
+        "Benötigte Bibliotheken werden automatisch in einer venv installiert."
     ),
     "input_schema": {
         "type": "object",
@@ -68,10 +70,6 @@ def run_code(task: str, input_data: str = "") -> dict:
         if emit_log:
             emit_log({"type": "header", "message": msg})
 
-    def log_json(label: str, data):
-        if emit_log:
-            emit_log({"type": "json", "label": label, "data": data})
-
     header("CODE-INTERPRETER GESTARTET")
     log(f"Aufgabe: {task}")
     log(f"Modell: {model} | Eingabedaten: {len(input_data)} Zeichen")
@@ -97,31 +95,68 @@ def run_code(task: str, input_data: str = "") -> dict:
     if usage:
         log(f"Tokens: prompt={usage.get('prompt_tokens','?')} completion={usage.get('completion_tokens','?')}")
 
-    code = _extract_code(raw)
+    script, requirements = _parse_llm_response(raw)
 
-    if not code:
+    if not script:
         log("FEHLER: Kein ausfuehrbarer Code in LLM-Antwort gefunden")
         return {"success": False, "output": "", "error": "LLM hat keinen ausfuehrbaren Code generiert"}
 
     header("CODE-INTERPRETER: GENERIERTER CODE")
-    log(code)
+    log(script)
+    if requirements:
+        header("CODE-INTERPRETER: REQUIREMENTS")
+        log(requirements)
 
     tmpdir = tempfile.mkdtemp()
     try:
-        script_path = os.path.join(tmpdir, "script.py")
-        with open(script_path, "w", encoding="utf-8") as f:
-            f.write(code)
+        # Write files
+        with open(os.path.join(tmpdir, "script.py"), "w", encoding="utf-8") as f:
+            f.write(script)
+        if requirements:
+            with open(os.path.join(tmpdir, "requirements.txt"), "w", encoding="utf-8") as f:
+                f.write(requirements)
 
+        # Paths for venv binaries (Linux/Docker)
+        venv_dir = os.path.join(tmpdir, "venv")
+        venv_python = os.path.join(venv_dir, "bin", "python")
+        venv_pip = os.path.join(venv_dir, "bin", "pip")
+
+        # Create venv
+        header("CODE-INTERPRETER: VENV")
+        log("Erstelle virtuelle Umgebung...")
+        venv_result = subprocess.run(
+            ["python", "-m", "venv", venv_dir],
+            capture_output=True, text=True, timeout=60
+        )
+        if venv_result.returncode != 0:
+            log(f"venv-Fehler: {venv_result.stderr}")
+            return {"success": False, "output": "", "error": f"venv-Fehler: {venv_result.stderr}"}
+        log("venv erstellt.")
+
+        # Install requirements if present
+        if requirements:
+            log("Installiere Abhängigkeiten via pip...")
+            pip_result = subprocess.run(
+                [venv_pip, "install", "-r", "requirements.txt", "-q"],
+                cwd=tmpdir,
+                capture_output=True, text=True, timeout=120
+            )
+            if pip_result.returncode != 0:
+                log(f"pip-Fehler: {pip_result.stderr}")
+                return {"success": False, "output": "", "error": f"pip install fehlgeschlagen: {pip_result.stderr}"}
+            log("Abhängigkeiten installiert.")
+
+        # Run script
         header("CODE-INTERPRETER: AUSFUEHRUNG")
-        log(f"Starte script.py (timeout=30s, stdin={len(input_data)} Zeichen)...")
+        log(f"Starte script.py mit venv-Python (timeout=60s, stdin={len(input_data)} Zeichen)...")
 
         result = subprocess.run(
-            ["python", "script.py"],
+            [venv_python, "script.py"],
             cwd=tmpdir,
             input=input_data,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=60
         )
 
         stdout = result.stdout.strip()
@@ -139,7 +174,7 @@ def run_code(task: str, input_data: str = "") -> dict:
         return {"success": True, "output": stdout, "error": ""}
 
     except subprocess.TimeoutExpired:
-        return {"success": False, "output": "", "error": "Timeout: Skript überschritt 30 Sekunden"}
+        return {"success": False, "output": "", "error": "Timeout überschritten"}
     except Exception as e:
         return {"success": False, "output": "", "error": str(e)}
     finally:
@@ -149,12 +184,11 @@ def run_code(task: str, input_data: str = "") -> dict:
 def _build_prompt(task: str, input_data: str) -> str:
     if input_data:
         sample = "\n".join(input_data.splitlines()[:10])
-        data_section = f"""Es gibt Eingabedaten. Das Skript soll sie mit `sys.stdin.read()` lesen.
-Erste Zeilen der Daten:
-```
-{sample}
-```
-Das Ergebnis muss nach stdout ausgegeben werden (print() oder sys.stdout.write())."""
+        data_section = (
+            f"Es gibt Eingabedaten. Das Skript soll sie mit `sys.stdin.read()` lesen.\n"
+            f"Erste Zeilen der Daten:\n```\n{sample}\n```\n"
+            "Das Ergebnis muss nach stdout ausgegeben werden."
+        )
     else:
         data_section = "Es gibt keine Eingabedaten. Das Skript führt die Aufgabe selbstständig aus und schreibt das Ergebnis nach stdout."
 
@@ -164,28 +198,40 @@ AUFGABE: {task}
 
 {data_section}
 
+Antworte AUSSCHLIESSLICH mit einem JSON-Objekt (kein Text davor oder danach):
+{{
+  "script": "<vollständiger Python-Code als String>",
+  "requirements": "<pip-Pakete, eine pro Zeile, oder leer wenn nur Standardbibliothek>"
+}}
+
 REGELN:
-- Nur Python-Standardbibliothek (sys, json, csv, re, collections, datetime usw.)
-- Fehlerbehandlung mit try/except
-- Ergebnis immer nach stdout
-
-Antworte NUR mit dem Code-Block:
-```python
-# dein code hier
-```"""
+- Beliebige pip-Pakete erlaubt (z.B. beautifulsoup4, pandas, requests)
+- Fehlerbehandlung mit try/except einbauen
+- Ergebnis immer nach stdout schreiben"""
 
 
-def _extract_code(text: str) -> str:
+def _parse_llm_response(text: str) -> tuple[str, str]:
+    """Parse LLM response: returns (script, requirements). Both may be empty strings."""
     text = text.strip()
-    if "```python" in text:
-        start = text.index("```python") + len("```python")
-        end = text.rindex("```")
-        return text[start:end].strip()
-    if text.startswith("```") and "```" in text[3:]:
-        start = text.index("\n") + 1
-        end = text.rindex("```")
-        return text[start:end].strip()
-    # Kein Codeblock — trotzdem zurückgeben wenn es wie Code aussieht
-    if any(kw in text for kw in ("import ", "def ", "print(", "sys.")):
-        return text
-    return ""
+
+    # Strip markdown code block if wrapped
+    if text.startswith("```"):
+        lines = text.splitlines()
+        # Remove first line (```json or ```) and last line (```)
+        inner = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
+        text = inner.strip()
+
+    try:
+        data = json.loads(text)
+        script = (data.get("script") or "").strip()
+        requirements = (data.get("requirements") or "").strip()
+        return script, requirements
+    except json.JSONDecodeError:
+        # Fallback: try to extract a python code block
+        if "```python" in text:
+            start = text.index("```python") + len("```python")
+            end = text.rindex("```")
+            return text[start:end].strip(), ""
+        if any(kw in text for kw in ("import ", "def ", "print(", "sys.")):
+            return text, ""
+        return "", ""
