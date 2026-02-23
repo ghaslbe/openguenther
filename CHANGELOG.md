@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.2] — 2026-02-23
+
+### Aktienkurs-Tool (`get_stock_price`)
+- Neues Built-in MCP Tool: aktueller Kurs, Tagesveränderung, Hoch/Tief, 52-Wochen-Range, Marktkapitalisierung und Volumen
+- Kein API-Key nötig (Yahoo Finance via `yfinance`)
+- Weltweit: US-Aktien (`AAPL`, `NVDA`), Deutsche Aktien (`BMW.DE`, `SAP.DE`), Indizes (`^DAX`, `^SPX`), Krypto (`BTC-USD`)
+- Logging im Guenther-Terminal
+
+---
+
 ## [1.3.1] — 2026-02-23
 
 ### Light/Dark Theme

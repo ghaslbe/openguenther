@@ -232,6 +232,7 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 
 | Tool | Beschreibung |
 |------|-------------|
+| `get_stock_price` | Aktienkurs, Tagesveränderung, Kennzahlen via Yahoo Finance (kein API-Key) |
 | `get_weather` | Wetter & Vorhersage via Open-Meteo (kein API-Key) |
 | `generate_image` | Bildgenerierung via OpenRouter |
 | `process_image` | Bildbearbeitung via ImageMagick (blur, grayscale, rotate, …) |
@@ -472,6 +473,7 @@ Data is stored persistently in a Docker volume (`/app/data`).
 
 | Tool | Description |
 |------|-------------|
+| `get_stock_price` | Stock price, daily change, key figures via Yahoo Finance (no API key needed) |
 | `get_weather` | Weather & forecast via Open-Meteo (no API key needed) |
 | `generate_image` | Image generation via OpenRouter |
 | `process_image` | Image editing via ImageMagick (blur, grayscale, rotate, …) |
