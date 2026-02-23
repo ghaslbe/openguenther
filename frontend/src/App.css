@@ -1530,9 +1530,29 @@ html, body, #root {
   --border: #c8cae0;
 }
 
-/* topbar border stays dark on dark topbar */
+/* light topbar */
 [data-theme="light"] .app-topbar {
-  border-bottom-color: #2a2a4a;
+  background: linear-gradient(135deg, var(--bg-sidebar) 0%, var(--bg-dark) 100%);
+  border-bottom-color: var(--border);
+}
+
+[data-theme="light"] .topbar-guenther {
+  color: #227722;
+  text-shadow: none;
+}
+
+[data-theme="light"] .topbar-version {
+  color: #448844;
+}
+
+[data-theme="light"] .btn-theme-toggle {
+  border-color: #999;
+  color: #555;
+}
+
+[data-theme="light"] .btn-theme-toggle:hover {
+  border-color: #227722;
+  color: #227722;
 }
 
 /* hover overlays (hardcoded white-rgba → dark-rgba in light mode) */
