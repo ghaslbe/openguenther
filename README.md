@@ -31,7 +31,7 @@
 
 ## 🇩🇪 Deutsch
 
-> ⚠️ **Die Nutzung dieser Software geschieht vollständig auf eigenes Risiko. Der Autor übernimmt keinerlei Haftung.** Siehe [Disclaimer](#disclaimer--haftungsausschluss) unten.
+> ⚠️ **Die Nutzung dieser Software geschieht vollständig auf eigenes Risiko. Die alleinige Verantwortung liegt beim Nutzer. Der Autor übernimmt keinerlei Haftung.** Siehe [Disclaimer](#disclaimer--haftungsausschluss) unten.
 
 Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und Telegram-Integration.
 
@@ -247,9 +247,11 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 
 ### Disclaimer / Haftungsausschluss
 
-> ⚠️ **DIE NUTZUNG DIESER SOFTWARE GESCHIEHT VOLLSTÄNDIG AUF EIGENES RISIKO.**
+> ⚠️ **DIE NUTZUNG DIESER SOFTWARE GESCHIEHT VOLLSTÄNDIG AUF EIGENES RISIKO. DIE ALLEINIGE VERANTWORTUNG FÜR DIE NUTZUNG LIEGT BEIM NUTZER.**
 
 Diese Software wird **„wie besehen"** (as-is) ohne jegliche ausdrückliche oder stillschweigende Gewährleistung bereitgestellt. Der Autor übernimmt **keinerlei Haftung** für direkte, indirekte, zufällige, besondere oder Folgeschäden, die aus der Nutzung oder Nichtnutzung dieser Software entstehen – gleichgültig, ob diese auf Vertrag, unerlaubter Handlung oder einem anderen Rechtsgrund beruhen.
+
+**Die gesamte Verantwortung für den Betrieb, die Konfiguration und die Nutzung dieser Software – einschließlich aller daraus resultierenden Handlungen und Konsequenzen – liegt ausschließlich beim Nutzer.**
 
 Dies umfasst insbesondere, aber nicht ausschließlich:
 
@@ -257,6 +259,7 @@ Dies umfasst insbesondere, aber nicht ausschließlich:
 - Kosten durch API-Nutzung bei Drittanbietern (OpenRouter, OpenAI, etc.)
 - Datenverlust oder Sicherheitsvorfälle
 - Schäden durch fehlerhafte Tool-Ausführungen
+- Rechtliche Konsequenzen aus der Nutzung oder den durch die Software ausgeführten Aktionen
 
 **Der Autor empfiehlt ausdrücklich:**
 - API-Keys mit minimalen Berechtigungen und Ausgabelimits zu versehen
@@ -267,7 +270,7 @@ Dies umfasst insbesondere, aber nicht ausschließlich:
 
 ## 🇬🇧 English
 
-> ⚠️ **Use of this software is entirely at your own risk. The author accepts no liability whatsoever.** See [Disclaimer](#disclaimer) below.
+> ⚠️ **Use of this software is entirely at your own risk. Sole responsibility rests with the user. The author accepts no liability whatsoever.** See [Disclaimer](#disclaimer) below.
 
 A self-hosted AI agent with chat interface, MCP tool support and Telegram integration.
 
@@ -483,9 +486,11 @@ Data is stored persistently in a Docker volume (`/app/data`).
 
 ### Disclaimer
 
-> ⚠️ **USE OF THIS SOFTWARE IS ENTIRELY AT YOUR OWN RISK.**
+> ⚠️ **USE OF THIS SOFTWARE IS ENTIRELY AT YOUR OWN RISK. SOLE RESPONSIBILITY FOR USE RESTS WITH THE USER.**
 
 This software is provided **"as is"** without any express or implied warranty of any kind. The author accepts **no liability** for any direct, indirect, incidental, special or consequential damages arising from the use or inability to use this software — regardless of whether based on contract, tort or any other legal basis.
+
+**Full responsibility for operating, configuring and using this software — including all resulting actions and consequences — rests solely with the user.**
 
 This includes but is not limited to:
 
@@ -493,6 +498,7 @@ This includes but is not limited to:
 - Costs incurred through third-party API usage (OpenRouter, OpenAI, etc.)
 - Data loss or security incidents
 - Damages caused by faulty tool executions
+- Legal consequences arising from use or actions carried out by the software
 
 **The author strongly recommends:**
 - Setting spending limits on API keys
