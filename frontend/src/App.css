@@ -1490,3 +1490,112 @@ html, body, #root {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* ── Theme Toggle Button ── */
+.btn-theme-toggle {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--guenther-dim);
+  border-radius: 3px;
+  color: var(--guenther-dim);
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.btn-theme-toggle:hover {
+  border-color: var(--guenther-text);
+  color: var(--guenther-text);
+}
+
+/* ── Light Theme ── */
+[data-theme="light"] {
+  --bg-dark: #f0f2f8;
+  --bg-sidebar: #e2e5f2;
+  --bg-chat: #f8f9fc;
+  --bg-input: #ffffff;
+  --bg-message-user: #ccd9f5;
+  --bg-message-bot: #ebebf5;
+  --text-primary: #1a1a2e;
+  --text-secondary: #5a5a80;
+  --accent: #0288d1;
+  --accent-hover: #0277bd;
+  --danger: #d32f2f;
+  --border: #c8cae0;
+}
+
+/* topbar border stays dark on dark topbar */
+[data-theme="light"] .app-topbar {
+  border-bottom-color: #2a2a4a;
+}
+
+/* hover overlays (hardcoded white-rgba → dark-rgba in light mode) */
+[data-theme="light"] .chat-list-item:hover,
+[data-theme="light"] .settings-nav-item:hover,
+[data-theme="light"] .provider-card-header:hover,
+[data-theme="light"] .tool-accordion-header:hover {
+  background: rgba(0, 0, 40, 0.05);
+}
+
+[data-theme="light"] .chat-list-item.active {
+  background: rgba(2, 136, 209, 0.13);
+}
+
+[data-theme="light"] .settings-nav-item.active {
+  background: rgba(2, 136, 209, 0.1);
+}
+
+/* code blocks */
+[data-theme="light"] .message-content pre {
+  background: rgba(0, 0, 50, 0.06);
+  border: 1px solid var(--border);
+}
+
+/* modal overlay */
+[data-theme="light"] .settings-overlay {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* provider toggle switch */
+[data-theme="light"] .provider-toggle-slider {
+  background: #aaaaaa;
+}
+
+/* badges with hardcoded accent rgba */
+[data-theme="light"] .settings-message {
+  background: rgba(2, 136, 209, 0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+[data-theme="light"] .file-attachment-bar {
+  background: rgba(2, 136, 209, 0.06);
+  border-top-color: rgba(2, 136, 209, 0.2);
+}
+
+[data-theme="light"] .chat-agent-badge {
+  background: rgba(2, 136, 209, 0.1);
+  border-color: rgba(2, 136, 209, 0.3);
+}
+
+[data-theme="light"] .tool-accordion-badge,
+[data-theme="light"] .mcp-tool-badge {
+  background: rgba(2, 136, 209, 0.12);
+  color: var(--accent);
+}
+
+[data-theme="light"] .tool-accordion-badge.override {
+  background: rgba(255, 160, 0, 0.15);
+  color: #e65100;
+}
+
+/* scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #b0b5cc;
+}

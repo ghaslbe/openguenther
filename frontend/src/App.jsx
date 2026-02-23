@@ -16,6 +16,17 @@ export default function App() {
   const [guentherWidth, setGuentherWidth] = useState(480);
   const [agents, setAgents] = useState([]);
   const [selectedAgentId, setSelectedAgentId] = useState('');
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('theme', next);
+  }
 
   const isResizing = useRef(false);
   const socket = getSocket();
@@ -169,6 +180,9 @@ export default function App() {
       <div className="app-topbar">
         <span className="topbar-open">OPEN</span><span className="topbar-guenther">guenther</span>
         <span className="topbar-version">v{__APP_VERSION__}</span>
+        <button className="btn-theme-toggle" onClick={toggleTheme}>
+          {theme === 'dark' ? 'LIGHT' : 'DARK'}
+        </button>
       </div>
       <div className="app">
         <ChatList
