@@ -23,7 +23,7 @@ TOOL_DEFINITION = {
     "description": (
         "Generiert Python-Code via LLM und führt ihn aus. "
         "Ideal für Datenverarbeitung, Konvertierung (CSV→JSON, JSON→XML usw.), "
-        "Berechnungen oder Textanalysen. "
+        "Web-Scraping, Berechnungen oder Textanalysen. "
         "Eingabedaten (z.B. Dateiinhalt) werden dem Skript via stdin übergeben. "
         "Benötigte Bibliotheken werden automatisch in einer venv installiert."
     ),
@@ -34,7 +34,7 @@ TOOL_DEFINITION = {
                 "type": "string",
                 "description": (
                     "Was soll der Code tun? Z.B. 'Konvertiere die CSV-Daten zu JSON' "
-                    "oder 'Berechne den Durchschnitt aller Zahlenwerte'"
+                    "oder 'Rufe https://example.com ab und extrahiere alle h1-Überschriften'"
                 )
             },
             "input_data": {
@@ -48,6 +48,8 @@ TOOL_DEFINITION = {
         "required": ["task"]
     }
 }
+
+MAX_RETRIES = 2
 
 
 def run_code(task: str, input_data: str = "") -> dict:
@@ -70,33 +72,28 @@ def run_code(task: str, input_data: str = "") -> dict:
         if emit_log:
             emit_log({"type": "header", "message": msg})
 
+    def llm(messages):
+        return call_openrouter(messages, None, api_key, model, temperature=0.1, base_url=base_url)
+
     header("CODE-INTERPRETER GESTARTET")
     log(f"Aufgabe: {task}")
     log(f"Modell: {model} | Eingabedaten: {len(input_data)} Zeichen")
 
+    # --- Phase 1: Code generieren ---
     prompt = _build_prompt(task, input_data)
-
     header("CODE-INTERPRETER: LLM-ANFRAGE")
     log(prompt)
 
-    messages = [{"role": "user", "content": prompt}]
-
     try:
-        response = call_openrouter(
-            messages, None, api_key, model,
-            temperature=0.1, base_url=base_url
-        )
+        response = llm([{"role": "user", "content": prompt}])
     except Exception as e:
         log(f"FEHLER LLM-Anfrage: {str(e)}")
         return {"success": False, "output": "", "error": f"LLM-Fehler: {str(e)}"}
 
     raw = response.get("choices", [{}])[0].get("message", {}).get("content", "")
-    usage = response.get("usage", {})
-    if usage:
-        log(f"Tokens: prompt={usage.get('prompt_tokens','?')} completion={usage.get('completion_tokens','?')}")
+    _log_tokens(response, log)
 
     script, requirements = _parse_llm_response(raw)
-
     if not script:
         log("FEHLER: Kein ausfuehrbarer Code in LLM-Antwort gefunden")
         return {"success": False, "output": "", "error": "LLM hat keinen ausfuehrbaren Code generiert"}
@@ -109,69 +106,65 @@ def run_code(task: str, input_data: str = "") -> dict:
 
     tmpdir = tempfile.mkdtemp()
     try:
-        # Write files
-        with open(os.path.join(tmpdir, "script.py"), "w", encoding="utf-8") as f:
-            f.write(script)
-        if requirements:
-            with open(os.path.join(tmpdir, "requirements.txt"), "w", encoding="utf-8") as f:
-                f.write(requirements)
+        venv_python, venv_pip = _setup_venv(tmpdir, requirements, log, header)
+        if venv_python is None:
+            return {"success": False, "output": "", "error": venv_pip}  # venv_pip holds error msg here
 
-        # Paths for venv binaries (Linux/Docker)
-        venv_dir = os.path.join(tmpdir, "venv")
-        venv_python = os.path.join(venv_dir, "bin", "python")
-        venv_pip = os.path.join(venv_dir, "bin", "pip")
+        # --- Phase 2: Ausführen + ggf. selbst korrigieren ---
+        for attempt in range(1, MAX_RETRIES + 2):  # 1 initial + MAX_RETRIES fixes
+            if attempt > 1:
+                header(f"CODE-INTERPRETER: KORREKTUR (Versuch {attempt})")
 
-        # Create venv
-        header("CODE-INTERPRETER: VENV")
-        log("Erstelle virtuelle Umgebung...")
-        venv_result = subprocess.run(
-            ["python", "-m", "venv", venv_dir],
-            capture_output=True, text=True, timeout=60
-        )
-        if venv_result.returncode != 0:
-            log(f"venv-Fehler: {venv_result.stderr}")
-            return {"success": False, "output": "", "error": f"venv-Fehler: {venv_result.stderr}"}
-        log("venv erstellt.")
+            _write_script(tmpdir, script)
 
-        # Install requirements if present
-        if requirements:
-            log("Installiere Abhängigkeiten via pip...")
-            pip_result = subprocess.run(
-                [venv_pip, "install", "-r", "requirements.txt", "-q"],
-                cwd=tmpdir,
-                capture_output=True, text=True, timeout=120
-            )
-            if pip_result.returncode != 0:
-                log(f"pip-Fehler: {pip_result.stderr}")
-                return {"success": False, "output": "", "error": f"pip install fehlgeschlagen: {pip_result.stderr}"}
-            log("Abhängigkeiten installiert.")
+            stdout, stderr, returncode = _run_script(tmpdir, venv_python, input_data, log, header, attempt)
 
-        # Run script
-        header("CODE-INTERPRETER: AUSFUEHRUNG")
-        log(f"Starte script.py mit venv-Python (timeout=60s, stdin={len(input_data)} Zeichen)...")
+            # Success
+            if returncode == 0 and _output_looks_ok(stdout):
+                header("CODE-INTERPRETER: ERGEBNIS")
+                log(stdout[:2000] + (" …[gekuerzt]" if len(stdout) > 2000 else ""))
+                log(f"Fertig — {len(stdout)} Zeichen Output (Versuch {attempt})")
+                return {"success": True, "output": stdout, "error": ""}
 
-        result = subprocess.run(
-            [venv_python, "script.py"],
-            cwd=tmpdir,
-            input=input_data,
-            capture_output=True,
-            text=True,
-            timeout=60
-        )
+            # Failure or suspicious output — let LLM fix it
+            if attempt <= MAX_RETRIES:
+                problem = stderr if returncode != 0 else f"Output war leer oder verdaechtig: '{stdout}'"
+                log(f"Versuche Korrektur... Problem: {problem[:300]}")
+                fix_prompt = _build_fix_prompt(task, script, requirements, problem)
+                try:
+                    fix_response = llm([{"role": "user", "content": fix_prompt}])
+                except Exception as e:
+                    break
+                fix_raw = fix_response.get("choices", [{}])[0].get("message", {}).get("content", "")
+                _log_tokens(fix_response, log)
+                new_script, new_req = _parse_llm_response(fix_raw)
+                if new_script:
+                    script = new_script
+                    header("CODE-INTERPRETER: KORRIGIERTER CODE")
+                    log(script)
+                    # Install new requirements if changed
+                    if new_req and new_req != requirements:
+                        requirements = new_req
+                        header("CODE-INTERPRETER: NEUE REQUIREMENTS")
+                        log(requirements)
+                        req_path = os.path.join(tmpdir, "requirements.txt")
+                        with open(req_path, "w") as f:
+                            f.write(requirements)
+                        pip_result = subprocess.run(
+                            [venv_pip, "install", "-r", "requirements.txt", "-q"],
+                            cwd=tmpdir, capture_output=True, text=True, timeout=120
+                        )
+                        if pip_result.returncode != 0:
+                            log(f"pip-Fehler bei Korrektur: {pip_result.stderr[:200]}")
+            else:
+                # Final failure
+                header("CODE-INTERPRETER: FEHLER (alle Versuche erschoepft)")
+                log(f"returncode={returncode}")
+                if stderr:
+                    log(stderr)
+                return {"success": False, "output": stdout, "error": stderr or f"Output leer nach {attempt} Versuchen"}
 
-        stdout = result.stdout.strip()
-        stderr = result.stderr.strip()
-
-        if result.returncode != 0:
-            header("CODE-INTERPRETER: FEHLER")
-            log(f"returncode={result.returncode}")
-            log(stderr)
-            return {"success": False, "output": stdout, "error": stderr}
-
-        header("CODE-INTERPRETER: ERGEBNIS")
-        log(stdout[:2000] + (" …[gekuerzt]" if len(stdout) > 2000 else ""))
-        log(f"Fertig — {len(stdout)} Zeichen Output")
-        return {"success": True, "output": stdout, "error": ""}
+        return {"success": False, "output": "", "error": "Maximale Korrekturversuche erreicht"}
 
     except subprocess.TimeoutExpired:
         return {"success": False, "output": "", "error": "Timeout überschritten"}
@@ -179,6 +172,72 @@ def run_code(task: str, input_data: str = "") -> dict:
         return {"success": False, "output": "", "error": str(e)}
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+def _setup_venv(tmpdir, requirements, log, header):
+    """Create venv, install requirements. Returns (venv_python, venv_pip) or (None, error_msg)."""
+    venv_dir = os.path.join(tmpdir, "venv")
+    venv_python = os.path.join(venv_dir, "bin", "python")
+    venv_pip = os.path.join(venv_dir, "bin", "pip")
+
+    header("CODE-INTERPRETER: VENV")
+    log("Erstelle virtuelle Umgebung...")
+    r = subprocess.run(["python", "-m", "venv", venv_dir], capture_output=True, text=True, timeout=60)
+    if r.returncode != 0:
+        log(f"venv-Fehler: {r.stderr}")
+        return None, f"venv-Fehler: {r.stderr}"
+    log("venv erstellt.")
+
+    if requirements:
+        req_path = os.path.join(tmpdir, "requirements.txt")
+        with open(req_path, "w") as f:
+            f.write(requirements)
+        log(f"Installiere: {requirements.replace(chr(10), ', ')}")
+        pip_r = subprocess.run(
+            [venv_pip, "install", "-r", "requirements.txt", "-q"],
+            cwd=tmpdir, capture_output=True, text=True, timeout=120
+        )
+        if pip_r.returncode != 0:
+            log(f"pip-Fehler: {pip_r.stderr}")
+            return None, f"pip install fehlgeschlagen: {pip_r.stderr}"
+        log("Abhängigkeiten installiert.")
+
+    return venv_python, venv_pip
+
+
+def _write_script(tmpdir, script):
+    with open(os.path.join(tmpdir, "script.py"), "w", encoding="utf-8") as f:
+        f.write(script)
+
+
+def _run_script(tmpdir, venv_python, input_data, log, header, attempt):
+    header(f"CODE-INTERPRETER: AUSFUEHRUNG (Versuch {attempt})")
+    log(f"Starte script.py (timeout=60s)...")
+    result = subprocess.run(
+        [venv_python, "script.py"],
+        cwd=tmpdir, input=input_data,
+        capture_output=True, text=True, timeout=60
+    )
+    return result.stdout.strip(), result.stderr.strip(), result.returncode
+
+
+def _output_looks_ok(stdout: str) -> bool:
+    """Return False if output looks like an empty/failed result."""
+    if not stdout:
+        return False
+    stripped = stdout.strip()
+    # Empty collections
+    if stripped in ("[]", "{}", "()", "None", ""):
+        return False
+    return True
+
+
+def _log_tokens(response, log):
+    usage = response.get("usage", {})
+    if usage:
+        log(f"Tokens: prompt={usage.get('prompt_tokens','?')} completion={usage.get('completion_tokens','?')}")
 
 
 def _build_prompt(task: str, input_data: str) -> str:
@@ -205,21 +264,52 @@ Antworte AUSSCHLIESSLICH mit einem JSON-Objekt (kein Text davor oder danach):
 }}
 
 REGELN:
-- Beliebige pip-Pakete erlaubt (z.B. beautifulsoup4, pandas, requests)
-- Fehlerbehandlung mit try/except einbauen
+- Beliebige pip-Pakete erlaubt (beautifulsoup4, pandas, requests, lxml usw.)
+- Bei HTTP-Anfragen IMMER einen realistischen User-Agent setzen:
+  headers = {{"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}}
+- Fehlerbehandlung mit try/except
+- Bei Web-Scraping: HTTP-Statuscode und Antwortgröße printen wenn kein Ergebnis
 - Ergebnis immer nach stdout schreiben"""
+
+
+def _build_fix_prompt(task: str, current_script: str, requirements: str, problem: str) -> str:
+    return f"""Du bist ein Python-Code-Debugger. Folgender Code hat ein Problem:
+
+AUFGABE: {task}
+
+AKTUELLER CODE:
+```python
+{current_script}
+```
+
+REQUIREMENTS: {requirements or '(keine)'}
+
+PROBLEM:
+{problem}
+
+Korrigiere den Code. Häufige Ursachen:
+- Bei HTTP/Web: User-Agent fehlt oder zu schwach → setze einen realistischen Browser-User-Agent
+- Bei leerem Ergebnis: Website blockiert Bots → teste mit Session, Cookies oder anderen Headern
+- Bei leerem Scraping-Ergebnis: HTML-Struktur prüfen, andere Tags/Klassen verwenden, HTML ausgeben zur Analyse
+
+Antworte AUSSCHLIESSLICH mit JSON (kein Text davor oder danach):
+{{
+  "script": "<korrigierter Python-Code>",
+  "requirements": "<pip-Pakete oder leer>"
+}}"""
 
 
 def _parse_llm_response(text: str) -> tuple[str, str]:
     """Parse LLM response: returns (script, requirements). Both may be empty strings."""
     text = text.strip()
 
-    # Strip markdown code block if wrapped
+    # Strip markdown code block wrapper
     if text.startswith("```"):
         lines = text.splitlines()
-        # Remove first line (```json or ```) and last line (```)
-        inner = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
-        text = inner.strip()
+        end = len(lines) - 1
+        while end > 0 and lines[end].strip() == "```":
+            end -= 1
+        text = "\n".join(lines[1:end + 1]).strip()
 
     try:
         data = json.loads(text)
@@ -227,7 +317,7 @@ def _parse_llm_response(text: str) -> tuple[str, str]:
         requirements = (data.get("requirements") or "").strip()
         return script, requirements
     except json.JSONDecodeError:
-        # Fallback: try to extract a python code block
+        # Fallback: extract python code block
         if "```python" in text:
             start = text.index("```python") + len("```python")
             end = text.rindex("```")
