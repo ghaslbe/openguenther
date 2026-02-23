@@ -26,6 +26,7 @@ from mcp.tools.weather_tool import get_weather, TOOL_DEFINITION as WEATHER_TOOL_
 from mcp.tools.wikipedia_tool import wikipedia_search, TOOL_DEFINITION as WIKI_TOOL_DEF
 from mcp.tools.tts_tool import text_to_speech, TOOL_DEFINITION as TTS_DEF, SETTINGS_SCHEMA as TTS_SETTINGS
 from mcp.tools.code_interpreter_tool import run_code, TOOL_DEFINITION as CODE_TOOL_DEF, SETTINGS_SCHEMA as CODE_SETTINGS
+from mcp.tools.stock_tool import get_stock_price, TOOL_DEFINITION as STOCK_TOOL_DEF
 from mcp.manager import load_external_tools
 from services.agent import run_agent
 from services.telegram_gateway import TelegramGateway
@@ -161,6 +162,13 @@ registry.register(MCPTool(
     input_schema=CODE_TOOL_DEF['input_schema'],
     handler=run_code,
     settings_schema=CODE_SETTINGS
+))
+
+registry.register(MCPTool(
+    name=STOCK_TOOL_DEF['name'],
+    description=STOCK_TOOL_DEF['description'],
+    input_schema=STOCK_TOOL_DEF['input_schema'],
+    handler=get_stock_price
 ))
 
 

@@ -5,3 +5,4 @@ simple-websocket==1.1.0
 requests==2.32.3
 Pillow==11.1.0
 qrcode[pil]==8.0
+yfinance>=0.2.40
