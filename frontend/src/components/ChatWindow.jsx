@@ -91,7 +91,38 @@ function MessageContent({ content }) {
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-export default function ChatWindow({ messages, onSendMessage, isLoading, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
+const CopyIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+  </svg>
+);
+
+function getTextForCopy(content) {
+  if (!content) return '';
+  return content
+    .replace(/!\[[^\]]*\]\(data:[^)]+\)/g, '[Bild]')
+    .trim();
+}
+
+function CopyButton({ text, align }) {
+  const [copied, setCopied] = React.useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+  return (
+    <div className={`message-copy-row message-copy-row--${align}`}>
+      <button className="btn-copy-msg" onClick={handleCopy} title="Kopieren">
+        {copied ? <span className="copy-check">✓</span> : <CopyIcon />}
+      </button>
+    </div>
+  );
+}
+
+export default function ChatWindow({ messages, onSendMessage, isLoading, currentTool, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [attachedFile, setAttachedFile] = useState(null); // {name, content}
@@ -190,6 +221,7 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
             <div className="message-content">
               <MessageContent content={msg.content} />
             </div>
+            <CopyButton text={getTextForCopy(msg.content)} align={msg.role === 'user' ? 'right' : 'left'} />
           </div>
         ))}
         {isLoading && (
@@ -198,6 +230,9 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, activeC
             <div className="message-content">
               <div className="typing-indicator">
                 <span></span><span></span><span></span>
+                {currentTool && (
+                  <span className="typing-tool-name">{currentTool}</span>
+                )}
               </div>
             </div>
           </div>

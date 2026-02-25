@@ -12,6 +12,7 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [guentherLogs, setGuentherLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentTool, setCurrentTool] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [guentherWidth, setGuentherWidth] = useState(480);
   const [agents, setAgents] = useState([]);
@@ -46,6 +47,13 @@ export default function App() {
   useEffect(() => {
     socket.on('guenther_log', (data) => {
       setGuentherLogs(prev => [...prev, data]);
+      if (data.type === 'header') {
+        if (data.message?.startsWith('TOOL CALL: ')) {
+          setCurrentTool(data.message.replace('TOOL CALL: ', ''));
+        } else if (data.message?.startsWith('TOOL RESULT: ') || data.message === 'GUENTHER AGENT BEENDET') {
+          setCurrentTool(null);
+        }
+      }
     });
 
     socket.on('chat_created', (data) => {
@@ -73,6 +81,7 @@ export default function App() {
 
     socket.on('agent_end', () => {
       setIsLoading(false);
+      setCurrentTool(null);
       loadChats();
     });
 
@@ -198,6 +207,7 @@ export default function App() {
         messages={messages}
         onSendMessage={handleSendMessage}
         isLoading={isLoading}
+        currentTool={currentTool}
         activeChatId={activeChatId}
         agents={agents}
         selectedAgentId={selectedAgentId}

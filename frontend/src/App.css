@@ -340,6 +340,59 @@ html, body, #root {
   30% { opacity: 1; transform: scale(1); }
 }
 
+.typing-tool-name {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  animation: none;
+  opacity: 0.55;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: var(--accent);
+  margin-left: 6px;
+  align-self: center;
+  letter-spacing: 0.3px;
+}
+
+/* Copy button */
+.message-copy-row {
+  display: flex;
+  margin-top: 3px;
+}
+
+.message-copy-row--right {
+  justify-content: flex-end;
+}
+
+.message-copy-row--left {
+  justify-content: flex-start;
+}
+
+.btn-copy-msg {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  opacity: 0.35;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: opacity 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+}
+
+.btn-copy-msg:hover {
+  opacity: 0.9;
+  color: var(--accent);
+}
+
+.copy-check {
+  font-size: 12px;
+  color: #4caf50;
+}
+
 /* Chat input */
 .chat-input-form {
   display: flex;
