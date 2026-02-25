@@ -279,16 +279,26 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
                         # Check for image data
                         if isinstance(result, dict) and 'image_base64' in result:
                             collected_images.append(result)
-                            simplified = {
-                                "success": True,
-                                "message": "Bild wurde erfolgreich erstellt",
-                                "width": result.get("width"),
-                                "height": result.get("height")
-                            }
-                            result_str = json.dumps(simplified, ensure_ascii=False)
-
-                            emit_log({"type": "header", "message": f"TOOL RESULT: {tool_name}"})
-                            emit_log({"type": "json", "label": "result", "data": simplified})
+                            # Alle Felder außer image_base64/mime_type an LLM schicken,
+                            # damit es die Daten (z.B. Flugzeug-Liste) noch sieht.
+                            # Bei reinen Bild-Tools (kein anderer Inhalt) bleibt nur die Erfolgsmeldung.
+                            data_fields = {k: v for k, v in result.items()
+                                           if k not in ('image_base64', 'mime_type')}
+                            if data_fields:
+                                data_fields['bild'] = "Karte wurde erstellt und wird im Chat angezeigt."
+                                result_str = json.dumps(data_fields, ensure_ascii=False)
+                                emit_log({"type": "header", "message": f"TOOL RESULT: {tool_name}"})
+                                emit_log({"type": "json", "label": "result", "data": data_fields})
+                            else:
+                                simplified = {
+                                    "success": True,
+                                    "message": "Bild wurde erfolgreich erstellt",
+                                    "width": result.get("width"),
+                                    "height": result.get("height")
+                                }
+                                result_str = json.dumps(simplified, ensure_ascii=False)
+                                emit_log({"type": "header", "message": f"TOOL RESULT: {tool_name}"})
+                                emit_log({"type": "json", "label": "result", "data": simplified})
                             emit_log({"type": "text", "message": f"[{_ts()}] (Bild-Daten: {len(result['image_base64'])} Bytes Base64)"})
                         elif isinstance(result, dict) and 'audio_base64' in result:
                             collected_audio.append(result)
