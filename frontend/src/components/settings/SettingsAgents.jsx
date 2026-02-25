@@ -85,21 +85,24 @@ export default function SettingsAgents({ onAgentsChange }) {
       <div className="settings-section">
         <h3>{editingId ? 'Agent bearbeiten' : 'Neuen Agenten erstellen'}</h3>
         <div className="agent-form">
+          <label className="agent-form-label">Name</label>
           <input
             type="text"
-            placeholder="Name (z.B. Poet)"
+            placeholder="z.B. Poet"
             value={form.name}
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
           />
+          <label className="agent-form-label">Kurzbeschreibung <span className="agent-form-optional">(optional)</span></label>
           <input
             type="text"
-            placeholder="Kurzbeschreibung (optional)"
+            placeholder="z.B. Antwortet in Reimen"
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           />
+          <label className="agent-form-label">System-Prompt</label>
           <textarea
             className="agent-prompt-textarea"
-            placeholder="System-Prompt (z.B. Antworte immer in Reimen.)"
+            placeholder="z.B. Antworte immer in Reimen."
             value={form.system_prompt}
             rows={6}
             onChange={e => setForm(f => ({ ...f, system_prompt: e.target.value }))}
