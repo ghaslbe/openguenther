@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.8] — 2026-02-25
+
+### SEO-Analyse-Tool (`analyze_seo`)
+- Neues Built-in MCP Tool: SEO-Analyse für URLs oder direkt übergebenen HTML-Code
+- Prüft: Title (Länge), Meta Description (Länge), H1 (Anzahl), Heading-Hierarchie, Bild-Alt-Texte, Canonical, HTML-lang, Open Graph (title/description/image), Twitter Card, Viewport, Robots-Meta, JSON-LD
+- Ausgabe als visueller HTML-Report mit Gesamt-Score (0–100), Farbkodierung (grün/gelb/rot) und konkreten Empfehlungen — direkt im Chat-Fenster als iframe gerendert
+- `fetch_website_info` entfernt (durch `analyze_seo` ersetzt)
+
+---
+
 ## [1.3.7] — 2026-02-25
 
 ### Provider-Einstellungen & Fehlerbehebung

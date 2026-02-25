@@ -244,7 +244,7 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 | `process_image` | Bildbearbeitung via ImageMagick (blur, grayscale, rotate, …) |
 | `text_to_image` | Text als PNG rendern |
 | `generate_qr_code` | QR-Code generieren |
-| `fetch_website_info` | Website-Titel & Description abrufen |
+| `analyze_seo` | SEO-Analyse einer URL oder eines HTML-Codes — Score, Title, Meta, Headings, OG-Tags, JSON-LD u.v.m. als visueller HTML-Report |
 | `send_email` | E-Mail via SMTP senden |
 | `generate_password` | Sichere Passwörter generieren |
 | `calculate` | Mathematische Ausdrücke auswerten |
@@ -491,7 +491,7 @@ Data is stored persistently in a Docker volume (`/app/data`).
 | `process_image` | Image editing via ImageMagick (blur, grayscale, rotate, …) |
 | `text_to_image` | Render text as PNG |
 | `generate_qr_code` | Generate QR codes |
-| `fetch_website_info` | Fetch website title & description |
+| `analyze_seo` | SEO analysis of a URL or HTML code — score, title, meta, headings, OG tags, JSON-LD and more as a visual HTML report |
 | `send_email` | Send email via SMTP |
 | `generate_password` | Generate secure passwords |
 | `calculate` | Evaluate mathematical expressions |

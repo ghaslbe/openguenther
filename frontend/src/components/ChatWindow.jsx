@@ -10,6 +10,7 @@ function parseContent(content) {
 
   const imageRegex = /!\[([^\]]*)\]\((data:image\/[^)]+)\)/g;
   const audioRegex = /!\[audio\]\((data:audio\/[^)]+)\)/g;
+  const htmlRegex = /\[HTML_REPORT\]\((data:text\/html;base64,[^)]+)\)/g;
 
   // Collect all matches with their positions
   const matches = [];
@@ -20,6 +21,9 @@ function parseContent(content) {
   }
   while ((m = audioRegex.exec(content)) !== null) {
     matches.push({ index: m.index, end: m.index + m[0].length, type: 'audio', src: m[1] });
+  }
+  while ((m = htmlRegex.exec(content)) !== null) {
+    matches.push({ index: m.index, end: m.index + m[0].length, type: 'html', src: m[1] });
   }
 
   matches.sort((a, b) => a.index - b.index);
@@ -34,8 +38,10 @@ function parseContent(content) {
     }
     if (match.type === 'image') {
       parts.push({ type: 'image', alt: match.alt, src: match.src });
-    } else {
+    } else if (match.type === 'audio') {
       parts.push({ type: 'audio', src: match.src });
+    } else {
+      parts.push({ type: 'html', src: match.src });
     }
     lastIndex = match.end;
   }
@@ -73,6 +79,17 @@ function MessageContent({ content }) {
             <audio key={i} controls autoPlay style={{ maxWidth: '100%', marginTop: '8px', display: 'block' }}>
               <source src={part.src} type="audio/mpeg" />
             </audio>
+          );
+        }
+        if (part.type === 'html') {
+          return (
+            <iframe
+              key={i}
+              src={part.src}
+              sandbox="allow-scripts"
+              style={{ width: '100%', minHeight: '480px', border: 'none', borderRadius: '10px', marginTop: '10px', display: 'block' }}
+              title="SEO Report"
+            />
           );
         }
         return (

@@ -214,6 +214,7 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
 
     collected_images = []
     collected_audio = []
+    collected_html = []
     max_iterations = 10
     iteration = 0
 
@@ -283,8 +284,17 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
                         emit_log({"type": "text", "message": f"[{_ts()}] Fuehre aus..."})
                         result = tool.handler(**tool_args)
 
+                        # Check for HTML report
+                        if isinstance(result, dict) and 'html_content' in result:
+                            collected_html.append(result['html_content'])
+                            simplified = {k: v for k, v in result.items() if k != 'html_content'}
+                            simplified['html_report'] = 'SEO-Report wird im Chat angezeigt.'
+                            result_str = json.dumps(simplified, ensure_ascii=False)
+                            emit_log({"type": "header", "message": f"TOOL RESULT: {tool_name}"})
+                            emit_log({"type": "json", "label": "result", "data": simplified})
+
                         # Check for image data
-                        if isinstance(result, dict) and 'image_base64' in result:
+                        elif isinstance(result, dict) and 'image_base64' in result:
                             collected_images.append(result)
                             # Alle Felder außer image_base64/mime_type an LLM schicken,
                             # damit es die Daten (z.B. Flugzeug-Liste) noch sieht.
@@ -348,6 +358,10 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
 
             emit_log({"type": "header", "message": "FINALE ANTWORT"})
             emit_log({"type": "text", "message": content})
+
+            # Append collected HTML reports
+            for html_b64 in collected_html:
+                content += f"\n\n[HTML_REPORT](data:text/html;base64,{html_b64})"
 
             # Append collected images
             for img in collected_images:

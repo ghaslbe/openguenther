@@ -17,7 +17,7 @@ from mcp.tools.dice_tool import roll_dice, TOOL_DEFINITION as DICE_TOOL_DEF
 from mcp.tools.calculator_tool import calculate, TOOL_DEFINITION as CALC_TOOL_DEF
 from mcp.tools.qr_code_tool import generate_qr_code, TOOL_DEFINITION as QR_TOOL_DEF
 from mcp.tools.password_tool import generate_password, TOOL_DEFINITION as PW_TOOL_DEF
-from mcp.tools.website_tool import fetch_website_info, TOOL_DEFINITION as WEB_TOOL_DEF
+from mcp.tools.seo_tool import analyze_seo, TOOL_DEFINITION as SEO_TOOL_DEF
 from mcp.tools.email_tool import send_email, TOOL_DEFINITION as EMAIL_TOOL_DEF, SETTINGS_SCHEMA as EMAIL_SETTINGS
 from mcp.tools.help_tool import list_available_tools, get_help, LIST_TOOLS_DEFINITION, HELP_DEFINITION
 from mcp.tools.image_process_tool import process_image, TOOL_DEFINITION as IMG_PROCESS_TOOL_DEF
@@ -92,10 +92,10 @@ registry.register(MCPTool(
 ))
 
 registry.register(MCPTool(
-    name=WEB_TOOL_DEF['name'],
-    description=WEB_TOOL_DEF['description'],
-    input_schema=WEB_TOOL_DEF['input_schema'],
-    handler=fetch_website_info
+    name=SEO_TOOL_DEF['name'],
+    description=SEO_TOOL_DEF['description'],
+    input_schema=SEO_TOOL_DEF['input_schema'],
+    handler=analyze_seo
 ))
 
 registry.register(MCPTool(
