@@ -41,7 +41,7 @@ export default function SettingsGeneral({ providers }) {
     const result = await fetchProviderModels(defaultProvider);
     setLoadingModels(false);
     if (result.success) {
-      setAvailableModels(result.models || []);
+      setAvailableModels((result.models || []).slice().sort());
       if (!result.models?.length) setModelsError('Keine Modelle gefunden');
     } else {
       setModelsError(result.error || 'Fehler beim Laden');
