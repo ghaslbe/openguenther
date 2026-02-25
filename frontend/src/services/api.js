@@ -140,6 +140,15 @@ export async function fetchProviders() {
   return res.json();
 }
 
+export async function testProvider(base_url, api_key = '') {
+  const res = await fetch(`${BASE}/api/providers/test`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ base_url, api_key })
+  });
+  return res.json();
+}
+
 export async function updateProvider(providerId, data) {
   const res = await fetch(`${BASE}/api/providers/${providerId}`, {
     method: 'PUT',

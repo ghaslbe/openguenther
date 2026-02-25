@@ -1,5 +1,18 @@
 import React, { useState } from 'react';
-import { updateProvider } from '../../services/api';
+import { updateProvider, testProvider } from '../../services/api';
+
+const SSH_INFO = {
+  ollama: {
+    port: 11434,
+    default_url: 'http://host.docker.internal:11434/v1',
+    label: 'Ollama',
+  },
+  lmstudio: {
+    port: 1234,
+    default_url: 'http://host.docker.internal:1234/v1',
+    label: 'LM Studio',
+  },
+};
 
 const PROVIDER_ORDER = ['openrouter', 'ollama', 'lmstudio'];
 
@@ -8,6 +21,8 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
   const [editState, setEditState] = useState({});
   const [showKeys, setShowKeys] = useState({});
   const [saving, setSaving] = useState({});
+  const [testing, setTesting] = useState({});
+  const [testResult, setTestResult] = useState({});
   const [message, setMessage] = useState('');
 
   function getEdit(pid) {
@@ -43,6 +58,21 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
     onProvidersChange();
   }
 
+  async function handleTest(pid) {
+    const edit = getEdit(pid);
+    const base_url = edit.base_url || providers[pid]?.base_url || '';
+    const api_key = edit.api_key || '';
+    if (!base_url) {
+      setTestResult(prev => ({ ...prev, [pid]: { success: false, error: 'Keine Base URL konfiguriert' } }));
+      return;
+    }
+    setTesting(prev => ({ ...prev, [pid]: true }));
+    setTestResult(prev => ({ ...prev, [pid]: null }));
+    const result = await testProvider(base_url, api_key);
+    setTesting(prev => ({ ...prev, [pid]: false }));
+    setTestResult(prev => ({ ...prev, [pid]: result }));
+  }
+
   async function handleSave(pid) {
     setSaving(prev => ({ ...prev, [pid]: true }));
     const edit = getEdit(pid);
@@ -71,6 +101,9 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
         const edit = getEdit(pid);
         const isExpanded = expanded[pid];
         const isSaving = saving[pid];
+        const isTesting = testing[pid];
+        const tResult = testResult[pid];
+        const sshInfo = SSH_INFO[pid];
 
         return (
           <div key={pid} className="provider-card">
@@ -131,9 +164,42 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
                     </div>
                     <small>Nur ausfüllen um den gespeicherten Key zu ändern</small>
                   </label>
-                  <button className="btn-save" onClick={() => handleSave(pid)} disabled={isSaving}>
-                    {isSaving ? 'Speichere...' : 'Speichern'}
-                  </button>
+                  {sshInfo && (
+                    <div className="provider-ssh-info">
+                      <strong>SSH-Tunnel (von Zuhause zum Server)</strong>
+                      <p>
+                        Falls {sshInfo.label} auf deinem lokalen Rechner läuft, kannst du es per
+                        SSH-Reverse-Tunnel für den Server erreichbar machen. Führe diesen Befehl
+                        auf deinem <em>lokalen Rechner</em> aus:
+                      </p>
+                      <code>ssh -R {sshInfo.port}:localhost:{sshInfo.port} gh@37.27.196.80 -N</code>
+                      <p>
+                        Solange der Tunnel aktiv ist, trage als Base URL ein:
+                      </p>
+                      <code>{sshInfo.default_url}</code>
+                      <p className="provider-ssh-note">
+                        <code>host.docker.internal</code> zeigt vom Container auf den Server-Host,
+                        wo der SSH-Tunnel lauscht. <code>-N</code> öffnet nur den Tunnel ohne Shell.
+                        Für einen dauerhaften Tunnel empfiehlt sich <code>autossh</code>.
+                      </p>
+                    </div>
+                  )}
+                  <div className="provider-action-row">
+                    <button className="btn-save" onClick={() => handleSave(pid)} disabled={isSaving}>
+                      {isSaving ? 'Speichere...' : 'Speichern'}
+                    </button>
+                    <button className="btn-test-provider" onClick={() => handleTest(pid)} disabled={isTesting}>
+                      {isTesting ? 'Teste...' : 'Verbindung testen'}
+                    </button>
+                  </div>
+                  {tResult && (
+                    <div className={`provider-test-result ${tResult.success ? 'ok' : 'err'}`}>
+                      {tResult.success
+                        ? <>✓ Verbindung OK — {tResult.model_count} Modell{tResult.model_count !== 1 ? 'e' : ''} gefunden{tResult.models?.length ? `: ${tResult.models.join(', ')}` : ''}</>
+                        : <>✗ Fehler: {tResult.error}</>
+                      }
+                    </div>
+                  )}
                 </div>
               </div>
             )}
