@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.6] — 2026-02-25
+
+### UX-Verbesserungen
+
+- **Denk-Indikator**: Zeigt jetzt aktives Tool (z.B. `get_flights_nearby`) und Live-Lognachricht direkt hinter den drei Punkten an
+- **Kopieren-Button**: Jede Chat-Nachricht hat einen Kopieren-Button (zwei Quadrate) — base64-Bilder werden dabei durch `[Bild]` ersetzt
+- **Provider-Test**: Neben „Speichern" gibt es bei jedem Provider einen „Verbindung testen"-Button der die Modellliste abruft (Anzahl + Namen)
+- **SSH-Tunnel-Guide**: In den Einstellungen bei Ollama und LM Studio erscheint eine Anleitung zum SSH-Reverse-Tunnel inkl. dynamisch ermittelter Server-IP (via ipify.org) und vollständiger sshd_config-Voraussetzungen (`AllowTcpForwarding yes`, `GatewayPorts yes`)
+- **Agenten-Formular**: Feldbezeichnungen (Name, Kurzbeschreibung, System-Prompt) stehen jetzt sichtbar über den Eingabefeldern
+- **LLM-Kontext**: base64-Bilder aus eigenen Nachrichten werden vor dem Senden an das LLM entfernt (reduziert Token-Verbrauch)
+
+---
+
 ## [1.3.5] — 2026-02-25
 
 ### Flugkarte (`get_flights_nearby` + `show_map`)

@@ -48,6 +48,9 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **Externe MCP-Server**: beliebige stdio-basierte MCP-Server anbindbar
 - **Tool-Router**: automatische Vorauswahl relevanter Tools pro Anfrage
 - **Light/Dark Theme**: umschaltbar per Button in der Titelleiste, Auswahl wird gespeichert
+- **Kopieren-Button**: Jede Nachricht hat ein Kopieren-Icon (Zwischenablage)
+- **Live Tool-Anzeige**: Während Guenther denkt, wird das aktive Tool + Log-Status neben den Punkten angezeigt
+- **SSH-Tunnel-Guide**: Anleitung in Provider-Einstellungen für Ollama/LM Studio (Reverse-Tunnel vom Heimrechner zum Server)
 
 ---
 
@@ -292,6 +295,9 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **External MCP servers**: connect any stdio-based MCP server
 - **Tool router**: automatic pre-selection of relevant tools per request
 - **Light/Dark Theme**: toggle via button in the title bar, preference is saved
+- **Copy button**: every message has a copy icon (clipboard)
+- **Live tool display**: while Guenther is thinking, the active tool + log status is shown next to the typing dots
+- **SSH tunnel guide**: instructions in provider settings for Ollama/LM Studio (reverse tunnel from home machine to server)
 
 ---
 

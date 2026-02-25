@@ -189,6 +189,11 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
                         wo der SSH-Tunnel lauscht. <code>-N</code> öffnet nur den Tunnel ohne Shell.
                         Für einen dauerhaften Tunnel empfiehlt sich <code>autossh</code>.
                       </p>
+                      <strong style={{marginTop: '12px'}}>Voraussetzung: SSH-Server konfigurieren</strong>
+                      <p>Damit der Reverse-Tunnel funktioniert, muss auf dem Server <code>/etc/ssh/sshd_config</code> folgendes enthalten:</p>
+                      <code>AllowTcpForwarding yes{'\n'}GatewayPorts yes</code>
+                      <p><code>GatewayPorts yes</code> ist nötig, damit der weitergeleitete Port nicht nur auf <code>127.0.0.1</code> des Servers lauscht, sondern auch vom Docker-Container erreichbar ist. Danach SSH-Dienst neu starten:</p>
+                      <code>sudo systemctl restart sshd</code>
                     </div>
                   )}
                   <div className="provider-action-row">
