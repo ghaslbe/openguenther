@@ -89,7 +89,11 @@ def _render_map(center_lat: float, center_lon: float, radius_km: float, flights:
     grounded = [f for f in flights if f.get("am_boden", False)]
     log(f"Karte: Zoom {zoom}, {len(airborne)} fliegend, {len(grounded)} am Boden")
 
-    m = StaticMap(900, 900, url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png")
+    m = StaticMap(
+        900, 900,
+        url_template="https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        headers={"User-Agent": "OpenGuenther/1.0 (https://openguenther.de)"}
+    )
 
     # Mittelpunkt (rot)
     m.add_marker(CircleMarker((center_lon, center_lat), "#ff3333", 14))
