@@ -105,6 +105,34 @@ def test_provider():
         return jsonify({'success': False, 'error': str(e)})
 
 
+@settings_bp.route('/api/providers/<provider_id>/models', methods=['GET'])
+def get_provider_models(provider_id):
+    import requests as req
+    settings = get_settings()
+    pcfg = settings.get('providers', {}).get(provider_id, {})
+    base_url = (pcfg.get('base_url') or '').rstrip('/')
+    api_key = pcfg.get('api_key', '')
+
+    if not base_url:
+        return jsonify({'success': False, 'error': 'Keine Base URL konfiguriert'})
+
+    headers = {'Content-Type': 'application/json'}
+    if api_key:
+        headers['Authorization'] = f'Bearer {api_key}'
+
+    try:
+        resp = req.get(f'{base_url}/models', headers=headers, timeout=8)
+        if resp.status_code == 200:
+            body = resp.json()
+            models = body.get('data') or body.get('models') or []
+            names = [m.get('id') or m.get('name') or str(m) for m in models]
+            return jsonify({'success': True, 'models': names})
+        else:
+            return jsonify({'success': False, 'error': f'HTTP {resp.status_code}'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
 @settings_bp.route('/api/providers/<provider_id>', methods=['PUT'])
 def update_provider(provider_id):
     data = request.get_json()

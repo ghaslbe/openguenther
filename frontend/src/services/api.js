@@ -149,6 +149,11 @@ export async function testProvider(base_url, api_key = '') {
   return res.json();
 }
 
+export async function fetchProviderModels(providerId) {
+  const res = await fetch(`${BASE}/api/providers/${providerId}/models`);
+  return res.json();
+}
+
 export async function updateProvider(providerId, data) {
   const res = await fetch(`${BASE}/api/providers/${providerId}`, {
     method: 'PUT',

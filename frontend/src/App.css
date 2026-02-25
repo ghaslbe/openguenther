@@ -882,6 +882,19 @@ html, body, #root {
   white-space: nowrap;
 }
 
+.btn-load-models {
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.btn-load-models:hover { background: var(--bg-hover); color: var(--text-primary); }
+.btn-load-models:disabled { opacity: 0.5; cursor: default; }
+
 .btn-close {
   background: transparent;
   border: none;

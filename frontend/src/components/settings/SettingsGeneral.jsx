@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchSettings, updateSettings } from '../../services/api';
+import { fetchSettings, updateSettings, fetchProviderModels } from '../../services/api';
 
 export default function SettingsGeneral({ providers }) {
   const [model, setModel] = useState('openai/gpt-4o-mini');
@@ -14,6 +14,9 @@ export default function SettingsGeneral({ providers }) {
   const [llmTimeout, setLlmTimeout] = useState('120');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [availableModels, setAvailableModels] = useState([]);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [modelsError, setModelsError] = useState('');
 
   useEffect(() => {
     loadSettings();
@@ -29,6 +32,20 @@ export default function SettingsGeneral({ providers }) {
     setOpenaiKeyMasked(s.openai_api_key_masked || '');
     setUseWhisper(s.use_openai_whisper || false);
     setLlmTimeout(String(s.llm_timeout ?? 120));
+  }
+
+  async function handleLoadModels() {
+    setLoadingModels(true);
+    setModelsError('');
+    setAvailableModels([]);
+    const result = await fetchProviderModels(defaultProvider);
+    setLoadingModels(false);
+    if (result.success) {
+      setAvailableModels(result.models || []);
+      if (!result.models?.length) setModelsError('Keine Modelle gefunden');
+    } else {
+      setModelsError(result.error || 'Fehler beim Laden');
+    }
   }
 
   async function handleSave() {
@@ -72,12 +89,35 @@ export default function SettingsGeneral({ providers }) {
         </label>
         <label>
           Standard-Modell
-          <input
-            type="text"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            placeholder="openai/gpt-4o-mini"
-          />
+          <div className="input-group">
+            <input
+              type="text"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder="openai/gpt-4o-mini"
+            />
+            <button
+              type="button"
+              className="btn-load-models"
+              onClick={handleLoadModels}
+              disabled={loadingModels}
+            >
+              {loadingModels ? '...' : 'Laden'}
+            </button>
+          </div>
+          {modelsError && <small style={{ color: 'var(--accent-red, #e05252)' }}>{modelsError}</small>}
+          {availableModels.length > 0 && (
+            <select
+              className="settings-select"
+              value=""
+              onChange={(e) => { if (e.target.value) setModel(e.target.value); }}
+            >
+              <option value="">— Modell aus Liste wählen —</option>
+              {availableModels.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          )}
           <small>z.B. openai/gpt-4o, anthropic/claude-3.5-sonnet, llama3.2 — je nach Provider</small>
         </label>
         <label>
