@@ -63,6 +63,11 @@ def haversine(lat1, lon1, lat2, lon2):
 
 def _render_map(center_lat: float, center_lon: float, radius_km: float, flights: list) -> str:
     """Rendert eine OSM-Karte mit Flugzeug-Markierungen. Gibt base64-PNG zurück."""
+    # Pillow 10+ hat Image.ANTIALIAS entfernt — staticmap 0.5.5 braucht es noch
+    import PIL.Image
+    if not hasattr(PIL.Image, "ANTIALIAS"):
+        PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
+
     from staticmap import StaticMap, CircleMarker
 
     # Zoom-Level aus Radius ableiten
