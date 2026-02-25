@@ -122,7 +122,7 @@ function CopyButton({ text, align }) {
   );
 }
 
-export default function ChatWindow({ messages, onSendMessage, isLoading, currentTool, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
+export default function ChatWindow({ messages, onSendMessage, isLoading, currentTool, currentToolLog, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [attachedFile, setAttachedFile] = useState(null); // {name, content}
@@ -230,8 +230,11 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, current
             <div className="message-content">
               <div className="typing-indicator">
                 <span></span><span></span><span></span>
-                {currentTool && (
-                  <span className="typing-tool-name">{currentTool}</span>
+                {(currentTool || currentToolLog) && (
+                  <div className="typing-tool-info">
+                    {currentTool && <span className="typing-tool-name">{currentTool}</span>}
+                    {currentToolLog && <span className="typing-tool-log">{currentToolLog}</span>}
+                  </div>
                 )}
               </div>
             </div>

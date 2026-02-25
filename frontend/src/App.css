@@ -317,6 +317,7 @@ html, body, #root {
   display: flex;
   gap: 4px;
   padding: 4px 0;
+  align-items: center;
 }
 
 .typing-indicator span {
@@ -340,20 +341,41 @@ html, body, #root {
   30% { opacity: 1; transform: scale(1); }
 }
 
+.typing-tool-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 10px;
+  min-width: 0;
+}
+
 .typing-indicator .typing-tool-name {
   width: auto;
   height: auto;
   border-radius: 0;
   background: none;
   animation: none;
-  opacity: 0.6;
+  opacity: 0.9;
   font-size: 11px;
   font-family: 'Courier New', monospace;
   color: var(--accent);
-  margin-left: 8px;
-  align-self: center;
   letter-spacing: 0.3px;
   white-space: nowrap;
+}
+
+.typing-indicator .typing-tool-log {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  animation: none;
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 340px;
 }
 
 /* Copy button */
