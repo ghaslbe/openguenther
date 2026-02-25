@@ -19,10 +19,10 @@ TOOL_DEFINITION = {
     "description": (
         "Zeigt aktuelle Flugzeuge in der Nähe von Geokoordinaten (live ADS-B Daten). "
         "Gibt Rufzeichen, Herkunftsland, Höhe, Geschwindigkeit und Kurs zurück. "
-        "Kann optional eine Karte als Bild ausgeben (show_map: true). "
+        "Mit show_map=true wird eine OpenStreetMap-Karte mit allen Flugzeugen als Bild ausgegeben — "
+        "IMMER show_map=true setzen wenn der Nutzer eine Karte sehen möchte. "
         "Nutzt OpenSky Network — kostenlos, kein API-Key nötig. "
-        "Tipp: Erst geocode_location aufrufen, um Koordinaten einer PLZ oder Stadt zu ermitteln, "
-        "dann diese Funktion mit den Koordinaten verwenden."
+        "Tipp: Erst geocode_location aufrufen, um Koordinaten einer PLZ oder Stadt zu ermitteln."
     ),
     "input_schema": {
         "type": "object",
@@ -45,7 +45,7 @@ TOOL_DEFINITION = {
             },
             "show_map": {
                 "type": "boolean",
-                "description": "Karte mit eingezeichneten Flugzeugen als Bild ausgeben (Standard: false)"
+                "description": "true = Karte mit Flugzeugen als PNG ausgeben. Setze dies auf true wenn der Nutzer eine Karte möchte."
             }
         },
         "required": ["latitude", "longitude"]
@@ -61,8 +61,9 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
-def _render_map(center_lat: float, center_lon: float, radius_km: float, flights: list) -> str:
+def _render_map(center_lat: float, center_lon: float, radius_km: float, flights: list, log) -> str:
     """Rendert eine OSM-Karte mit Flugzeug-Markierungen. Gibt base64-PNG zurück."""
+
     # Pillow 10+ hat Image.ANTIALIAS entfernt — staticmap 0.5.5 braucht es noch
     import PIL.Image
     if not hasattr(PIL.Image, "ANTIALIAS"):
@@ -84,30 +85,33 @@ def _render_map(center_lat: float, center_lon: float, radius_km: float, flights:
     else:
         zoom = 11
 
+    airborne = [f for f in flights if not f.get("am_boden", False)]
+    grounded = [f for f in flights if f.get("am_boden", False)]
+    log(f"Karte: Zoom {zoom}, {len(airborne)} fliegend, {len(grounded)} am Boden")
+
     m = StaticMap(900, 900, url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png")
 
-    # Mittelpunkt (rot, größer)
+    # Mittelpunkt (rot)
     m.add_marker(CircleMarker((center_lon, center_lat), "#ff3333", 14))
     m.add_marker(CircleMarker((center_lon, center_lat), "white", 6))
 
-    # Flugzeuge (blau, mit Richtungsindikator wenn Track bekannt)
+    # Flugzeuge
     for f in flights:
         lat = f["koordinaten"]["lat"]
         lon = f["koordinaten"]["lon"]
-        on_ground = f.get("am_boden", False)
-        color = "#888888" if on_ground else "#1a88ff"
+        color = "#888888" if f.get("am_boden", False) else "#1a88ff"
         m.add_marker(CircleMarker((lon, lat), "white", 12))
         m.add_marker(CircleMarker((lon, lat), color, 9))
 
+    log("OSM-Tiles werden geladen...")
     image = m.render(zoom=zoom)
+    log(f"Tiles geladen, Bildgröße: {image.size[0]}x{image.size[1]}px")
 
-    # Callsigns als Text einzeichnen (mit Pillow)
+    # Callsigns als Text einzeichnen
     try:
-        from PIL import ImageDraw, ImageFont
+        from PIL import ImageDraw
         draw = ImageDraw.Draw(image)
 
-        # Koordinaten → Pixel-Position (grobe Näherung via staticmap-Projektion)
-        # staticmap zentriert das Bild auf center_lat/lon bei gegebenem Zoom
         def deg_to_tile(lat, lon, z):
             n = 2 ** z
             x = (lon + 180) / 360 * n
@@ -117,6 +121,7 @@ def _render_map(center_lat: float, center_lon: float, radius_km: float, flights:
         cx, cy = deg_to_tile(center_lat, center_lon, zoom)
         tile_size = 256
         img_w, img_h = image.size
+        labeled = 0
 
         for f in flights:
             lat = f["koordinaten"]["lat"]
@@ -127,13 +132,17 @@ def _render_map(center_lat: float, center_lon: float, radius_km: float, flights:
 
             callsign = f.get("callsign", "")
             if callsign and callsign != "unbekannt" and 0 < px < img_w and 0 < py < img_h:
-                # Weißer Hintergrund für Lesbarkeit
                 draw.text((px + 8, py - 8), callsign, fill="black", stroke_width=2, stroke_fill="white")
-    except Exception:
-        pass  # Text-Overlay optional, kein harter Fehler
+                labeled += 1
+
+        log(f"{labeled} Callsigns beschriftet")
+    except Exception as e:
+        log(f"Callsign-Beschriftung übersprungen: {e}")
 
     buf = io.BytesIO()
     image.save(buf, format="PNG")
+    size_kb = len(buf.getvalue()) // 1024
+    log(f"PNG kodiert: {size_kb} KB")
     return base64.b64encode(buf.getvalue()).decode()
 
 
@@ -149,43 +158,43 @@ def get_flights_nearby(latitude: float, longitude: float,
     radius_km = min(float(radius_km), 500)
     max_results = min(int(max_results), 50)
 
-    # Bounding box aus Radius berechnen (1° Breitengrad ≈ 111 km)
     lat_delta = radius_km / 111.0
     lon_delta = radius_km / (111.0 * abs(math.cos(math.radians(latitude))) or 0.001)
 
-    lamin = latitude - lat_delta
-    lamax = latitude + lat_delta
-    lomin = longitude - lon_delta
-    lomax = longitude + lon_delta
-
-    log(f"Flüge abrufen bei {latitude:.4f}, {longitude:.4f} (Radius: {radius_km} km)")
+    log(f"[Flüge] Abfrage: {latitude:.4f}, {longitude:.4f} | Radius: {radius_km:.0f} km | Karte: {'ja' if show_map else 'nein'}")
 
     params = {
-        "lamin": round(lamin, 4),
-        "lamax": round(lamax, 4),
-        "lomin": round(lomin, 4),
-        "lomax": round(lomax, 4),
+        "lamin": round(latitude - lat_delta, 4),
+        "lamax": round(latitude + lat_delta, 4),
+        "lomin": round(longitude - lon_delta, 4),
+        "lomax": round(longitude + lon_delta, 4),
     }
 
-    headers = {"User-Agent": "OpenGuenther/1.0 (MCP flights tool)"}
+    log(f"[Flüge] OpenSky abrufen (Bounding Box: {params['lamin']:.2f}–{params['lamax']:.2f} lat, {params['lomin']:.2f}–{params['lomax']:.2f} lon)...")
 
     try:
-        resp = requests.get(OPENSKY_URL, params=params, headers=headers, timeout=15)
+        resp = requests.get(OPENSKY_URL, params=params,
+                            headers={"User-Agent": "OpenGuenther/1.0"},
+                            timeout=15)
         if resp.status_code == 429:
+            log("[Flüge] Rate-Limit erreicht (429)")
             return {"error": "OpenSky Rate-Limit erreicht. Bitte kurz warten und erneut versuchen."}
         resp.raise_for_status()
         data = resp.json()
     except Exception as e:
+        log(f"[Flüge] Fehler: {e}")
         return {"error": f"OpenSky-Fehler: {e}"}
 
     states = data.get("states") or []
+    log(f"[Flüge] {len(states)} Rohdatensätze empfangen")
+
     if not states:
         return {
             "koordinaten": {"lat": latitude, "lon": longitude},
             "radius_km": radius_km,
             "anzahl": 0,
             "flugzeuge": [],
-            "hinweis": "Keine Flugzeuge in diesem Bereich gefunden (oder keine aktuellen Daten)."
+            "hinweis": "Keine Flugzeuge in diesem Bereich gefunden."
         }
 
     flights = []
@@ -238,7 +247,8 @@ def get_flights_nearby(latitude: float, longitude: float,
     flights.sort(key=lambda x: x[0])
     flights = [f[1] for f in flights[:max_results]]
 
-    log(f"{len(flights)} Flugzeuge gefunden (von {len(states)} in Bounding Box)")
+    airborne_count = sum(1 for f in flights if not f.get("am_boden", False))
+    log(f"[Flüge] {len(flights)} Flugzeuge ({airborne_count} fliegend, {len(flights) - airborne_count} am Boden)")
 
     result = {
         "koordinaten": {"lat": latitude, "lon": longitude},
@@ -247,14 +257,17 @@ def get_flights_nearby(latitude: float, longitude: float,
         "flugzeuge": flights
     }
 
-    if show_map and flights:
-        log("Karte wird gerendert (OSM-Tiles)...")
-        try:
-            result["image_base64"] = _render_map(latitude, longitude, radius_km, flights)
-            result["mime_type"] = "image/png"
-            log("Karte fertig.")
-        except Exception as e:
-            result["map_fehler"] = f"Karte konnte nicht erstellt werden: {e}"
-            log(f"Karten-Fehler: {e}")
+    if show_map:
+        if not flights:
+            log("[Karte] Keine Flugzeuge zum Einzeichnen")
+        else:
+            log("[Karte] Rendering startet...")
+            try:
+                result["image_base64"] = _render_map(latitude, longitude, radius_km, flights, log)
+                result["mime_type"] = "image/png"
+                log("[Karte] Fertig — wird im Chat angezeigt")
+            except Exception as e:
+                result["map_fehler"] = f"Karte konnte nicht erstellt werden: {e}"
+                log(f"[Karte] FEHLER: {e}")
 
     return result
