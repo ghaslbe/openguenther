@@ -212,6 +212,12 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
                       }
                     </div>
                   )}
+                  {pid === 'openrouter' && (
+                    <div className="provider-help-links">
+                      <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener noreferrer">API Keys bei OpenRouter</a>
+                      <a href="https://openrouter.ai/settings/credits" target="_blank" rel="noopener noreferrer">Verbrauch bei OpenRouter</a>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

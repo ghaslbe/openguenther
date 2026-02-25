@@ -1040,6 +1040,20 @@ html, body, #root {
   user-select: text;
 }
 
+.provider-help-links {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.provider-help-links a {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  opacity: 0.85;
+}
+.provider-help-links a:hover { opacity: 1; text-decoration: underline; }
+
 .btn-reload-mcp {
   width: 100%;
   background: transparent;

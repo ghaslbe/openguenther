@@ -11,7 +11,7 @@ import SettingsAgents from './settings/SettingsAgents';
 const NAV_ITEMS = [
   { id: 'general',   label: 'Allgemein' },
   { id: 'agents',    label: 'Agenten' },
-  { id: 'providers', label: 'Provider' },
+  { id: 'providers', label: 'LLM Provider' },
   { id: 'tools',     label: 'MCP Tools' },
   { id: 'mcp',       label: 'MCP Server' },
   { id: 'telegram',  label: 'Telegram' },
