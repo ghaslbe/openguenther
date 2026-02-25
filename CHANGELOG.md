@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.5] — 2026-02-25
+
+### Flugkarte (`get_flights_nearby` + `show_map`)
+- Neuer optionaler Parameter `show_map: true` in `get_flights_nearby`
+- Rendert eine OpenStreetMap-Karte mit allen Flugzeugen als PNG (kein API-Key nötig)
+- Roter Punkt = Suchmittelpunkt, blaue Punkte = Flugzeuge in der Luft, graue Punkte = am Boden
+- Callsigns werden direkt auf der Karte beschriftet
+- Zoom-Level wird automatisch aus dem Suchradius berechnet
+- Nutzt `staticmap` Bibliothek (OSM-Tile-Server)
+
+---
+
 ## [1.3.4] — 2026-02-25
 
 ### Callsign-Tool (`resolve_callsign`)

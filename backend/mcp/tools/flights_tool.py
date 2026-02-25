@@ -1,3 +1,6 @@
+import io
+import math
+import base64
 import requests
 from services.tool_context import get_emit_log
 
@@ -16,6 +19,7 @@ TOOL_DEFINITION = {
     "description": (
         "Zeigt aktuelle Flugzeuge in der Nähe von Geokoordinaten (live ADS-B Daten). "
         "Gibt Rufzeichen, Herkunftsland, Höhe, Geschwindigkeit und Kurs zurück. "
+        "Kann optional eine Karte als Bild ausgeben (show_map: true). "
         "Nutzt OpenSky Network — kostenlos, kein API-Key nötig. "
         "Tipp: Erst geocode_location aufrufen, um Koordinaten einer PLZ oder Stadt zu ermitteln, "
         "dann diese Funktion mit den Koordinaten verwenden."
@@ -38,6 +42,10 @@ TOOL_DEFINITION = {
             "max_results": {
                 "type": "integer",
                 "description": "Maximale Anzahl zurückgegebener Flugzeuge (Standard: 20, Max: 50)"
+            },
+            "show_map": {
+                "type": "boolean",
+                "description": "Karte mit eingezeichneten Flugzeugen als Bild ausgeben (Standard: false)"
             }
         },
         "required": ["latitude", "longitude"]
@@ -45,8 +53,88 @@ TOOL_DEFINITION = {
 }
 
 
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def _render_map(center_lat: float, center_lon: float, radius_km: float, flights: list) -> str:
+    """Rendert eine OSM-Karte mit Flugzeug-Markierungen. Gibt base64-PNG zurück."""
+    from staticmap import StaticMap, CircleMarker
+
+    # Zoom-Level aus Radius ableiten
+    if radius_km > 400:
+        zoom = 6
+    elif radius_km > 200:
+        zoom = 7
+    elif radius_km > 100:
+        zoom = 8
+    elif radius_km > 50:
+        zoom = 9
+    elif radius_km > 20:
+        zoom = 10
+    else:
+        zoom = 11
+
+    m = StaticMap(900, 900, url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png")
+
+    # Mittelpunkt (rot, größer)
+    m.add_marker(CircleMarker((center_lon, center_lat), "#ff3333", 14))
+    m.add_marker(CircleMarker((center_lon, center_lat), "white", 6))
+
+    # Flugzeuge (blau, mit Richtungsindikator wenn Track bekannt)
+    for f in flights:
+        lat = f["koordinaten"]["lat"]
+        lon = f["koordinaten"]["lon"]
+        on_ground = f.get("am_boden", False)
+        color = "#888888" if on_ground else "#1a88ff"
+        m.add_marker(CircleMarker((lon, lat), "white", 12))
+        m.add_marker(CircleMarker((lon, lat), color, 9))
+
+    image = m.render(zoom=zoom)
+
+    # Callsigns als Text einzeichnen (mit Pillow)
+    try:
+        from PIL import ImageDraw, ImageFont
+        draw = ImageDraw.Draw(image)
+
+        # Koordinaten → Pixel-Position (grobe Näherung via staticmap-Projektion)
+        # staticmap zentriert das Bild auf center_lat/lon bei gegebenem Zoom
+        def deg_to_tile(lat, lon, z):
+            n = 2 ** z
+            x = (lon + 180) / 360 * n
+            y = (1 - math.log(math.tan(math.radians(lat)) + 1 / math.cos(math.radians(lat))) / math.pi) / 2 * n
+            return x, y
+
+        cx, cy = deg_to_tile(center_lat, center_lon, zoom)
+        tile_size = 256
+        img_w, img_h = image.size
+
+        for f in flights:
+            lat = f["koordinaten"]["lat"]
+            lon = f["koordinaten"]["lon"]
+            tx, ty = deg_to_tile(lat, lon, zoom)
+            px = int((tx - cx) * tile_size + img_w / 2)
+            py = int((ty - cy) * tile_size + img_h / 2)
+
+            callsign = f.get("callsign", "")
+            if callsign and callsign != "unbekannt" and 0 < px < img_w and 0 < py < img_h:
+                # Weißer Hintergrund für Lesbarkeit
+                draw.text((px + 8, py - 8), callsign, fill="black", stroke_width=2, stroke_fill="white")
+    except Exception:
+        pass  # Text-Overlay optional, kein harter Fehler
+
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode()
+
+
 def get_flights_nearby(latitude: float, longitude: float,
-                       radius_km: float = 100, max_results: int = 20) -> dict:
+                       radius_km: float = 100, max_results: int = 20,
+                       show_map: bool = False) -> dict:
     emit_log = get_emit_log()
 
     def log(msg):
@@ -58,7 +146,7 @@ def get_flights_nearby(latitude: float, longitude: float,
 
     # Bounding box aus Radius berechnen (1° Breitengrad ≈ 111 km)
     lat_delta = radius_km / 111.0
-    lon_delta = radius_km / (111.0 * abs(__import__('math').cos(__import__('math').radians(latitude))) or 0.001)
+    lon_delta = radius_km / (111.0 * abs(math.cos(math.radians(latitude))) or 0.001)
 
     lamin = latitude - lat_delta
     lamax = latitude + lat_delta
@@ -74,9 +162,7 @@ def get_flights_nearby(latitude: float, longitude: float,
         "lomax": round(lomax, 4),
     }
 
-    headers = {
-        "User-Agent": "OpenGuenther/1.0 (MCP flights tool)"
-    }
+    headers = {"User-Agent": "OpenGuenther/1.0 (MCP flights tool)"}
 
     try:
         resp = requests.get(OPENSKY_URL, params=params, headers=headers, timeout=15)
@@ -96,16 +182,6 @@ def get_flights_nearby(latitude: float, longitude: float,
             "flugzeuge": [],
             "hinweis": "Keine Flugzeuge in diesem Bereich gefunden (oder keine aktuellen Daten)."
         }
-
-    # Flugzeuge nach Entfernung sortieren
-    import math
-
-    def haversine(lat1, lon1, lat2, lon2):
-        R = 6371
-        dlat = math.radians(lat2 - lat1)
-        dlon = math.radians(lon2 - lon1)
-        a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
-        return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
     flights = []
     for s in states:
@@ -159,9 +235,21 @@ def get_flights_nearby(latitude: float, longitude: float,
 
     log(f"{len(flights)} Flugzeuge gefunden (von {len(states)} in Bounding Box)")
 
-    return {
+    result = {
         "koordinaten": {"lat": latitude, "lon": longitude},
         "radius_km": radius_km,
         "anzahl": len(flights),
         "flugzeuge": flights
     }
+
+    if show_map and flights:
+        log("Karte wird gerendert (OSM-Tiles)...")
+        try:
+            result["image_base64"] = _render_map(latitude, longitude, radius_km, flights)
+            result["mime_type"] = "image/png"
+            log("Karte fertig.")
+        except Exception as e:
+            result["map_fehler"] = f"Karte konnte nicht erstellt werden: {e}"
+            log(f"Karten-Fehler: {e}")
+
+    return result
