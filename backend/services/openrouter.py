@@ -20,7 +20,7 @@ Antworte auf Deutsch, es sei denn, der Benutzer schreibt in einer anderen Sprach
 Sei praezise und hilfreich."""
 
 
-def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini', temperature=0.5, base_url=None, timeout=120):
+def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini', temperature=0.5, base_url=None, timeout=120, provider_name='OpenRouter'):
     if base_url is None:
         url = OPENROUTER_API_URL
     elif base_url.endswith('/chat/completions'):
@@ -67,7 +67,7 @@ def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'
             error_code = response.status_code
 
         raise requests.HTTPError(
-            f"OpenRouter {error_code}: {error_msg}",
+            f"{provider_name} {error_code}: {error_msg}",
             response=response
         )
 
@@ -138,7 +138,7 @@ def generate_image(prompt, api_key, model, aspect_ratio="1:1", timeout=120, emit
         except Exception:
             msg = response.text or response.reason
         _log({"type": "text", "message": f"[FEHLER] HTTP {response.status_code}: {msg}"})
-        raise requests.HTTPError(f"OpenRouter {response.status_code}: {msg}", response=response)
+        raise requests.HTTPError(f"LLM {response.status_code}: {msg}", response=response)
 
     data = response.json()
 

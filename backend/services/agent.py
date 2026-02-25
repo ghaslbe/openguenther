@@ -220,7 +220,8 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
     while iteration < max_iterations:
         iteration += 1
         emit_log({"type": "header", "message": f"ITERATION {iteration}"})
-        emit_log({"type": "text", "message": f"[{_ts()}] Sende Anfrage an OpenRouter..."})
+        provider_display = provider_cfg.get('name') or provider_id
+        emit_log({"type": "text", "message": f"[{_ts()}] Sende Anfrage an {provider_display}..."})
 
         # ── Log: Full API Request ──
         # Build the payload like openrouter.py does
@@ -237,7 +238,7 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
         emit_log({"type": "json", "label": "payload", "data": request_payload})
 
         try:
-            response = call_openrouter(messages, tools if tools else None, api_key, model, temperature, base_url=base_url, timeout=llm_timeout)
+            response = call_openrouter(messages, tools if tools else None, api_key, model, temperature, base_url=base_url, timeout=llm_timeout, provider_name=provider_display)
         except Exception as e:
             error_msg = f"Fehler bei LLM-Anfrage: {str(e)}"
             emit_log({"type": "text", "message": f"[{_ts()}] FEHLER: {error_msg}"})
