@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.4] — 2026-02-25
+
+### Callsign-Tool (`resolve_callsign`)
+- Neues Built-in MCP Tool: Flugzeug-Rufzeichen auflösen (z.B. `DLH1MH` → Lufthansa)
+- Airline-Lookup via OpenFlights `airlines.dat` (ICAO-Code → Name, Land, IATA, Rufzeichen-Klartextname) — gecacht in `/app/data/`
+- Live-Daten via adsb.one (kein API-Key): Position, Höhe, Geschwindigkeit, Kurs, Squawk — falls Flugzeug gerade in der Luft
+- Graceful Fallback wenn Flugzeug am Boden oder Callsign unbekannt
+
+---
+
 ## [1.3.3] — 2026-02-25
 
 ### Geocoding-Tool (`geocode_location`)

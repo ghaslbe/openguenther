@@ -233,6 +233,7 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 | Tool | Beschreibung |
 |------|-------------|
 | `get_stock_price` | Aktienkurs, Tagesveränderung, Kennzahlen via Yahoo Finance (kein API-Key) |
+| `resolve_callsign` | Flugzeug-Rufzeichen auflösen: Airline-Name via OpenFlights + Live-Daten via adsb.one (kein API-Key) |
 | `geocode_location` | Geokoordinaten für PLZ, Ortsnamen oder Adressen via OpenStreetMap Nominatim (kein API-Key) |
 | `get_flights_nearby` | Live-Flugzeuge in der Nähe von Koordinaten via OpenSky Network ADS-B (kein API-Key) |
 | `get_weather` | Wetter & Vorhersage via Open-Meteo (kein API-Key) |
@@ -476,6 +477,7 @@ Data is stored persistently in a Docker volume (`/app/data`).
 | Tool | Description |
 |------|-------------|
 | `get_stock_price` | Stock price, daily change, key figures via Yahoo Finance (no API key needed) |
+| `resolve_callsign` | Resolve aircraft callsign: airline name via OpenFlights + live data via adsb.one (no API key) |
 | `geocode_location` | Geocoordinates for postal codes, place names or addresses via OpenStreetMap Nominatim (no API key) |
 | `get_flights_nearby` | Live aircraft near given coordinates via OpenSky Network ADS-B (no API key) |
 | `get_weather` | Weather & forecast via Open-Meteo (no API key needed) |

@@ -29,6 +29,7 @@ from mcp.tools.code_interpreter_tool import run_code, TOOL_DEFINITION as CODE_TO
 from mcp.tools.stock_tool import get_stock_price, TOOL_DEFINITION as STOCK_TOOL_DEF
 from mcp.tools.geocode_tool import geocode_location, TOOL_DEFINITION as GEOCODE_TOOL_DEF
 from mcp.tools.flights_tool import get_flights_nearby, TOOL_DEFINITION as FLIGHTS_TOOL_DEF
+from mcp.tools.callsign_tool import resolve_callsign, TOOL_DEFINITION as CALLSIGN_TOOL_DEF
 from mcp.manager import load_external_tools
 from services.agent import run_agent
 from services.telegram_gateway import TelegramGateway
@@ -185,6 +186,13 @@ registry.register(MCPTool(
     description=FLIGHTS_TOOL_DEF['description'],
     input_schema=FLIGHTS_TOOL_DEF['input_schema'],
     handler=get_flights_nearby
+))
+
+registry.register(MCPTool(
+    name=CALLSIGN_TOOL_DEF['name'],
+    description=CALLSIGN_TOOL_DEF['description'],
+    input_schema=CALLSIGN_TOOL_DEF['input_schema'],
+    handler=resolve_callsign
 ))
 
 
