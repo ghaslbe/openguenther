@@ -10,11 +10,17 @@ RUN npm run build
 FROM python:3.12-slim
 WORKDIR /app
 
-# Install system dependencies (fonts for Pillow text rendering, ImageMagick for image processing)
+# Install system dependencies (fonts, ImageMagick, WeasyPrint HTML→PDF)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     imagemagick \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libcairo2 \
+    libffi8 \
+    shared-mime-info \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies

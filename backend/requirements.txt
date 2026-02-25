@@ -7,3 +7,4 @@ Pillow==11.1.0
 qrcode[pil]==8.0
 yfinance>=0.2.40
 staticmap==0.5.5
+weasyprint

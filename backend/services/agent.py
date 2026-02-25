@@ -1,5 +1,6 @@
 import json
 import re
+import base64
 from datetime import datetime
 from services.openrouter import call_openrouter, SYSTEM_PROMPT
 from services.tool_context import set_emit_log
@@ -286,8 +287,12 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
 
                         # Check for HTML report
                         if isinstance(result, dict) and 'html_content' in result:
-                            collected_html.append(result['html_content'])
-                            simplified = {k: v for k, v in result.items() if k != 'html_content'}
+                            collected_html.append({
+                                'html_content': result['html_content'],
+                                'pdf_html': result.get('pdf_html', ''),
+                            })
+                            simplified = {k: v for k, v in result.items()
+                                          if k not in ('html_content', 'pdf_html')}
                             simplified['html_report'] = 'SEO-Report wird im Chat angezeigt.'
                             result_str = json.dumps(simplified, ensure_ascii=False)
                             emit_log({"type": "header", "message": f"TOOL RESULT: {tool_name}"})
@@ -360,8 +365,11 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
             emit_log({"type": "text", "message": content})
 
             # Append collected HTML reports
-            for html_b64 in collected_html:
-                content += f"\n\n[HTML_REPORT](data:text/html;base64,{html_b64})"
+            for report in collected_html:
+                content += f"\n\n[HTML_REPORT](data:text/html;base64,{report['html_content']})"
+                if report.get('pdf_html'):
+                    pdf_b64 = base64.b64encode(report['pdf_html'].encode('utf-8')).decode()
+                    content += f"\n\n[PDF_REPORT](data:text/html;base64,{pdf_b64})"
 
             # Append collected images
             for img in collected_images:

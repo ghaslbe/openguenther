@@ -91,6 +91,17 @@ class TelegramGateway:
             logger.error(f"Telegram sendPhoto error: {e}")
             return None
 
+    def _send_document(self, token, chat_id, file_bytes, filename, mime_type='application/pdf'):
+        url = TELEGRAM_API.format(token=token, method="sendDocument")
+        try:
+            files = {"document": (filename, io.BytesIO(file_bytes), mime_type)}
+            data = {"chat_id": chat_id}
+            r = http_requests.post(url, files=files, data=data, timeout=30)
+            return r.json()
+        except Exception as e:
+            logger.error(f"Telegram sendDocument error: {e}")
+            return None
+
     def _send_typing(self, token, chat_id):
         """Send a single typing action indicator."""
         self._api_post(token, "sendChatAction", chat_id=chat_id, action="typing")
@@ -426,6 +437,7 @@ class TelegramGateway:
 
             text_part, images = self._extract_images(response)
             text_part, audio_clips = self._extract_audio(text_part)
+            text_part, pdf_docs = self._extract_pdf_reports(text_part)
             clean = self._clean_text_for_telegram(text_part)
             if clean:
                 self._send_message(token, telegram_chat_id, clean)
@@ -433,6 +445,8 @@ class TelegramGateway:
                 self._send_photo(token, telegram_chat_id, img_bytes)
             for audio_bytes in audio_clips:
                 self._send_audio(token, telegram_chat_id, audio_bytes)
+            for pdf_bytes in pdf_docs:
+                self._send_document(token, telegram_chat_id, pdf_bytes, 'seo-report.pdf')
 
         except Exception as e:
             logger.error(f"Error processing Telegram message: {e}", exc_info=True)
@@ -478,6 +492,28 @@ class TelegramGateway:
         clean = re.sub(r'!\[audio\]\((data:audio/[^)]+)\)', replace_audio, text)
         clean = clean.strip()
         return clean, clips
+
+    def _extract_pdf_reports(self, text):
+        """Extract [PDF_REPORT](data:text/html;base64,...) markers, convert to PDF, return (clean_text, [pdf_bytes])."""
+        pdfs = []
+
+        def replace_pdf(m):
+            data_uri = m.group(1)
+            try:
+                b64_part = data_uri.split(",", 1)[1]
+                html_str = base64.b64decode(b64_part).decode('utf-8')
+                from weasyprint import HTML
+                pdf_bytes = HTML(string=html_str).write_pdf()
+                pdfs.append(pdf_bytes)
+            except Exception as e:
+                logger.warning(f"PDF conversion error: {e}")
+            return ""
+
+        clean = re.sub(r'\[PDF_REPORT\]\((data:text/html;base64,[^)]+)\)', replace_pdf, text)
+        # Also strip any leftover HTML_REPORT markers (already handled by iframe in web UI)
+        clean = re.sub(r'\[HTML_REPORT\]\((data:text/html;base64,[^)]+)\)', '', clean)
+        clean = clean.strip()
+        return clean, pdfs
 
     def _clean_text_for_telegram(self, text):
         if len(text) > 4096:

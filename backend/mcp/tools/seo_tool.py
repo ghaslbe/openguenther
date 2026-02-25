@@ -300,6 +300,76 @@ def _render_report(checks, score, title, source_label):
 </html>'''
 
 
+# ── PDF Report (light theme, WeasyPrint-compatible) ──────────────────────────
+
+def _render_report_pdf(checks, score, title, source_label):
+    ok = sum(1 for c in checks if c['status'] == 'ok')
+    warn = sum(1 for c in checks if c['status'] == 'warn')
+    err = sum(1 for c in checks if c['status'] == 'err')
+
+    color = '#2e7d32' if score >= 75 else '#e65100' if score >= 45 else '#c62828'
+
+    rows = ''
+    for c in checks:
+        icon = {'ok': '✓', 'warn': '⚠', 'err': '✗'}[c['status']]
+        bg = {'ok': '#f1f8f1', 'warn': '#fffbf0', 'err': '#fff4f4'}[c['status']]
+        ic = {'ok': '#2e7d32', 'warn': '#e65100', 'err': '#c62828'}[c['status']]
+        rows += f'''
+        <tr style="background:{bg};border-bottom:1px solid #e0e0e0;">
+          <td style="padding:8px 10px;width:28px;">
+            <span style="color:{ic};font-weight:700;">{icon}</span>
+          </td>
+          <td style="padding:8px 10px;font-weight:600;color:#212121;white-space:nowrap;font-size:12px;">{c["label"]}</td>
+          <td style="padding:8px 10px;color:#555;font-size:11px;word-break:break-all;">{c["value"]}</td>
+          <td style="padding:8px 10px;color:#666;font-size:11px;">{c["tip"]}</td>
+        </tr>'''
+
+    t = title[:70] if title else ''
+    return f'''<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page {{ margin: 1.5cm; size: A4; }}
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{ font-family: DejaVu Sans, sans-serif; font-size: 13px; color: #212121; background: #fff; }}
+  .header {{ border-bottom: 3px solid {color}; padding-bottom: 14px; margin-bottom: 18px; display: flex; align-items: center; gap: 20px; }}
+  .score-box {{ width: 70px; height: 70px; border: 5px solid {color}; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }}
+  .score-num {{ font-size: 24px; font-weight: 800; color: {color}; }}
+  h1 {{ font-size: 16px; color: #212121; margin-bottom: 4px; }}
+  .sub {{ font-size: 11px; color: #777; margin-bottom: 8px; }}
+  .badges {{ display: flex; gap: 10px; }}
+  .badge {{ padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }}
+  .b-ok {{ background: #e8f5e9; color: #2e7d32; }}
+  .b-warn {{ background: #fff3e0; color: #e65100; }}
+  .b-err {{ background: #ffebee; color: #c62828; }}
+  table {{ width: 100%; border-collapse: collapse; }}
+  th {{ background: #f5f5f5; padding: 8px 10px; text-align: left; font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .6px; border-bottom: 2px solid #e0e0e0; }}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="score-box"><span class="score-num">{score}</span></div>
+  <div>
+    <h1>SEO-Analyse{": " + t if t else ""}</h1>
+    <div class="sub">{source_label}</div>
+    <div class="badges">
+      <span class="badge b-ok">✓ {ok} OK</span>
+      <span class="badge b-warn">⚠ {warn} Hinweise</span>
+      <span class="badge b-err">✗ {err} Fehler</span>
+    </div>
+  </div>
+</div>
+<table>
+  <thead><tr>
+    <th></th><th>Kriterium</th><th>Wert</th><th>Empfehlung</th>
+  </tr></thead>
+  <tbody>{rows}</tbody>
+</table>
+</body>
+</html>'''
+
+
 # ── Tool Handler ──────────────────────────────────────────────────────────────
 
 def analyze_seo(html=None, url=None):
@@ -323,6 +393,7 @@ def analyze_seo(html=None, url=None):
     checks, score, title = _analyze(html)
     report_html = _render_report(checks, score, title, source_label)
     html_b64 = base64.b64encode(report_html.encode('utf-8')).decode()
+    pdf_html = _render_report_pdf(checks, score, title, source_label)
 
     ok = sum(1 for c in checks if c['status'] == 'ok')
     warn = sum(1 for c in checks if c['status'] == 'warn')
@@ -330,6 +401,7 @@ def analyze_seo(html=None, url=None):
 
     return {
         'html_content': html_b64,
+        'pdf_html': pdf_html,
         'score': score,
         'ok': ok,
         'warnings': warn,
