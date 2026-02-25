@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.9] — 2026-02-25
+
+### SEO-Report als PDF
+- **PDF-Download-Button** im Web-Chat: unter jedem SEO-Report erscheint „📄 PDF herunterladen" — Backend konvertiert via WeasyPrint und liefert `seo-report.pdf`
+- **Telegram**: SEO-Report wird automatisch als `seo-report.pdf`-Dokument mitgeschickt (light-themed, A4, druckfertig)
+- Neuer Backend-Endpoint `POST /api/tools/html-to-pdf` (WeasyPrint)
+- Dockerfile: WeasyPrint-Systempakete ergänzt (`libpango`, `libcairo2` etc.)
+
+---
+
 ## [1.3.8] — 2026-02-25
 
 ### SEO-Analyse-Tool (`analyze_seo`)
