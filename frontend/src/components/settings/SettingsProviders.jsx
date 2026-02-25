@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { updateProvider, testProvider } from '../../services/api';
 
 const SSH_INFO = {
@@ -20,10 +20,17 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
   const [expanded, setExpanded] = useState({});
   const [editState, setEditState] = useState({});
   const [showKeys, setShowKeys] = useState({});
+  const [serverIp, setServerIp] = useState(null);
   const [saving, setSaving] = useState({});
   const [testing, setTesting] = useState({});
   const [testResult, setTestResult] = useState({});
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    fetch('/api/system/info').then(r => r.json()).then(d => {
+      if (d.public_ip) setServerIp(d.public_ip);
+    }).catch(() => {});
+  }, []);
 
   function getEdit(pid) {
     return editState[pid] || {
@@ -172,7 +179,7 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
                         SSH-Reverse-Tunnel für den Server erreichbar machen. Führe diesen Befehl
                         auf deinem <em>lokalen Rechner</em> aus:
                       </p>
-                      <code>ssh -R {sshInfo.port}:localhost:{sshInfo.port} user@server-ip -N</code>
+                      <code>ssh -R {sshInfo.port}:localhost:{sshInfo.port} user@{serverIp || 'server-ip'} -N</code>
                       <p>
                         Solange der Tunnel aktiv ist, trage als Base URL ein:
                       </p>

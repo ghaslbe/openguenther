@@ -65,6 +65,19 @@ def get_providers():
     return jsonify(result)
 
 
+@settings_bp.route('/api/system/info', methods=['GET'])
+def system_info():
+    import requests as req
+    try:
+        ip = req.get('https://api.ipify.org', timeout=4).text.strip()
+    except Exception:
+        try:
+            ip = req.get('https://ifconfig.me/ip', timeout=4).text.strip()
+        except Exception:
+            ip = None
+    return jsonify({'public_ip': ip})
+
+
 @settings_bp.route('/api/providers/test', methods=['POST'])
 def test_provider():
     import requests as req
