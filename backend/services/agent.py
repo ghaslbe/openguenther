@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime
 from services.openrouter import call_openrouter, SYSTEM_PROMPT
 from services.tool_context import set_emit_log
@@ -152,10 +153,15 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
     if not api_key and provider_id == 'openrouter':
         return "Fehler: Kein OpenRouter API-Key konfiguriert. Bitte in den Einstellungen hinterlegen."
 
-    # Build messages
+    # Build messages — strip embedded base64 media from history (spart Tokens, war nie nützlich fürs LLM)
     active_prompt = system_prompt if system_prompt else SYSTEM_PROMPT
     messages = [{"role": "system", "content": active_prompt}]
-    messages.extend(chat_messages)
+    for msg in chat_messages:
+        if msg.get("role") == "assistant" and isinstance(msg.get("content"), str):
+            cleaned = re.sub(r'!\[[^\]]*\]\(data:[^)]{20,}\)', '', msg["content"]).strip()
+            messages.append({**msg, "content": cleaned})
+        else:
+            messages.append(msg)
 
     all_tools = registry.get_openai_tools()
 
