@@ -172,7 +172,7 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
                         SSH-Reverse-Tunnel für den Server erreichbar machen. Führe diesen Befehl
                         auf deinem <em>lokalen Rechner</em> aus:
                       </p>
-                      <code>ssh -R {sshInfo.port}:localhost:{sshInfo.port} gh@37.27.196.80 -N</code>
+                      <code>ssh -R {sshInfo.port}:localhost:{sshInfo.port} user@server-ip -N</code>
                       <p>
                         Solange der Tunnel aktiv ist, trage als Base URL ein:
                       </p>
