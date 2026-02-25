@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.3.7] — 2026-02-25
+
+### Provider-Einstellungen & Fehlerbehebung
+- **Modelle laden**: Dropdown-Liste der verfügbaren Modelle beim Standard-Modell-Feld — alphabetisch sortiert, Textfeld bleibt editierbar
+- **Sidebar**: „Provider" → „LLM Provider"
+- **OpenRouter-Links**: Direktlinks zu „API Keys" und „Verbrauch" in der OpenRouter-Karte
+- **Fehlertext**: Fehlermeldungen bei LLM-Anfragen zeigen jetzt den echten Provider-Namen (z.B. „LM Studio 400: ...") statt immer „OpenRouter"
+- **Version**: package.json auf 1.3.7 aktualisiert
+
+---
+
 ## [1.3.6] — 2026-02-25
 
 ### UX-Verbesserungen
