@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.3.3] — 2026-02-25
+
+### Geocoding-Tool (`geocode_location`)
+- Neues Built-in MCP Tool: Geokoordinaten (Breitengrad/Längengrad) für Postleitzahlen, Ortsnamen und Adressen
+- Nutzt OpenStreetMap Nominatim — kostenlos, kein API-Key nötig, weltweit
+- Gibt beste Übereinstimmung + weitere Treffer zurück (Postleitzahl, Ort, Bundesland, Land)
+- Logging im Guenther-Terminal
+
+### Flugdaten-Tool (`get_flights_nearby`)
+- Neues Built-in MCP Tool: Live-Flugzeuge in einem Radius um beliebige Geokoordinaten
+- Nutzt OpenSky Network ADS-B Daten — kostenlos, kein API-Key nötig
+- Zeigt Callsign, Herkunftsland, Höhe (m + ft), Geschwindigkeit, Kurs, Vertikalrate
+- Sortierung nach Entfernung, konfigurierbarer Radius (max. 500 km) und Ergebnislimit
+- Tipp: Kombination mit `geocode_location` → PLZ eingeben → Koordinaten → Flüge
+
+---
+
 ## [1.3.2] — 2026-02-23
 
 ### Aktienkurs-Tool (`get_stock_price`)

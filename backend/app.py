@@ -27,6 +27,8 @@ from mcp.tools.wikipedia_tool import wikipedia_search, TOOL_DEFINITION as WIKI_T
 from mcp.tools.tts_tool import text_to_speech, TOOL_DEFINITION as TTS_DEF, SETTINGS_SCHEMA as TTS_SETTINGS
 from mcp.tools.code_interpreter_tool import run_code, TOOL_DEFINITION as CODE_TOOL_DEF, SETTINGS_SCHEMA as CODE_SETTINGS
 from mcp.tools.stock_tool import get_stock_price, TOOL_DEFINITION as STOCK_TOOL_DEF
+from mcp.tools.geocode_tool import geocode_location, TOOL_DEFINITION as GEOCODE_TOOL_DEF
+from mcp.tools.flights_tool import get_flights_nearby, TOOL_DEFINITION as FLIGHTS_TOOL_DEF
 from mcp.manager import load_external_tools
 from services.agent import run_agent
 from services.telegram_gateway import TelegramGateway
@@ -169,6 +171,20 @@ registry.register(MCPTool(
     description=STOCK_TOOL_DEF['description'],
     input_schema=STOCK_TOOL_DEF['input_schema'],
     handler=get_stock_price
+))
+
+registry.register(MCPTool(
+    name=GEOCODE_TOOL_DEF['name'],
+    description=GEOCODE_TOOL_DEF['description'],
+    input_schema=GEOCODE_TOOL_DEF['input_schema'],
+    handler=geocode_location
+))
+
+registry.register(MCPTool(
+    name=FLIGHTS_TOOL_DEF['name'],
+    description=FLIGHTS_TOOL_DEF['description'],
+    input_schema=FLIGHTS_TOOL_DEF['input_schema'],
+    handler=get_flights_nearby
 ))
 
 
