@@ -11,6 +11,7 @@ function parseContent(content) {
   const imageRegex = /!\[([^\]]*)\]\((data:image\/[^)]+)\)/g;
   const audioRegex = /!\[audio\]\((data:audio\/[^)]+)\)/g;
   const htmlRegex = /\[HTML_REPORT\]\((data:text\/html;base64,[^)]+)\)/g;
+  const pdfRegex = /\[PDF_REPORT\]\((data:text\/html;base64,[^)]+)\)/g;
 
   // Collect all matches with their positions
   const matches = [];
@@ -24,6 +25,9 @@ function parseContent(content) {
   }
   while ((m = htmlRegex.exec(content)) !== null) {
     matches.push({ index: m.index, end: m.index + m[0].length, type: 'html', src: m[1] });
+  }
+  while ((m = pdfRegex.exec(content)) !== null) {
+    matches.push({ index: m.index, end: m.index + m[0].length, type: 'pdf', src: m[1] });
   }
 
   matches.sort((a, b) => a.index - b.index);
@@ -40,8 +44,10 @@ function parseContent(content) {
       parts.push({ type: 'image', alt: match.alt, src: match.src });
     } else if (match.type === 'audio') {
       parts.push({ type: 'audio', src: match.src });
-    } else {
+    } else if (match.type === 'html') {
       parts.push({ type: 'html', src: match.src });
+    } else {
+      parts.push({ type: 'pdf', src: match.src });
     }
     lastIndex = match.end;
   }
@@ -56,6 +62,39 @@ function parseContent(content) {
   }
 
   return parts;
+}
+
+function PdfDownloadButton({ src }) {
+  const [loading, setLoading] = useState(false);
+
+  async function handleDownload() {
+    setLoading(true);
+    try {
+      const b64 = src.split(',', 2)[1];
+      const html = atob(b64);
+      const res = await fetch('/api/tools/html-to-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html }),
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'seo-report.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('PDF download failed', e);
+    }
+    setLoading(false);
+  }
+
+  return (
+    <button className="btn-pdf-download" onClick={handleDownload} disabled={loading}>
+      {loading ? 'Erstelle PDF...' : '📄 PDF herunterladen'}
+    </button>
+  );
 }
 
 function MessageContent({ content }) {
@@ -91,6 +130,9 @@ function MessageContent({ content }) {
               title="SEO Report"
             />
           );
+        }
+        if (part.type === 'pdf') {
+          return <PdfDownloadButton key={i} src={part.src} />;
         }
         return (
           <ReactMarkdown key={i} components={{

@@ -78,6 +78,22 @@ def system_info():
     return jsonify({'public_ip': ip})
 
 
+@settings_bp.route('/api/tools/html-to-pdf', methods=['POST'])
+def html_to_pdf():
+    from weasyprint import HTML
+    from flask import Response
+    data = request.get_json()
+    html_str = data.get('html', '')
+    if not html_str:
+        return jsonify({'error': 'No HTML provided'}), 400
+    pdf_bytes = HTML(string=html_str).write_pdf()
+    return Response(
+        pdf_bytes,
+        mimetype='application/pdf',
+        headers={'Content-Disposition': 'attachment; filename=seo-report.pdf'}
+    )
+
+
 @settings_bp.route('/api/providers/test', methods=['POST'])
 def test_provider():
     import requests as req
