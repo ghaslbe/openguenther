@@ -1,5 +1,7 @@
 import os
 import re
+import py_compile
+import tempfile
 
 from config import DATA_DIR
 from services.tool_context import get_emit_log
@@ -57,6 +59,17 @@ def handler(tool_name: str, code: str) -> dict:
     if 'def handler' not in code and f'def {safe_name}' not in code:
         return {"success": False, "error": "Code enthält keine handler()-Funktion."}
 
+    # Syntax check BEFORE touching anything on disk
+    try:
+        with tempfile.NamedTemporaryFile(suffix='.py', mode='w', encoding='utf-8', delete=False) as tmp:
+            tmp.write(code)
+            tmp_path = tmp.name
+        py_compile.compile(tmp_path, doraise=True)
+        os.unlink(tmp_path)
+    except py_compile.PyCompileError as e:
+        os.unlink(tmp_path)
+        return {"success": False, "error": f"Syntax-Fehler im Code: {str(e)}"}
+
     # Read old tool name from registry to unregister it first
     try:
         from mcp.loader import _load_module, _register_module
@@ -76,20 +89,29 @@ def handler(tool_name: str, code: str) -> dict:
     except Exception as e:
         log(f"Hinweis: Altes Tool konnte nicht deregistriert werden: {e}")
 
-    # Write new code
+    # Back up old code, then write new code
+    with open(tool_py, 'r', encoding='utf-8') as f:
+        old_code = f.read()
+
     with open(tool_py, 'w', encoding='utf-8') as f:
         f.write(code)
     log(f"Geschrieben: {tool_py}")
 
-    # Load new version
+    # Load new version — restore backup on failure
     try:
         from mcp.loader import _load_module, _register_module
         mod = _load_module(tool_py, f'custom_tools.{safe_name}')
         count = _register_module(mod, f'custom/{safe_name}')
         if count == 0:
-            return {"success": False, "error": "Datei geschrieben, aber kein Tool konnte registriert werden."}
+            with open(tool_py, 'w', encoding='utf-8') as f:
+                f.write(old_code)
+            log(f"Rollback: alte Version wiederhergestellt")
+            return {"success": False, "error": "Kein Tool registriert — alte Version wiederhergestellt."}
         log(f"Tool '{safe_name}' neu geladen ({count} Tool(s) registriert)")
         header(f"EDIT MCP TOOL: FERTIG")
         return {"success": True, "tool_name": safe_name, "registered": count}
     except Exception as e:
-        return {"success": False, "error": f"Datei geschrieben, aber Fehler beim Laden: {str(e)}"}
+        with open(tool_py, 'w', encoding='utf-8') as f:
+            f.write(old_code)
+        log(f"Rollback: alte Version wiederhergestellt")
+        return {"success": False, "error": f"Fehler beim Laden (alte Version wiederhergestellt): {str(e)}"}

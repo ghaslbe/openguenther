@@ -1,5 +1,8 @@
 import os
 import re
+import shutil
+import py_compile
+import tempfile
 
 from config import DATA_DIR
 from services.tool_context import get_emit_log
@@ -69,6 +72,17 @@ def handler(tool_name: str, code: str) -> dict:
     if 'def handler' not in code and f'def {safe_name}' not in code:
         return {"success": False, "error": "Code enthält keine handler()-Funktion."}
 
+    # Syntax check BEFORE writing anything to disk
+    try:
+        with tempfile.NamedTemporaryFile(suffix='.py', mode='w', encoding='utf-8', delete=False) as tmp:
+            tmp.write(code)
+            tmp_path = tmp.name
+        py_compile.compile(tmp_path, doraise=True)
+        os.unlink(tmp_path)
+    except py_compile.PyCompileError as e:
+        os.unlink(tmp_path)
+        return {"success": False, "error": f"Syntax-Fehler im Code: {str(e)}"}
+
     # Write files
     os.makedirs(tool_dir, exist_ok=True)
     with open(tool_py, 'w', encoding='utf-8') as f:
@@ -78,16 +92,18 @@ def handler(tool_name: str, code: str) -> dict:
 
     log(f"Geschrieben: {tool_py}")
 
-    # Load into registry immediately
+    # Load into registry immediately — rollback on any error
     try:
         from mcp.loader import _load_module, _register_module
         mod = _load_module(tool_py, f'custom_tools.{safe_name}')
         count = _register_module(mod, f'custom/{safe_name}')
         if count == 0:
+            shutil.rmtree(tool_dir)
+            log(f"Rollback: Verzeichnis {tool_dir} gelöscht")
             return {
                 "success": False,
-                "error": "Datei wurde geschrieben, aber kein Tool konnte registriert werden. "
-                         "Bitte TOOL_DEFINITION und handler prüfen."
+                "error": "Code hat keine Fehler, aber kein Tool konnte registriert werden. "
+                         "TOOL_DEFINITION oder handler-Funktion prüfen."
             }
         log(f"Tool '{safe_name}' erfolgreich registriert ({count} Tool(s))")
         header(f"CREATE MCP TOOL: FERTIG")
@@ -98,8 +114,9 @@ def handler(tool_name: str, code: str) -> dict:
             "registered": count
         }
     except Exception as e:
+        shutil.rmtree(tool_dir, ignore_errors=True)
+        log(f"Rollback: Verzeichnis {tool_dir} gelöscht")
         return {
             "success": False,
-            "error": f"Datei geschrieben, aber Fehler beim Laden: {str(e)}",
-            "path": tool_py
+            "error": f"Fehler beim Laden des Tools (Rollback durchgeführt): {str(e)}"
         }
