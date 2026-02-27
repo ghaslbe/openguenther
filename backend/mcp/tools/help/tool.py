@@ -254,3 +254,10 @@ HELP_DEFINITION = {
         "required": []
     }
 }
+
+# Multi-tool convention for the loader
+TOOL_DEFINITIONS = [LIST_TOOLS_DEFINITION, HELP_DEFINITION]
+HANDLERS = {
+    'list_available_tools': list_available_tools,
+    'get_help': get_help,
+}
