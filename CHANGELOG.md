@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.0] — 2026-02-27
+
+### Tool-Architektur: Subdirectories + Auto-Discovery
+- Jedes Built-in MCP Tool lebt jetzt in einem eigenen Unterordner (`backend/mcp/tools/<name>/tool.py`)
+- Neuer Auto-Loader (`backend/mcp/loader.py`) scannt beide Verzeichnisse und registriert Tools automatisch
+- **Custom Tools**: eigene Python-Tools in `/app/data/custom_tools/<name>/tool.py` ablegen → nach Neustart automatisch aktiv, ohne Code-Änderung
+- `app.py` ohne manuelle Tool-Imports — vollständig über Loader gesteuert
+- `CUSTOM_TOOL_GUIDE.md`: vollständige Schnittstellenbeschreibung für eigene Tools
+
+---
+
 ## [1.3.9] — 2026-02-25
 
 ### SEO-Report als PDF
