@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.4] — 2026-02-27
+
+### Präsentations-Generator (`generate_presentation`)
+
+- Neues Built-in Tool `generate_presentation`: erstellt professionelle PowerPoint-Präsentationen (.pptx)
+  - Eingabe: Thema (Text) oder optionaler Quelltext als inhaltliche Basis
+  - LLM generiert Folienstruktur als JSON, slidegen.py baut die PPTX daraus
+  - 8 Layouts: `hero`, `cards`, `two-column`, `steps`, `icon-list`, `pyramid`, `feature`, `statement`
+  - Zwei Farbthemen: `dark` (dunkel/orange) und `purple` (dunkel/lila)
+  - Nutzt Standard-Provider + Modell; Override via Tool-Einstellungen konfigurierbar
+  - Download-Button direkt im Chat (📊) — vollständig clientseitig, kein Server-Roundtrip
+- `requirements.txt`: `python-pptx` und `lxml` ergänzt
+
+---
+
 ## [1.4.2] — 2026-02-27
 
 ### Custom Tools vollständig via Chat verwaltbar

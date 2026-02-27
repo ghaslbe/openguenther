@@ -52,6 +52,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **Live Tool-Anzeige**: Während Guenther denkt, wird das aktive Tool + Log-Status neben den Punkten angezeigt
 - **SSH-Tunnel-Guide**: Anleitung in Provider-Einstellungen für Ollama/LM Studio (Reverse-Tunnel vom Heimrechner zum Server)
 - **Custom Tools**: eigene MCP-Tools als Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen, keine Code-Änderung nötig (siehe `CUSTOM_TOOL_GUIDE.md`)
+- **Präsentations-Generator**: PowerPoint-Dateien (.pptx) direkt aus dem Chat erstellen — Guenther strukturiert das Thema und liefert einen Download-Button
 
 ---
 
@@ -246,6 +247,7 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 | `text_to_image` | Text als PNG rendern |
 | `generate_qr_code` | QR-Code generieren |
 | `analyze_seo` | SEO-Analyse einer URL oder eines HTML-Codes — Score, Title, Meta, Headings, OG-Tags, JSON-LD u.v.m. als visueller HTML-Report |
+| `generate_presentation` | PowerPoint-Präsentation (.pptx) aus Thema oder Quelltext — 8 Layouts, 2 Themes, Download-Button im Chat |
 | `send_email` | E-Mail via SMTP senden |
 | `generate_password` | Sichere Passwörter generieren |
 | `calculate` | Mathematische Ausdrücke auswerten |
@@ -300,6 +302,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **Live tool display**: while Guenther is thinking, the active tool + log status is shown next to the typing dots
 - **SSH tunnel guide**: instructions in provider settings for Ollama/LM Studio (reverse tunnel from home machine to server)
 - **Custom tools**: drop your own MCP tools as Python files into `/app/data/custom_tools/` — loaded automatically, no code changes needed (see `CUSTOM_TOOL_GUIDE.md`)
+- **Presentation generator**: create PowerPoint files (.pptx) directly from chat — Guenther structures the topic and delivers a download button
 
 ---
 
@@ -494,6 +497,7 @@ Data is stored persistently in a Docker volume (`/app/data`).
 | `text_to_image` | Render text as PNG |
 | `generate_qr_code` | Generate QR codes |
 | `analyze_seo` | SEO analysis of a URL or HTML code — score, title, meta, headings, OG tags, JSON-LD and more as a visual HTML report |
+| `generate_presentation` | PowerPoint presentation (.pptx) from a topic or source text — 8 layouts, 2 themes, download button in chat |
 | `send_email` | Send email via SMTP |
 | `generate_password` | Generate secure passwords |
 | `calculate` | Evaluate mathematical expressions |
