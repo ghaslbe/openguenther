@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.1] — 2026-02-27
+
+### Custom Tool Erstellung via Chat
+
+- Neues Built-in Tool `create_mcp_tool`: Guenther kann auf Zuruf neue MCP-Tools anlegen
+  - Nimmt `tool_name` + vollständigen Python-Code als Parameter
+  - Schreibt `tool.py` + `__init__.py` nach `/app/data/custom_tools/<name>/`
+  - Registriert das neue Tool sofort in der Registry — kein Reload, kein Neustart nötig
+  - Validiert `TOOL_DEFINITION` und Handler-Funktion vor dem Schreiben
+- Einstellungen → Hilfe: neuer Abschnitt „Custom Tools" mit Verzeichnisstruktur, Minimal-Beispiel und Schritt-für-Schritt-Anleitung
+
+---
+
 ## [1.4.0] — 2026-02-27
 
 ### Tool-Architektur: Subdirectories + Auto-Discovery
