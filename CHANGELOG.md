@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.5] — 2026-02-27
+
+### Robusteres Custom-Tool-Management
+
+- `create_mcp_tool`: Syntax-Check via `py_compile` **vor** dem Schreiben — bei Fehler wird nichts auf Disk geschrieben
+- `create_mcp_tool`: Rollback bei Ladefehler — Verzeichnis wird automatisch gelöscht
+- `edit_mcp_tool`: Syntax-Check vor dem Überschreiben — alte Datei bleibt unberührt
+- `edit_mcp_tool`: Rollback bei Ladefehler — alte `tool.py` wird wiederhergestellt
+- `/new` im Chat-Eingabefeld startet eine neue Session (identisch zum `+` Button)
+
+---
+
 ## [1.4.4] — 2026-02-27
 
 ### Präsentations-Generator (`generate_presentation`)
