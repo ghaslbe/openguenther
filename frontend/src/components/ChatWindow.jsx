@@ -210,7 +210,7 @@ function CopyButton({ text, align }) {
   );
 }
 
-export default function ChatWindow({ messages, onSendMessage, isLoading, currentTool, currentToolLog, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
+export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoading, currentTool, currentToolLog, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [attachedFile, setAttachedFile] = useState(null); // {name, content}
@@ -232,6 +232,11 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, current
     const text = input.trim();
     if (!text && !attachedFile) return;
     if (isLoading) return;
+    if (text === '/new') {
+      setInput('');
+      onNewChat?.();
+      return;
+    }
     if (recognitionRef.current) {
       recognitionRef.current.onresult = null;
       recognitionRef.current.stop();

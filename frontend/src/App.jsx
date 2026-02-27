@@ -212,6 +212,7 @@ export default function App() {
       <ChatWindow
         messages={messages}
         onSendMessage={handleSendMessage}
+        onNewChat={handleNewChat}
         isLoading={isLoading}
         currentTool={currentTool}
         currentToolLog={currentToolLog}
