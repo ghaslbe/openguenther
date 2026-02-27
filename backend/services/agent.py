@@ -216,6 +216,7 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
     collected_images = []
     collected_audio = []
     collected_html = []
+    collected_pptx = []
     max_iterations = 10
     iteration = 0
 
@@ -322,6 +323,20 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
                                 emit_log({"type": "header", "message": f"TOOL RESULT: {tool_name}"})
                                 emit_log({"type": "json", "label": "result", "data": simplified})
                             emit_log({"type": "text", "message": f"[{_ts()}] (Bild-Daten: {len(result['image_base64'])} Bytes Base64)"})
+                        elif isinstance(result, dict) and 'pptx_base64' in result:
+                            collected_pptx.append(result)
+                            simplified = {
+                                "success": True,
+                                "title": result.get("title", ""),
+                                "slides": result.get("slides", 0),
+                                "filename": result.get("filename", "presentation.pptx"),
+                                "message": "Präsentation wurde erstellt und steht zum Download bereit.",
+                            }
+                            result_str = json.dumps(simplified, ensure_ascii=False)
+                            emit_log({"type": "header", "message": f"TOOL RESULT: {tool_name}"})
+                            emit_log({"type": "json", "label": "result", "data": simplified})
+                            emit_log({"type": "text", "message": f"[{_ts()}] (PPTX: {len(result['pptx_base64'])} Bytes Base64)"})
+
                         elif isinstance(result, dict) and 'audio_base64' in result:
                             collected_audio.append(result)
                             simplified = {
@@ -370,6 +385,12 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
                 if report.get('pdf_html'):
                     pdf_b64 = base64.b64encode(report['pdf_html'].encode('utf-8')).decode()
                     content += f"\n\n[PDF_REPORT](data:text/html;base64,{pdf_b64})"
+
+            # Append collected PPTX downloads
+            for pptx in collected_pptx:
+                filename = pptx.get('filename', 'presentation.pptx')
+                b64 = pptx.get('pptx_base64', '')
+                content += f"\n\n[PPTX_DOWNLOAD]({filename}::{b64})"
 
             # Append collected images
             for img in collected_images:

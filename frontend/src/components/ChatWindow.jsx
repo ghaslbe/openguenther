@@ -12,6 +12,7 @@ function parseContent(content) {
   const audioRegex = /!\[audio\]\((data:audio\/[^)]+)\)/g;
   const htmlRegex = /\[HTML_REPORT\]\((data:text\/html;base64,[^)]+)\)/g;
   const pdfRegex = /\[PDF_REPORT\]\((data:text\/html;base64,[^)]+)\)/g;
+  const pptxRegex = /\[PPTX_DOWNLOAD\]\(([^:)]+)::([A-Za-z0-9+/=]+)\)/g;
 
   // Collect all matches with their positions
   const matches = [];
@@ -28,6 +29,9 @@ function parseContent(content) {
   }
   while ((m = pdfRegex.exec(content)) !== null) {
     matches.push({ index: m.index, end: m.index + m[0].length, type: 'pdf', src: m[1] });
+  }
+  while ((m = pptxRegex.exec(content)) !== null) {
+    matches.push({ index: m.index, end: m.index + m[0].length, type: 'pptx', filename: m[1], b64: m[2] });
   }
 
   matches.sort((a, b) => a.index - b.index);
@@ -46,8 +50,10 @@ function parseContent(content) {
       parts.push({ type: 'audio', src: match.src });
     } else if (match.type === 'html') {
       parts.push({ type: 'html', src: match.src });
-    } else {
+    } else if (match.type === 'pdf') {
       parts.push({ type: 'pdf', src: match.src });
+    } else if (match.type === 'pptx') {
+      parts.push({ type: 'pptx', filename: match.filename, b64: match.b64 });
     }
     lastIndex = match.end;
   }
@@ -97,6 +103,26 @@ function PdfDownloadButton({ src }) {
   );
 }
 
+function PptxDownloadButton({ filename, b64 }) {
+  function handleDownload() {
+    const bytes = atob(b64);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const blob = new Blob([arr], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'presentation.pptx';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  return (
+    <button className="btn-pdf-download" onClick={handleDownload}>
+      📊 {filename || 'Präsentation'} herunterladen
+    </button>
+  );
+}
+
 function MessageContent({ content }) {
   const parts = parseContent(content);
 
@@ -133,6 +159,9 @@ function MessageContent({ content }) {
         }
         if (part.type === 'pdf') {
           return <PdfDownloadButton key={i} src={part.src} />;
+        }
+        if (part.type === 'pptx') {
+          return <PptxDownloadButton key={i} filename={part.filename} b64={part.b64} />;
         }
         return (
           <ReactMarkdown key={i} components={{
