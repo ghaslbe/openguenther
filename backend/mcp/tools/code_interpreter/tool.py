@@ -4,7 +4,7 @@ import tempfile
 import shutil
 import os
 
-from config import get_settings, get_tool_settings
+from config import get_settings, get_tool_settings, DATA_DIR
 from services.openrouter import call_openrouter
 from services.tool_context import get_emit_log
 
@@ -104,6 +104,9 @@ def run_code(task: str, input_data: str = "") -> dict:
         header("CODE-INTERPRETER: REQUIREMENTS")
         log(requirements)
 
+    custom_tools_dir = os.path.join(DATA_DIR, 'custom_tools')
+    custom_tools_before = _snapshot_custom_tools(custom_tools_dir)
+
     tmpdir = tempfile.mkdtemp()
     try:
         venv_python, venv_pip = _setup_venv(tmpdir, requirements, log, header)
@@ -124,7 +127,11 @@ def run_code(task: str, input_data: str = "") -> dict:
                 header("CODE-INTERPRETER: ERGEBNIS")
                 log(stdout[:2000] + (" …[gekuerzt]" if len(stdout) > 2000 else ""))
                 log(f"Fertig — {len(stdout)} Zeichen Output (Versuch {attempt})")
-                return {"success": True, "output": stdout, "error": ""}
+                new_tools = _reload_if_new_custom_tools(custom_tools_dir, custom_tools_before, log, header)
+                result = {"success": True, "output": stdout, "error": ""}
+                if new_tools:
+                    result["new_tools"] = new_tools
+                return result
 
             # Failure or suspicious output — let LLM fix it
             if attempt <= MAX_RETRIES:
@@ -269,7 +276,17 @@ REGELN:
   headers = {{"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}}
 - Fehlerbehandlung mit try/except
 - Bei Web-Scraping: HTTP-Statuscode und Antwortgröße printen wenn kein Ergebnis
-- Ergebnis immer nach stdout schreiben"""
+- Ergebnis immer nach stdout schreiben
+
+CUSTOM MCP TOOL ERSTELLEN (nur wenn explizit darum gebeten):
+Wenn der Nutzer ein neues MCP-Tool anlegen will, schreibe tool.py nach /app/data/custom_tools/<toolname>/tool.py.
+Das Tool wird dann automatisch in die Registry geladen — kein Neustart nötig.
+Pflichtstruktur:
+  TOOL_DEFINITION = {{"name": "...", "description": "...", "input_schema": {{"type": "object", "properties": {{...}}, "required": [...]}}}}
+  def handler(<params>):
+      return {{...}}  # JSON-serialisierbares dict
+Schreibe außerdem eine leere __init__.py ins selbe Verzeichnis.
+Gib nach dem Schreiben per print() aus, welche Datei(en) angelegt wurden."""
 
 
 def _build_fix_prompt(task: str, current_script: str, requirements: str, problem: str) -> str:
@@ -297,6 +314,30 @@ Antworte AUSSCHLIESSLICH mit JSON (kein Text davor oder danach):
   "script": "<korrigierter Python-Code>",
   "requirements": "<pip-Pakete oder leer>"
 }}"""
+
+
+def _snapshot_custom_tools(custom_tools_dir: str) -> set:
+    """Return set of existing tool directory names in custom_tools/."""
+    if not os.path.isdir(custom_tools_dir):
+        return set()
+    return {e for e in os.listdir(custom_tools_dir)
+            if os.path.isfile(os.path.join(custom_tools_dir, e, 'tool.py'))}
+
+
+def _reload_if_new_custom_tools(custom_tools_dir: str, before: set, log, header) -> list:
+    """Check for newly added custom tools and load them into the registry. Returns list of new tool names."""
+    after = _snapshot_custom_tools(custom_tools_dir)
+    new_dirs = after - before
+    if not new_dirs:
+        return []
+
+    from mcp.loader import load_custom_tools
+    header("CODE-INTERPRETER: NEUE MCP-TOOLS ERKANNT")
+    for d in sorted(new_dirs):
+        log(f"Neues Tool-Verzeichnis gefunden: {d}")
+    count = load_custom_tools()
+    log(f"MCP-Registry aktualisiert — {count} custom tool(s) (re)geladen")
+    return sorted(new_dirs)
 
 
 def _parse_llm_response(text: str) -> tuple[str, str]:
