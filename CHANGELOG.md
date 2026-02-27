@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.2] — 2026-02-27
+
+### Custom Tools vollständig via Chat verwaltbar
+
+- Neues Tool `edit_mcp_tool`: bestehendes Custom Tool durch neuen Code ersetzen und sofort neu laden (altes Tool wird sauber deregistriert)
+- Neues Tool `delete_mcp_tool`: Custom Tool dauerhaft löschen und aus der Registry entfernen
+- `get_help`: neues Topic `custom_tools` mit vollständiger Anleitung für create/edit/delete
+- Einstellungen → Hilfe: Abschnitt „Custom Tools" komplett überarbeitet — zeigt alle drei Operationen mit Beispiel-Prompts
+
 ## [1.4.1] — 2026-02-27
 
 ### Custom Tool Erstellung via Chat

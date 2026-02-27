@@ -154,28 +154,33 @@ export default function SettingsHilfe() {
         <P>Nach dem Hinzufügen unter <em>Tools</em> auf <strong>„MCP Tools neu laden"</strong> klicken. Die neuen Tools erscheinen dann in der Liste und stehen Guenther zur Verfügung.</P>
       </Section>
 
-      <Section title="Custom Tools — eigene MCP-Tools erstellen">
-        <P>Du kannst eigene Tools als Python-Dateien hinterlegen — Guenther lädt sie automatisch beim Start. Kein Code in der App muss geändert werden.</P>
-        <P><strong style={{ color: 'var(--text-primary)' }}>Verzeichnisstruktur</strong></P>
-        <Block>{'/app/data/custom_tools/\n└── mein_tool/\n    ├── tool.py      ← Pflicht\n    └── helpers.py   ← optional'}</Block>
-        <P><strong style={{ color: 'var(--text-primary)' }}>Minimales Beispiel (tool.py)</strong></P>
-        <Block>{'TOOL_DEFINITION = {\n    "name": "say_hello",\n    "description": "Grüßt eine Person beim Namen.",\n    "input_schema": {\n        "type": "object",\n        "properties": {\n            "name": {\n                "type": "string",\n                "description": "Der Name der Person"\n            }\n        },\n        "required": ["name"]\n    }\n}\n\ndef handler(name):\n    return {"message": f"Hallo, {name}!"}'}</Block>
-        <P><strong style={{ color: 'var(--text-primary)' }}>Regeln</strong></P>
+      <Section title="Custom Tools — erstellen, bearbeiten, löschen">
+        <P>Guenther kann eigene MCP-Tools direkt im Chat anlegen, bearbeiten und löschen — ohne Neustart, ohne Dateibearbeitung.</P>
+
+        <P><strong style={{ color: 'var(--text-primary)' }}>Tool erstellen</strong></P>
+        <P>Einfach im Chat beschreiben was das Tool tun soll:</P>
+        <Block>{'Erstelle ein neues Tool namens spiegelcaller.\nEs soll spiegel.de 10x aufrufen und die Antwortzeiten zurückgeben.'}</Block>
+        <P>Guenther ruft intern <Code>create_mcp_tool</Code> auf, schreibt <Code>tool.py</Code> nach <Code>/app/data/custom_tools/spiegelcaller/</Code> und registriert das Tool sofort.</P>
+
+        <P><strong style={{ color: 'var(--text-primary)' }}>Tool bearbeiten</strong></P>
+        <Block>{'Bearbeite spiegelcaller, es soll jetzt stern.de 20x aufrufen\nund die Antwortzeiten als Tabelle zurückgeben.'}</Block>
+        <P>Guenther ruft <Code>edit_mcp_tool</Code> auf — der alte Code wird ersetzt, das Tool sofort neu geladen.</P>
+
+        <P><strong style={{ color: 'var(--text-primary)' }}>Tool löschen</strong></P>
+        <Block>{'Lösche das Tool spiegelcaller.'}</Block>
+        <P>Guenther ruft <Code>delete_mcp_tool</Code> auf — Verzeichnis wird gelöscht, Tool aus der Registry entfernt.</P>
+
+        <Hint>Custom Tools liegen in <Code>/app/data/custom_tools/</Code> (persistentes Docker-Volume) und überleben jeden Container-Neustart.</Hint>
+
+        <P><strong style={{ color: 'var(--text-primary)' }}>Pflichtstruktur für tool.py</strong></P>
+        <Block>{'TOOL_DEFINITION = {\n    "name": "mein_tool",\n    "description": "Was das Tool tut.",\n    "input_schema": {\n        "type": "object",\n        "properties": {\n            "param": {"type": "string", "description": "..."}\n        },\n        "required": ["param"]\n    }\n}\n\ndef handler(param):\n    return {"result": param}'}</Block>
+
+        <P><strong style={{ color: 'var(--text-primary)' }}>Manuell ablegen (alternativ)</strong></P>
         <ul style={{ paddingLeft: '18px', marginBottom: '8px' }}>
-          <Li><Code>TOOL_DEFINITION</Code> — dict mit <Code>name</Code>, <Code>description</Code>, <Code>input_schema</Code></Li>
-          <Li><Code>handler()</Code> — Funktion die die Parameter als Keyword-Argumente bekommt</Li>
-          <Li>Alternativ: Funktion so benennen wie das Tool (statt <Code>handler</Code>)</Li>
-          <Li>Rückgabe: beliebiger JSON-serialisierbarer Wert (dict, list, string, …)</Li>
-          <Li>Fehler: <Code>{'{"error": "Beschreibung"}'}</Code> zurückgeben</Li>
+          <Li>Datei nach <Code>/app/data/custom_tools/&lt;name&gt;/tool.py</Code> legen</Li>
+          <Li>Unter <em>Tools</em> auf <strong>„MCP Tools neu laden"</strong> klicken</Li>
         </ul>
-        <P><strong style={{ color: 'var(--text-primary)' }}>Konfigurierbare Settings (optional)</strong></P>
-        <Block>{'SETTINGS_SCHEMA = [\n    {\n        "key": "api_key",\n        "label": "API Key",\n        "type": "password",\n        "placeholder": "sk-...",\n        "description": "Dein API Key"\n    }\n]\n\n# Im Handler lesen:\nfrom config import get_tool_settings\n\ndef handler(query):\n    s = get_tool_settings("say_hello")\n    key = s.get("api_key", "")'}</Block>
-        <P><strong style={{ color: 'var(--text-primary)' }}>Nach dem Anlegen</strong></P>
-        <ul style={{ paddingLeft: '18px', marginBottom: '8px' }}>
-          <Li>In den Einstellungen unter <em>Tools</em> auf <strong>„MCP Tools neu laden"</strong> klicken — kein Neustart nötig</Li>
-          <Li>Das neue Tool erscheint sofort in der Tool-Liste und steht Guenther zur Verfügung</Li>
-        </ul>
-        <Hint>📄 Vollständige Schnittstellenbeschreibung mit weiteren Beispielen: <strong>CUSTOM_TOOL_GUIDE.md</strong> im Projektverzeichnis</Hint>
+        <Hint>📄 Vollständige Schnittstellenbeschreibung: <strong>CUSTOM_TOOL_GUIDE.md</strong> im Projektverzeichnis</Hint>
       </Section>
 
       <Section title="Telegram Gateway">

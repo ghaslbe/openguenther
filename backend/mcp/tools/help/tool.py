@@ -36,7 +36,10 @@ def get_help(topic="general"):
             "- 'Wie ist das Wetter in Berlin?' -> get_weather\n"
             "- 'Was ist ein Schwarzes Loch?' -> wikipedia_search\n"
             "- 'Welche Tools hast du?' -> list_available_tools\n"
-            "- 'Konvertiere diese CSV zu JSON' -> run_code (Code-Interpreter)\n\n"
+            "- 'Konvertiere diese CSV zu JSON' -> run_code (Code-Interpreter)\n"
+            "- 'Erstelle ein neues Tool namens X' -> create_mcp_tool\n"
+            "- 'Bearbeite das Tool X, es soll jetzt...' -> edit_mcp_tool\n"
+            "- 'Loesche das Tool X' -> delete_mcp_tool\n\n"
             "AGENTEN-SYSTEM:\n"
             "In Einstellungen -> Agenten kannst du eigene Agenten mit individuellem System-Prompt "
             "erstellen. Beim Start eines neuen Chats waehle einen Agenten aus — er bestimmt dann "
@@ -81,6 +84,12 @@ def get_help(topic="general"):
             "- wikipedia_search: Wikipedia durchsuchen — findet auch Ortsteile & Weiterleitungen (de/en/...)\n"
             "- text_to_speech: Text vorlesen via ElevenLabs (API Key in Tool-Einstellungen)\n"
             "- run_code: Python-Code via LLM generieren und ausfuehren (Datenverarbeitung, Konvertierung)\n"
+            "- create_mcp_tool: Neues Custom Tool anlegen und sofort registrieren\n"
+            "- edit_mcp_tool: Bestehendes Custom Tool bearbeiten und neu laden\n"
+            "- delete_mcp_tool: Custom Tool dauerhaft loeschen und aus Registry entfernen\n"
+            "- create_mcp_tool: Neues Custom Tool anlegen und sofort registrieren\n"
+            "- edit_mcp_tool: Bestehendes Custom Tool bearbeiten und neu laden\n"
+            "- delete_mcp_tool: Custom Tool dauerhaft loeschen\n"
             "- list_available_tools: Alle Tools auflisten\n"
             "- get_help: Diese Hilfe anzeigen\n\n"
             "PRO-TOOL MODELL-OVERRIDE:\n"
@@ -193,6 +202,34 @@ def get_help(topic="general"):
             "In Einstellungen -> MCP Tools -> run_code -> Einstellungen kann ein "
             "separates Modell fuer die Code-Generierung festgelegt werden."
         ),
+        "custom_tools": (
+            "Guenther kann neue MCP-Tools direkt im Chat erstellen, bearbeiten und loeschen.\n\n"
+            "TOOL ERSTELLEN:\n"
+            "'Erstelle ein neues Tool namens spiegelcaller. Es soll spiegel.de 10x aufrufen und die Antwortzeiten zurueckgeben.'\n"
+            "-> Guenther ruft create_mcp_tool auf:\n"
+            "   tool_name: 'spiegelcaller'\n"
+            "   code: vollstaendiger Python-Code mit TOOL_DEFINITION + handler()\n"
+            "Das Tool wird sofort in die Registry geladen — kein Neustart noetig.\n\n"
+            "TOOL BEARBEITEN:\n"
+            "'Bearbeite spiegelcaller, es soll jetzt stern.de 20x aufrufen und die Zeiten als Tabelle ausgeben.'\n"
+            "-> Guenther ruft edit_mcp_tool auf:\n"
+            "   tool_name: 'spiegelcaller'\n"
+            "   code: neuer vollstaendiger Python-Code\n"
+            "Das alte Tool wird deregistriert, der neue Code sofort geladen.\n\n"
+            "TOOL LOESCHEN:\n"
+            "'Loesche das Tool spiegelcaller.'\n"
+            "-> Guenther ruft delete_mcp_tool auf:\n"
+            "   tool_name: 'spiegelcaller'\n"
+            "Das Verzeichnis wird geloescht, das Tool aus der Registry entfernt.\n\n"
+            "PERSISTENZ:\n"
+            "Custom Tools liegen in /app/data/custom_tools/ (persistentes Docker-Volume).\n"
+            "Sie ueberleben Container-Neustarts und werden beim Start automatisch geladen.\n\n"
+            "PFLICHTSTRUKTUR fuer tool.py:\n"
+            "TOOL_DEFINITION = {'name': '...', 'description': '...', 'input_schema': {...}}\n"
+            "def handler(<params>):\n"
+            "    return {...}  # JSON-serialisierbares dict\n\n"
+            "Detaillierte Anleitung: Einstellungen -> Hilfe -> 'Custom Tools'"
+        ),
         "agents": (
             "Das Agenten-System erlaubt eigene KI-Persoenlichkeiten mit individuellem System-Prompt.\n\n"
             "ANLEGEN:\n"
@@ -241,13 +278,13 @@ LIST_TOOLS_DEFINITION = {
 
 HELP_DEFINITION = {
     "name": "get_help",
-    "description": "Gibt Hilfe und Erklaerungen zu Guenther und seinen Funktionen. Themen: general, tools, settings, mcp, telegram, voice, wikipedia, code, agents.",
+    "description": "Gibt Hilfe und Erklaerungen zu Guenther und seinen Funktionen. Themen: general, tools, settings, mcp, telegram, voice, wikipedia, code, agents, custom_tools.",
     "input_schema": {
         "type": "object",
         "properties": {
             "topic": {
                 "type": "string",
-                "description": "Hilfe-Thema: 'general', 'tools', 'settings', 'mcp', 'telegram', 'voice', 'wikipedia', 'code' oder 'agents'",
+                "description": "Hilfe-Thema: 'general', 'tools', 'settings', 'mcp', 'telegram', 'voice', 'wikipedia', 'code', 'agents' oder 'custom_tools'",
                 "default": "general"
             }
         },
