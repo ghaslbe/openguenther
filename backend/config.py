@@ -25,9 +25,10 @@ DEFAULT_SETTINGS = {
     },
     'llm_timeout': 120,
     'providers': {
-        'openrouter': {'name': 'OpenRouter', 'base_url': 'https://openrouter.ai/api/v1', 'api_key': '', 'enabled': True},
-        'ollama':     {'name': 'Ollama',     'base_url': 'http://localhost:11434/v1',    'api_key': '', 'enabled': False},
-        'lmstudio':   {'name': 'LM Studio',  'base_url': 'http://localhost:1234/v1',     'api_key': '', 'enabled': False},
+        'openrouter': {'name': 'OpenRouter', 'base_url': 'https://openrouter.ai/api/v1',  'api_key': '', 'enabled': True},
+        'mistral':    {'name': 'Mistral',    'base_url': 'https://api.mistral.ai/v1',     'api_key': '', 'enabled': False},
+        'ollama':     {'name': 'Ollama',     'base_url': 'http://localhost:11434/v1',     'api_key': '', 'enabled': False},
+        'lmstudio':   {'name': 'LM Studio',  'base_url': 'http://localhost:1234/v1',      'api_key': '', 'enabled': False},
     },
     'default_provider': 'openrouter',
 }

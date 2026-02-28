@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.14] — 2026-02-28
+
+### Mistral als LLM Provider
+
+- **Mistral (Europa)** als zweiter Provider in den Einstellungen — zwischen OpenRouter und Ollama
+- Base URL: `https://api.mistral.ai/v1` (OpenAI-kompatibel), API Key erforderlich
+- Hilfe-Links: API Keys + Dokumentation direkt in den Provider-Einstellungen
+- Untertitel: `(Europa)` / `(Europe)` via i18n
+- Bestehende Installationen: Mistral wird beim nächsten Start automatisch zu `settings.json` hinzugefügt (disabled)
+
+---
+
 ## [1.4.13] — 2026-02-28
 
 ### Provider-Untertitel in LLM Provider-Einstellungen

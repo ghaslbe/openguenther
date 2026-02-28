@@ -15,7 +15,7 @@ const SSH_INFO = {
   },
 };
 
-const PROVIDER_ORDER = ['openrouter', 'ollama', 'lmstudio'];
+const PROVIDER_ORDER = ['openrouter', 'mistral', 'ollama', 'lmstudio'];
 
 export default function SettingsProviders({ providers, onProvidersChange }) {
   const { t } = useTranslation();
@@ -215,6 +215,12 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
                     <div className="provider-help-links">
                       <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener noreferrer">{t('settings.providers.openrouterKeys')}</a>
                       <a href="https://openrouter.ai/settings/credits" target="_blank" rel="noopener noreferrer">{t('settings.providers.openrouterUsage')}</a>
+                    </div>
+                  )}
+                  {pid === 'mistral' && (
+                    <div className="provider-help-links">
+                      <a href="https://console.mistral.ai/api-keys" target="_blank" rel="noopener noreferrer">{t('settings.providers.mistralKeys')}</a>
+                      <a href="https://docs.mistral.ai/api" target="_blank" rel="noopener noreferrer">{t('settings.providers.mistralDocs')}</a>
                     </div>
                   )}
                 </div>

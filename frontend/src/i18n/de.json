@@ -203,8 +203,11 @@
       "sshRestartDesc": "GatewayPorts yes ist nötig, damit der weitergeleitete Port nicht nur auf 127.0.0.1 des Servers lauscht, sondern auch vom Docker-Container erreichbar ist. Danach SSH-Dienst neu starten:",
       "openrouterKeys": "API Keys bei OpenRouter",
       "openrouterUsage": "Verbrauch bei OpenRouter",
+      "mistralKeys": "API Keys bei Mistral",
+      "mistralDocs": "Mistral API Dokumentation",
       "subtitles": {
         "openrouter": "via USA, Modelle weltweit",
+        "mistral": "Europa",
         "ollama": "lokale KI",
         "lmstudio": "lokale KI"
       }
