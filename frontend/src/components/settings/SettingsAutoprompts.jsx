@@ -36,6 +36,7 @@ export default function SettingsAutoprompts() {
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
   const [errorPopup, setErrorPopup] = useState(null);
+  const [logPopup, setLogPopup] = useState(null);
 
   useEffect(() => {
     load();
@@ -129,7 +130,17 @@ export default function SettingsAutoprompts() {
                 <span className="agent-item-desc" style={{ fontSize: '12px' }}>
                   {scheduleLabel(ap)}
                   {ap.last_run && ` · Zuletzt: ${new Date(ap.last_run).toLocaleString('de-DE')}`}
-                  {ap.last_error && (
+                  {ap.last_status === 'success' && !ap.last_error && (
+                    <button
+                      onClick={() => setLogPopup({ name: ap.name, log: ap.last_log || '(kein Log)' })}
+                      style={{
+                        background: 'none', border: 'none', padding: '0 0 0 4px',
+                        color: '#66bb6a', cursor: 'pointer', fontSize: 'inherit',
+                        textDecoration: 'underline', fontFamily: 'inherit',
+                      }}
+                    >· Erfolgreich</button>
+                  )}
+                  {ap.last_error && (<>
                     <button
                       onClick={() => setErrorPopup({ name: ap.name, error: ap.last_error })}
                       style={{
@@ -138,7 +149,17 @@ export default function SettingsAutoprompts() {
                         textDecoration: 'underline', fontFamily: 'inherit',
                       }}
                     >· Fehler</button>
-                  )}
+                    {ap.last_log && (
+                      <button
+                        onClick={() => setLogPopup({ name: ap.name, log: ap.last_log })}
+                        style={{
+                          background: 'none', border: 'none', padding: '0 0 0 4px',
+                          color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 'inherit',
+                          textDecoration: 'underline', fontFamily: 'inherit',
+                        }}
+                      >Log</button>
+                    )}
+                  </>)}
                 </span>
               </div>
               <div className="agent-item-actions">
@@ -256,6 +277,41 @@ export default function SettingsAutoprompts() {
           </div>
         </div>
       </div>
+      {logPopup && (
+        <div
+          onClick={() => setLogPopup(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'var(--bg-sidebar)', border: '1px solid var(--border)',
+              borderRadius: '8px', padding: '24px', maxWidth: '680px', width: '90%',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+            }}
+          >
+            <p style={{ fontWeight: '700', color: 'var(--text-primary)', marginBottom: '12px', fontSize: '14px' }}>
+              Log: {logPopup.name}
+            </p>
+            <pre style={{
+              background: 'var(--bg-dark)', border: '1px solid var(--border)',
+              borderRadius: '4px', padding: '12px', fontSize: '11px',
+              color: 'var(--text-primary)', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+              maxHeight: '400px', overflowY: 'auto', margin: 0, lineHeight: '1.6',
+            }}>
+              {logPopup.log}
+            </pre>
+            <button onClick={() => setLogPopup(null)} className="btn-save-agent" style={{ marginTop: '16px' }}>
+              Schließen
+            </button>
+          </div>
+        </div>
+      )}
+
       {errorPopup && (
         <div
           onClick={() => setErrorPopup(null)}

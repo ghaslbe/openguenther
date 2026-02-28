@@ -133,12 +133,27 @@ class AutopromptService:
             if agent_cfg:
                 agent_system_prompt = agent_cfg.get('system_prompt') or None
 
+        # Collect run log for display in the UI
+        run_log_lines = []
+
+        def collect_log(entry):
+            if isinstance(entry, dict):
+                t = entry.get('type', 'text')
+                msg = entry.get('message', '')
+                if msg:
+                    prefix = '▶ ' if t == 'header' else '  '
+                    run_log_lines.append(f"{prefix}{msg}")
+            else:
+                run_log_lines.append(str(entry))
+
         try:
-            response = run_agent(messages, settings, emit_log=lambda _: None, system_prompt=agent_system_prompt)
+            response = run_agent(messages, settings, emit_log=collect_log, system_prompt=agent_system_prompt)
             add_message(chat_id, 'user', ap['prompt'])
             add_message(chat_id, 'assistant', response)
             ap['last_run'] = now_iso
             ap['last_error'] = None
+            ap['last_status'] = 'success'
+            ap['last_log'] = '\n'.join(run_log_lines)[-8000:]
             log.info(f"Autoprompt '{ap['name']}' abgeschlossen.")
             self.socketio.emit('autoprompt_done', {
                 'id': ap_id,
@@ -149,6 +164,8 @@ class AutopromptService:
         except Exception as e:
             ap['last_error'] = str(e)
             ap['last_run'] = now_iso
+            ap['last_status'] = 'error'
+            ap['last_log'] = '\n'.join(run_log_lines)[-8000:]
             log.error(f"Autoprompt '{ap['name']}' Fehler: {e}")
 
         save_autoprompt(ap)
