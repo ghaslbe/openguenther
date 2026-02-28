@@ -53,6 +53,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **SSH-Tunnel-Guide**: Anleitung in Provider-Einstellungen für Ollama/LM Studio (Reverse-Tunnel vom Heimrechner zum Server)
 - **Custom Tools**: eigene MCP-Tools als Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen, keine Code-Änderung nötig (siehe `CUSTOM_TOOL_GUIDE.md`)
 - **Präsentations-Generator**: PowerPoint-Dateien (.pptx) direkt aus dem Chat erstellen — Guenther strukturiert das Thema und liefert einen Download-Button
+- **Autoprompts**: Prompts mit Zeitplan hinterlegen (Intervall / täglich / wöchentlich) — Ergebnisse landen automatisch in einem dedizierten Chat
 
 ---
 
@@ -303,6 +304,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **SSH tunnel guide**: instructions in provider settings for Ollama/LM Studio (reverse tunnel from home machine to server)
 - **Custom tools**: drop your own MCP tools as Python files into `/app/data/custom_tools/` — loaded automatically, no code changes needed (see `CUSTOM_TOOL_GUIDE.md`)
 - **Presentation generator**: create PowerPoint files (.pptx) directly from chat — Guenther structures the topic and delivers a download button
+- **Autoprompts**: schedule prompts to run automatically (interval / daily / weekly) — results are saved to a dedicated chat automatically
 
 ---
 

@@ -10,11 +10,13 @@ from models import init_db, get_chat, add_message, create_chat, update_chat_titl
 from routes.chat import chat_bp
 from routes.settings import settings_bp
 from routes.agents import agents_bp
+from routes.autoprompts import autoprompts_bp, set_service as set_autoprompt_service
 from mcp.registry import registry, MCPTool
 from mcp.loader import load_builtin_tools, load_custom_tools
 from mcp.manager import load_external_tools
 from services.agent import run_agent
 from services.telegram_gateway import TelegramGateway
+from services.autoprompt import AutopromptService
 
 app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
 CORS(app)
@@ -24,6 +26,7 @@ telegram_gateway = TelegramGateway(socketio)
 app.register_blueprint(chat_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(agents_bp)
+app.register_blueprint(autoprompts_bp)
 
 # Initialize database
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -209,6 +212,10 @@ def handle_disconnect():
 _tg_token = get_settings().get('telegram', {}).get('bot_token', '')
 if _tg_token:
     telegram_gateway.start(_tg_token)
+
+# Start Autoprompt scheduler
+_autoprompt_service = AutopromptService(socketio)
+set_autoprompt_service(_autoprompt_service)
 
 
 if __name__ == '__main__':

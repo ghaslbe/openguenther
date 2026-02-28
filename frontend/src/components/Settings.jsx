@@ -7,27 +7,30 @@ import SettingsMcp from './settings/SettingsMcp';
 import SettingsTelegram from './settings/SettingsTelegram';
 import SettingsHilfe from './settings/SettingsHilfe';
 import SettingsAgents from './settings/SettingsAgents';
+import SettingsAutoprompts from './settings/SettingsAutoprompts';
 
 const NAV_ITEMS = [
-  { id: 'general',   label: 'Allgemein' },
-  { id: 'agents',    label: 'Agenten' },
-  { id: 'providers', label: 'LLM Provider' },
-  { id: 'tools',     label: 'MCP Tools' },
-  { id: 'mcp',       label: 'MCP Server' },
-  { id: 'telegram',  label: 'Telegram' },
-  { id: 'hilfe',     label: 'Hilfe' },
-  { id: 'info',      label: 'Info' },
+  { id: 'general',      label: 'Allgemein' },
+  { id: 'agents',       label: 'Agenten' },
+  { id: 'autoprompts',  label: 'Autoprompts' },
+  { id: 'providers',    label: 'LLM Provider' },
+  { id: 'tools',        label: 'MCP Tools' },
+  { id: 'mcp',          label: 'MCP Server' },
+  { id: 'telegram',     label: 'Telegram' },
+  { id: 'hilfe',        label: 'Hilfe' },
+  { id: 'info',         label: 'Info' },
 ];
 
 const SECTION_TITLES = {
-  general:   'Allgemein',
-  agents:    'Agenten',
-  providers: 'LLM Provider',
-  tools:     'Enthaltene MCP Tools',
-  mcp:       'Externe MCP Server',
-  telegram:  'Telegram Gateway',
-  hilfe:     'Hilfe',
-  info:      'Info',
+  general:     'Allgemein',
+  agents:      'Agenten',
+  autoprompts: 'Autoprompts',
+  providers:   'LLM Provider',
+  tools:       'Enthaltene MCP Tools',
+  mcp:         'Externe MCP Server',
+  telegram:    'Telegram Gateway',
+  hilfe:       'Hilfe',
+  info:        'Info',
 };
 
 export default function Settings({ onClose, onAgentsChange }) {
@@ -47,6 +50,8 @@ export default function Settings({ onClose, onAgentsChange }) {
     switch (activeSection) {
       case 'agents':
         return <SettingsAgents onAgentsChange={onAgentsChange} />;
+      case 'autoprompts':
+        return <SettingsAutoprompts />;
       case 'general':
         return <SettingsGeneral providers={providers} />;
       case 'providers':

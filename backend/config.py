@@ -5,6 +5,7 @@ DATA_DIR = os.environ.get('DATA_DIR', '/app/data')
 SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
 DB_FILE = os.path.join(DATA_DIR, 'guenther.db')
 AGENTS_FILE = os.path.join(DATA_DIR, 'agents.json')
+AUTOPROMPTS_FILE = os.path.join(DATA_DIR, 'autoprompts.json')
 
 DEFAULT_SETTINGS = {
     'openrouter_api_key': '',

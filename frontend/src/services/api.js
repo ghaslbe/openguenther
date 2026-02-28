@@ -135,6 +135,38 @@ export async function deleteAgent(id) {
   await fetch(`${BASE}/api/agents/${id}`, { method: 'DELETE' });
 }
 
+export async function fetchAutoprompts() {
+  const res = await fetch(`${BASE}/api/autoprompts`);
+  return res.json();
+}
+
+export async function createAutoprompt(data) {
+  const res = await fetch(`${BASE}/api/autoprompts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+export async function updateAutoprompt(id, data) {
+  const res = await fetch(`${BASE}/api/autoprompts/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+export async function deleteAutoprompt(id) {
+  await fetch(`${BASE}/api/autoprompts/${id}`, { method: 'DELETE' });
+}
+
+export async function runAutopromptNow(id) {
+  const res = await fetch(`${BASE}/api/autoprompts/${id}/run`, { method: 'POST' });
+  return res.json();
+}
+
 export async function fetchProviders() {
   const res = await fetch(`${BASE}/api/providers`);
   return res.json();

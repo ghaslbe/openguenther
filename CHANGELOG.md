@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.6] — 2026-02-28
+
+### Autoprompts — geplante Prompts
+
+- Neuer Einstellungsbereich **Autoprompts**: Prompts mit eigenem Zeitplan hinterlegen
+  - Zeitplan-Typen: **Intervall** (alle X Minuten/Stunden), **Täglich** (HH:MM), **Wöchentlich** (Wochentag + HH:MM)
+  - Optional: eigenen Agenten pro Autoprompt zuweisen
+  - Ergebnisse landen in einem **dedizierten Chat** (einmalig erstellt, immer wiederverwendet — kein neuer Chat bei jedem Lauf)
+  - ▶ Button zum sofortigen manuellen Ausführen
+  - Pause/Aktiv Toggle zum temporären Deaktivieren
+- Backend: `APScheduler` (BackgroundScheduler) für cron-artige Ausführung
+- Backend: `backend/services/autoprompt.py` + `backend/routes/autoprompts.py`
+- Persistenz: `/app/data/autoprompts.json` (liegt im Docker-Volume)
+- `requirements.txt`: `apscheduler==3.10.4` ergänzt
+
+---
+
 ## [1.4.5] — 2026-02-27
 
 ### Robusteres Custom-Tool-Management
