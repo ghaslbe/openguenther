@@ -270,7 +270,7 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
                 fontSize: '12px',
                 borderRadius: '4px',
                 border: '1px solid var(--border)',
-                background: usagePeriod === p ? 'var(--accent)' : 'var(--bg-secondary)',
+                background: usagePeriod === p ? 'var(--accent)' : 'var(--bg-input)',
                 color: usagePeriod === p ? '#fff' : 'var(--text-primary)',
                 cursor: 'pointer',
               }}
@@ -341,7 +341,7 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
           ) : (
             <button
               onClick={() => setConfirmReset(true)}
-              style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--bg-input)', color: 'var(--text-secondary)', cursor: 'pointer' }}
             >
               {t('settings.usage.reset')}
             </button>

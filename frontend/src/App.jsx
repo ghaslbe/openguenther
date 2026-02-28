@@ -46,7 +46,7 @@ function UsagePopup({ onClose }) {
           position: 'absolute',
           top: '48px',
           right: '12px',
-          background: 'var(--bg-secondary)',
+          background: 'var(--bg-sidebar)',
           border: '1px solid var(--border)',
           borderRadius: '8px',
           padding: '16px',
