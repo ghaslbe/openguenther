@@ -123,6 +123,7 @@
       "providerDefault": "— Default (global setting) —",
       "modelOverride": "Model (override)",
       "modelPlaceholder": "empty = use default model",
+      "providerSelectFirst": "Select a provider first",
       "save": "Save",
       "create": "Create",
       "cancel": "Cancel"

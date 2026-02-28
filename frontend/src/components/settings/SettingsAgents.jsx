@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchAgents, createAgent, updateAgent, deleteAgent, fetchProviders } from '../../services/api';
+import { fetchAgents, createAgent, updateAgent, deleteAgent, fetchProviders, fetchProviderModels } from '../../services/api';
 
 const EMPTY_FORM = { name: '', description: '', system_prompt: '', provider_id: '', model: '' };
 
@@ -11,6 +11,9 @@ export default function SettingsAgents({ onAgentsChange }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
+  const [availableModels, setAvailableModels] = useState([]);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [modelsError, setModelsError] = useState('');
 
   useEffect(() => {
     loadAgents();
@@ -30,6 +33,21 @@ export default function SettingsAgents({ onAgentsChange }) {
   function showMessage(msg) {
     setMessage(msg);
     setTimeout(() => setMessage(''), 3000);
+  }
+
+  async function handleLoadModels() {
+    if (!form.provider_id) return;
+    setLoadingModels(true);
+    setModelsError('');
+    setAvailableModels([]);
+    const result = await fetchProviderModels(form.provider_id);
+    setLoadingModels(false);
+    if (result.success) {
+      setAvailableModels((result.models || []).slice().sort());
+      if (!result.models?.length) setModelsError(t('settings.general.noModels'));
+    } else {
+      setModelsError(result.error || t('settings.general.loadError'));
+    }
   }
 
   function startEdit(agent) {
@@ -136,7 +154,7 @@ export default function SettingsAgents({ onAgentsChange }) {
           </label>
           <select
             value={form.provider_id}
-            onChange={e => setForm(f => ({ ...f, provider_id: e.target.value }))}
+            onChange={e => { setForm(f => ({ ...f, provider_id: e.target.value })); setAvailableModels([]); setModelsError(''); }}
           >
             <option value="">{t('settings.agents.providerDefault')}</option>
             {Object.entries(providers)
@@ -146,12 +164,36 @@ export default function SettingsAgents({ onAgentsChange }) {
               ))}
           </select>
           <label className="agent-form-label">{t('settings.agents.modelOverride')} <span className="agent-form-optional">{t('settings.agents.optional')}</span></label>
-          <input
-            type="text"
-            placeholder={t('settings.agents.modelPlaceholder')}
-            value={form.model}
-            onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
-          />
+          <div className="input-group">
+            <input
+              type="text"
+              placeholder={t('settings.agents.modelPlaceholder')}
+              value={form.model}
+              onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
+            />
+            <button
+              type="button"
+              className="btn-load-models"
+              onClick={handleLoadModels}
+              disabled={loadingModels || !form.provider_id}
+              title={!form.provider_id ? t('settings.agents.providerSelectFirst') : ''}
+            >
+              {loadingModels ? '...' : t('settings.general.load')}
+            </button>
+          </div>
+          {modelsError && <small style={{ color: 'var(--accent-red, #e05252)' }}>{modelsError}</small>}
+          {availableModels.length > 0 && (
+            <select
+              className="settings-select"
+              value=""
+              onChange={e => { if (e.target.value) setForm(f => ({ ...f, model: e.target.value })); }}
+            >
+              <option value="">{t('settings.general.selectModel')}</option>
+              {availableModels.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          )}
           <div className="agent-form-actions">
             <button className="btn-save-agent" onClick={handleSave} disabled={!form.name.trim() || !form.system_prompt.trim()}>
               {editingId ? t('settings.agents.save') : t('settings.agents.create')}
