@@ -51,6 +51,15 @@ export async function addMcpServer(server) {
   return res.json();
 }
 
+export async function updateMcpServer(serverId, data) {
+  const res = await fetch(`${BASE}/api/mcp-servers/${serverId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
 export async function deleteMcpServer(serverId) {
   await fetch(`${BASE}/api/mcp-servers/${serverId}`, { method: 'DELETE' });
 }

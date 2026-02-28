@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchMcpServers, addMcpServer, deleteMcpServer } from '../../services/api';
+import { fetchMcpServers, addMcpServer, updateMcpServer, deleteMcpServer } from '../../services/api';
+
+function envToText(env) {
+  if (!env) return '';
+  return Object.entries(env).map(([k, v]) => `${k}=${v}`).join('\n');
+}
+
+function textToEnv(text) {
+  const env = {};
+  text.split('\n').forEach(line => {
+    const idx = line.indexOf('=');
+    if (idx > 0) env[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+  });
+  return env;
+}
 
 export default function SettingsMcp() {
   const { t } = useTranslation();
@@ -9,6 +23,8 @@ export default function SettingsMcp() {
   const [newCommand, setNewCommand] = useState('');
   const [newArgs, setNewArgs] = useState('');
   const [newEnv, setNewEnv] = useState('');
+  const [editId, setEditId] = useState(null);
+  const [editState, setEditState] = useState({});
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -23,11 +39,7 @@ export default function SettingsMcp() {
   async function handleAddServer() {
     if (!newName || !newCommand) return;
     const args = newArgs ? newArgs.split(' ').filter(Boolean) : [];
-    const env = {};
-    newEnv.split('\n').forEach(line => {
-      const idx = line.indexOf('=');
-      if (idx > 0) env[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
-    });
+    const env = textToEnv(newEnv);
     await addMcpServer({ name: newName, transport: 'stdio', command: newCommand, args, env });
     setNewName('');
     setNewCommand('');
@@ -35,6 +47,31 @@ export default function SettingsMcp() {
     setNewEnv('');
     await loadMcpServers();
     setMessage(t('settings.mcp.added'));
+    setTimeout(() => setMessage(''), 3000);
+  }
+
+  function startEdit(s) {
+    setEditId(s.id);
+    setEditState({
+      name: s.name,
+      command: s.command,
+      args: (s.args || []).join(' '),
+      env: envToText(s.env),
+    });
+  }
+
+  function cancelEdit() {
+    setEditId(null);
+    setEditState({});
+  }
+
+  async function handleSaveEdit(id) {
+    const args = editState.args ? editState.args.split(' ').filter(Boolean) : [];
+    const env = textToEnv(editState.env || '');
+    await updateMcpServer(id, { name: editState.name, command: editState.command, args, env });
+    setEditId(null);
+    await loadMcpServers();
+    setMessage(t('settings.mcp.saved'));
     setTimeout(() => setMessage(''), 3000);
   }
 
@@ -54,19 +91,62 @@ export default function SettingsMcp() {
         <h3>{t('settings.mcp.configured')}</h3>
         <div className="mcp-servers-list">
           {mcpServers.map(s => (
-            <div key={s.id} className="mcp-server-item">
-              <div className="mcp-server-info">
-                <strong>{s.name}</strong>
-                <span className="mcp-server-cmd">{s.command} {(s.args || []).join(' ')}</span>
-                {s.env && Object.keys(s.env).length > 0 && (
-                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', display: 'block' }}>
-                    ENV: {Object.keys(s.env).join(', ')}
-                  </span>
-                )}
-              </div>
-              <button className="btn-delete-server" onClick={() => handleDeleteServer(s.id)}>
-                {t('settings.mcp.remove')}
-              </button>
+            <div key={s.id} className="mcp-server-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+              {editId === s.id ? (
+                <div className="mcp-add-form" style={{ border: 'none', padding: '8px 0' }}>
+                  <input
+                    type="text"
+                    value={editState.name}
+                    onChange={e => setEditState(p => ({ ...p, name: e.target.value }))}
+                    placeholder="Name"
+                  />
+                  <input
+                    type="text"
+                    value={editState.command}
+                    onChange={e => setEditState(p => ({ ...p, command: e.target.value }))}
+                    placeholder="Command"
+                  />
+                  <input
+                    type="text"
+                    value={editState.args}
+                    onChange={e => setEditState(p => ({ ...p, args: e.target.value }))}
+                    placeholder="Argumente"
+                  />
+                  <textarea
+                    value={editState.env}
+                    onChange={e => setEditState(p => ({ ...p, env: e.target.value }))}
+                    placeholder={t('settings.mcp.envPlaceholder')}
+                    rows={3}
+                    style={{ fontFamily: 'monospace', fontSize: '12px', resize: 'vertical' }}
+                  />
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn-save" onClick={() => handleSaveEdit(s.id)}>
+                      {t('settings.mcp.save')}
+                    </button>
+                    <button className="btn-test-provider" onClick={cancelEdit}>
+                      {t('settings.mcp.cancel')}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+                  <div className="mcp-server-info" style={{ flex: 1 }}>
+                    <strong>{s.name}</strong>
+                    <span className="mcp-server-cmd">{s.command} {(s.args || []).join(' ')}</span>
+                    {s.env && Object.keys(s.env).length > 0 && (
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', display: 'block' }}>
+                        ENV: {Object.keys(s.env).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                  <button className="btn-test-provider" onClick={() => startEdit(s)}>
+                    {t('settings.mcp.edit')}
+                  </button>
+                  <button className="btn-delete-server" onClick={() => handleDeleteServer(s.id)}>
+                    {t('settings.mcp.remove')}
+                  </button>
+                </div>
+              )}
             </div>
           ))}
           {mcpServers.length === 0 && (

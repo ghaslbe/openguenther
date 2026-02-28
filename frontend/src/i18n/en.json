@@ -239,7 +239,11 @@
       "empty": "No external MCP servers configured",
       "addTitle": "Add new server",
       "added": "Server added!",
+      "saved": "Server saved!",
       "add": "Add",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
       "envPlaceholder": "Environment variables (optional, one per line):\nFIRECRAWL_API_KEY=fc-xxx\nOTHER_VAR=value",
       "marketplaceHint": "Find MCP servers on various marketplaces, e.g.",
       "marketplaceHintSuffix": " — one of many."

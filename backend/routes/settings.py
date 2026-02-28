@@ -208,6 +208,21 @@ def add_mcp_server():
     return jsonify(server), 201
 
 
+@settings_bp.route('/api/mcp-servers/<server_id>', methods=['PUT'])
+def update_mcp_server(server_id):
+    data = request.get_json()
+    settings = get_settings()
+    for s in settings.get('mcp_servers', []):
+        if s['id'] == server_id:
+            s['name'] = data.get('name', s['name'])
+            s['command'] = data.get('command', s['command'])
+            s['args'] = data.get('args', s['args'])
+            s['env'] = data.get('env', s.get('env', {}))
+            break
+    save_settings(settings)
+    return jsonify({'success': True})
+
+
 @settings_bp.route('/api/mcp-servers/<server_id>', methods=['DELETE'])
 def remove_mcp_server(server_id):
     settings = get_settings()
