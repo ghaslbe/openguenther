@@ -89,6 +89,23 @@ export default function SettingsMcp() {
           </button>
         </div>
       </div>
+
+      <div style={{
+        marginTop: '24px',
+        padding: '12px 16px',
+        background: 'var(--bg-input)',
+        border: '1px solid var(--border)',
+        borderRadius: '8px',
+        fontSize: '13px',
+        color: 'var(--text-secondary)',
+        lineHeight: '1.5',
+      }}>
+        💡 {t('settings.mcp.marketplaceHint')}{' '}
+        <a href="https://mcpmarket.com/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>
+          mcpmarket.com
+        </a>
+        {t('settings.mcp.marketplaceHintSuffix')}
+      </div>
     </div>
   );
 }

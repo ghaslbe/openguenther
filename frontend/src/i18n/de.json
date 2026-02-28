@@ -239,7 +239,9 @@
       "empty": "Keine externen MCP Server konfiguriert",
       "addTitle": "Neuen Server hinzufügen",
       "added": "Server hinzugefügt!",
-      "add": "Hinzufügen"
+      "add": "Hinzufügen",
+      "marketplaceHint": "MCP Server findest du auf verschiedenen Marktplätzen, z.B.",
+      "marketplaceHintSuffix": " — einer von vielen."
     },
     "usage": {
       "title": "Nutzungsstatistik",

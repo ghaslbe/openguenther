@@ -239,7 +239,9 @@
       "empty": "No external MCP servers configured",
       "addTitle": "Add new server",
       "added": "Server added!",
-      "add": "Add"
+      "add": "Add",
+      "marketplaceHint": "Find MCP servers on various marketplaces, e.g.",
+      "marketplaceHintSuffix": " — one of many."
     },
     "usage": {
       "title": "Usage statistics",
