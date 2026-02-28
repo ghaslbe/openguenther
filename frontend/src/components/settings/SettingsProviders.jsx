@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { updateProvider, testProvider } from '../../services/api';
 
 const SSH_INFO = {
@@ -17,6 +18,7 @@ const SSH_INFO = {
 const PROVIDER_ORDER = ['openrouter', 'ollama', 'lmstudio'];
 
 export default function SettingsProviders({ providers, onProvidersChange }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState({});
   const [editState, setEditState] = useState({});
   const [showKeys, setShowKeys] = useState({});
@@ -70,7 +72,7 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
     const base_url = edit.base_url || providers[pid]?.base_url || '';
     const api_key = edit.api_key || '';
     if (!base_url) {
-      setTestResult(prev => ({ ...prev, [pid]: { success: false, error: 'Keine Base URL konfiguriert' } }));
+      setTestResult(prev => ({ ...prev, [pid]: { success: false, error: t('settings.providers.noBaseUrl') } }));
       return;
     }
     setTesting(prev => ({ ...prev, [pid]: true }));
@@ -86,7 +88,7 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
     await updateProvider(pid, edit);
     onProvidersChange();
     setEditState(prev => ({ ...prev, [pid]: { ...edit, api_key: '' } }));
-    setMessage('Gespeichert!');
+    setMessage(t('settings.providers.saved'));
     setSaving(prev => ({ ...prev, [pid]: false }));
     setTimeout(() => setMessage(''), 3000);
   }
@@ -100,7 +102,7 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
     <div>
       {message && <div className="settings-message">{message}</div>}
       <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
-        Alle Provider sind OpenAI-API-kompatibel. Für Ollama und LM Studio ist kein API Key nötig.
+        {t('settings.providers.description')}
       </p>
 
       {orderedProviders.map(pid => {
@@ -117,7 +119,7 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
             <div className="provider-card-header" onClick={() => toggleExpand(pid)}>
               <span className="provider-name">{p.name || pid}</span>
               <span className={`provider-badge ${p.enabled ? 'active' : 'inactive'}`}>
-                {p.enabled ? 'Aktiv' : 'Inaktiv'}
+                {p.enabled ? t('settings.providers.active') : t('settings.providers.inactive')}
               </span>
               <label className="provider-toggle" onClick={(e) => e.stopPropagation()}>
                 <input
@@ -134,7 +136,7 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
               <div className="provider-card-body">
                 <div className="settings-section" style={{ marginTop: '12px', marginBottom: 0 }}>
                   <label>
-                    Name
+                    {t('settings.providers.name')}
                     <input
                       type="text"
                       value={edit.name}
@@ -143,79 +145,69 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
                     />
                   </label>
                   <label>
-                    Base URL
+                    {t('settings.providers.baseUrl')}
                     <input
                       type="text"
                       value={edit.base_url}
                       onChange={(e) => setEdit(pid, 'base_url', e.target.value)}
                       placeholder="https://openrouter.ai/api/v1"
                     />
-                    <small>Endet mit <code>/v1</code> — <code>/chat/completions</code> wird automatisch angehängt</small>
+                    <small>{t('settings.providers.baseUrlHelp')}</small>
                   </label>
                   <label>
-                    API Key {pid !== 'openrouter' && <span style={{ opacity: 0.6 }}>(optional)</span>}
+                    {t('settings.providers.apiKey')} {pid !== 'openrouter' && <span style={{ opacity: 0.6 }}>{t('settings.providers.apiKeyOptional')}</span>}
                     <div className="input-group">
                       <input
                         type={showKeys[pid] ? 'text' : 'password'}
                         value={edit.api_key}
                         onChange={(e) => setEdit(pid, 'api_key', e.target.value)}
-                        placeholder={p.api_key_masked || (pid === 'openrouter' ? 'sk-or-v1-...' : 'leer lassen wenn nicht nötig')}
+                        placeholder={p.api_key_masked || (pid === 'openrouter' ? 'sk-or-v1-...' : t('settings.providers.apiKeyHelp'))}
                       />
                       <button
                         type="button"
                         className="btn-toggle-key"
                         onClick={() => setShowKeys(prev => ({ ...prev, [pid]: !prev[pid] }))}
                       >
-                        {showKeys[pid] ? 'Verbergen' : 'Anzeigen'}
+                        {showKeys[pid] ? t('settings.providers.hide') : t('settings.providers.show')}
                       </button>
                     </div>
-                    <small>Nur ausfüllen um den gespeicherten Key zu ändern</small>
+                    <small>{t('settings.providers.apiKeyHelp')}</small>
                   </label>
                   {sshInfo && (
                     <div className="provider-ssh-info">
-                      <strong>SSH-Tunnel (von Zuhause zum Server)</strong>
-                      <p>
-                        Falls {sshInfo.label} auf deinem lokalen Rechner läuft, kannst du es per
-                        SSH-Reverse-Tunnel für den Server erreichbar machen. Führe diesen Befehl
-                        auf deinem <em>lokalen Rechner</em> aus:
-                      </p>
+                      <strong>{t('settings.providers.sshTitle')}</strong>
+                      <p>{t('settings.providers.sshDesc', { label: sshInfo.label })}</p>
                       <code>ssh -R {sshInfo.port}:localhost:{sshInfo.port} user@{serverIp || 'server-ip'} -N</code>
-                      <p>
-                        Solange der Tunnel aktiv ist, trage als Base URL ein:
-                      </p>
+                      <p>{t('settings.providers.sshUrlTitle')}</p>
                       <code>{sshInfo.default_url}</code>
-                      <p className="provider-ssh-note">
-                        <code>host.docker.internal</code> zeigt vom Container auf den Server-Host,
-                        wo der SSH-Tunnel lauscht. <code>-N</code> öffnet nur den Tunnel ohne Shell.
-                        Für einen dauerhaften Tunnel empfiehlt sich <code>autossh</code>.
-                      </p>
-                      <strong style={{marginTop: '12px'}}>Voraussetzung: SSH-Server konfigurieren</strong>
-                      <p>Damit der Reverse-Tunnel funktioniert, muss auf dem Server <code>/etc/ssh/sshd_config</code> folgendes enthalten:</p>
+                      <p className="provider-ssh-note">{t('settings.providers.sshNote')}</p>
+                      <strong style={{marginTop: '12px'}}>{t('settings.providers.sshPrereqTitle')}</strong>
+                      <p>{t('settings.providers.sshPrereqDesc')}</p>
                       <code>AllowTcpForwarding yes{'\n'}GatewayPorts yes</code>
-                      <p><code>GatewayPorts yes</code> ist nötig, damit der weitergeleitete Port nicht nur auf <code>127.0.0.1</code> des Servers lauscht, sondern auch vom Docker-Container erreichbar ist. Danach SSH-Dienst neu starten:</p>
+                      <p>{t('settings.providers.sshRestartDesc')}</p>
                       <code>sudo systemctl restart sshd</code>
                     </div>
                   )}
                   <div className="provider-action-row">
                     <button className="btn-save" onClick={() => handleSave(pid)} disabled={isSaving}>
-                      {isSaving ? 'Speichere...' : 'Speichern'}
+                      {isSaving ? t('settings.providers.saving') : t('settings.providers.save')}
                     </button>
                     <button className="btn-test-provider" onClick={() => handleTest(pid)} disabled={isTesting}>
-                      {isTesting ? 'Teste...' : 'Verbindung testen'}
+                      {isTesting ? t('settings.providers.testing') : t('settings.providers.test')}
                     </button>
                   </div>
                   {tResult && (
                     <div className={`provider-test-result ${tResult.success ? 'ok' : 'err'}`}>
                       {tResult.success
-                        ? <>✓ Verbindung OK — {tResult.model_count} Modell{tResult.model_count !== 1 ? 'e' : ''} gefunden{tResult.models?.length ? `: ${tResult.models.join(', ')}` : ''}</>
-                        : <>✗ Fehler: {tResult.error}</>
+                        ? <>{t('settings.providers.testOk', { count: tResult.model_count })}{tResult.models?.length ? `: ${tResult.models.join(', ')}` : ''}</>
+                        : t('settings.providers.testErr', { error: tResult.error })
                       }
                     </div>
                   )}
                   {pid === 'openrouter' && (
                     <div className="provider-help-links">
-                      <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener noreferrer">API Keys bei OpenRouter</a>
-                      <a href="https://openrouter.ai/settings/credits" target="_blank" rel="noopener noreferrer">Verbrauch bei OpenRouter</a>
+                      <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener noreferrer">{t('settings.providers.openrouterKeys')}</a>
+                      <a href="https://openrouter.ai/settings/credits" target="_blank" rel="noopener noreferrer">{t('settings.providers.openrouterUsage')}</a>
                     </div>
                   )}
                 </div>

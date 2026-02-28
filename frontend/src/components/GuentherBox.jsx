@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function syntaxHighlight(json) {
   if (typeof json !== 'string') {
@@ -28,6 +29,7 @@ function syntaxHighlight(json) {
 }
 
 function LogEntry({ entry }) {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
 
   // Legacy format: plain string
@@ -65,7 +67,7 @@ function LogEntry({ entry }) {
           {isLarge && (
             <span className="json-toggle">{collapsed ? '+ ' : '- '}</span>
           )}
-          {entry.label || 'data'} {isLarge && collapsed && <span className="json-preview">({lines} Zeilen)</span>}
+          {entry.label || 'data'} {isLarge && collapsed && <span className="json-preview">({lines} {t('guenther.lines')})</span>}
         </div>
         {!collapsed && (
           <pre
@@ -82,6 +84,7 @@ function LogEntry({ entry }) {
 }
 
 export default function GuentherBox({ logs, width, onResizeStart, onClear }) {
+  const { t } = useTranslation();
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -96,14 +99,14 @@ export default function GuentherBox({ logs, width, onResizeStart, onClear }) {
           <span className="guenther-title">GUENTHER</span>
           <span className="guenther-subtitle">MCP Terminal</span>
         </div>
-        <button className="btn-guenther-clear" onClick={onClear} title="Terminal leeren">CLR</button>
+        <button className="btn-guenther-clear" onClick={onClear} title={t('guenther.clearTitle')}>CLR</button>
       </div>
       <div className="guenther-terminal">
         {logs.map((log, idx) => (
           <LogEntry key={idx} entry={log} />
         ))}
         {logs.length === 0 && (
-          <div className="guenther-line dim">Warte auf Aktivitaet...</div>
+          <div className="guenther-line dim">{t('guenther.waiting')}</div>
         )}
         <div ref={bottomRef} />
       </div>

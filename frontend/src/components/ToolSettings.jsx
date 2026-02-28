@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchToolSettings, updateToolSettings } from '../services/api';
 
 export default function ToolSettings({ toolName, onClose }) {
+  const { t } = useTranslation();
   const [schema, setSchema] = useState([]);
   const [values, setValues] = useState({});
   const [saving, setSaving] = useState(false);
@@ -30,7 +32,7 @@ export default function ToolSettings({ toolName, onClose }) {
   async function handleSave() {
     setSaving(true);
     await updateToolSettings(toolName, values);
-    setMessage('Gespeichert!');
+    setMessage(t('toolSettings.saved'));
     setSaving(false);
     setTimeout(() => setMessage(''), 3000);
   }
@@ -70,7 +72,7 @@ export default function ToolSettings({ toolName, onClose }) {
                       className="btn-toggle-key"
                       onClick={() => togglePassword(field.key)}
                     >
-                      {showPasswords[field.key] ? 'Verbergen' : 'Anzeigen'}
+                      {showPasswords[field.key] ? t('toolSettings.hide') : t('toolSettings.show')}
                     </button>
                   </div>
                 ) : (
@@ -88,7 +90,7 @@ export default function ToolSettings({ toolName, onClose }) {
             ))}
 
             <button className="btn-save" onClick={handleSave} disabled={saving}>
-              {saving ? 'Speichere...' : 'Speichern'}
+              {saving ? t('toolSettings.saving') : t('toolSettings.save')}
             </button>
           </div>
         </div>

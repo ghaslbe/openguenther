@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchMcpServers, addMcpServer, deleteMcpServer } from '../../services/api';
 
 export default function SettingsMcp() {
+  const { t } = useTranslation();
   const [mcpServers, setMcpServers] = useState([]);
   const [newName, setNewName] = useState('');
   const [newCommand, setNewCommand] = useState('');
@@ -25,7 +27,7 @@ export default function SettingsMcp() {
     setNewCommand('');
     setNewArgs('');
     await loadMcpServers();
-    setMessage('Server hinzugefügt!');
+    setMessage(t('settings.mcp.added'));
     setTimeout(() => setMessage(''), 3000);
   }
 
@@ -38,11 +40,11 @@ export default function SettingsMcp() {
     <div>
       {message && <div className="settings-message">{message}</div>}
       <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-        Externe MCP Server werden über stdio (JSON-RPC 2.0) angebunden. Nach dem Hinzufügen "MCP Tools neu laden" unter Tools klicken.
+        {t('settings.mcp.description')}
       </p>
 
       <div className="settings-section">
-        <h3>Konfigurierte Server</h3>
+        <h3>{t('settings.mcp.configured')}</h3>
         <div className="mcp-servers-list">
           {mcpServers.map(s => (
             <div key={s.id} className="mcp-server-item">
@@ -51,18 +53,18 @@ export default function SettingsMcp() {
                 <span className="mcp-server-cmd">{s.command} {(s.args || []).join(' ')}</span>
               </div>
               <button className="btn-delete-server" onClick={() => handleDeleteServer(s.id)}>
-                Entfernen
+                {t('settings.mcp.remove')}
               </button>
             </div>
           ))}
           {mcpServers.length === 0 && (
-            <div className="mcp-servers-empty">Keine externen MCP Server konfiguriert</div>
+            <div className="mcp-servers-empty">{t('settings.mcp.empty')}</div>
           )}
         </div>
       </div>
 
       <div className="settings-section">
-        <h3>Neuen Server hinzufügen</h3>
+        <h3>{t('settings.mcp.addTitle')}</h3>
         <div className="mcp-add-form">
           <input
             type="text"
@@ -83,7 +85,7 @@ export default function SettingsMcp() {
             onChange={(e) => setNewArgs(e.target.value)}
           />
           <button className="btn-add-server" onClick={handleAddServer}>
-            Hinzufügen
+            {t('settings.mcp.add')}
           </button>
         </div>
       </div>

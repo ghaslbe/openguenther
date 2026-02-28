@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import ChatList from './components/ChatList';
 import ChatWindow from './components/ChatWindow';
 import GuentherBox from './components/GuentherBox';
 import Settings from './components/Settings';
-import { fetchChats, fetchChat, deleteChat, fetchAgents } from './services/api';
+import FirstRunOverlay from './components/FirstRunOverlay';
+import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders } from './services/api';
 import { getSocket } from './services/socket';
 
 export default function App() {
@@ -19,6 +21,8 @@ export default function App() {
   const [agents, setAgents] = useState([]);
   const [selectedAgentId, setSelectedAgentId] = useState('');
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  const [showFirstRun, setShowFirstRun] = useState(false);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -29,6 +33,21 @@ export default function App() {
     setTheme(next);
     localStorage.setItem('theme', next);
   }
+
+  function toggleLang() {
+    const next = i18n.language === 'de' ? 'en' : 'de';
+    i18n.changeLanguage(next);
+    localStorage.setItem('language', next);
+  }
+
+  // Show first-run overlay if language is not saved and no provider is configured
+  useEffect(() => {
+    if (localStorage.getItem('language')) return;
+    fetchProviders().then(providers => {
+      const hasProvider = Object.values(providers || {}).some(p => p.enabled);
+      if (!hasProvider) setShowFirstRun(true);
+    }).catch(() => {});
+  }, []);
 
   const isResizing = useRef(false);
   const socket = getSocket();
@@ -195,8 +214,11 @@ export default function App() {
       <div className="app-topbar">
         <span className="topbar-open">OPEN</span><span className="topbar-guenther">guenther</span>
         <span className="topbar-version">v{__APP_VERSION__}</span><span className="topbar-beta">beta</span>
+        <button className="btn-theme-toggle" onClick={toggleLang}>
+          {i18n.language === 'de' ? 'EN' : 'DE'}
+        </button>
         <button className="btn-theme-toggle" onClick={toggleTheme}>
-          {theme === 'dark' ? 'LIGHT' : 'DARK'}
+          {theme === 'dark' ? t('topbar.light') : t('topbar.dark')}
         </button>
       </div>
       <div className="app">
@@ -229,6 +251,7 @@ export default function App() {
         onClear={handleClearLogs}
       />
       {showSettings && <Settings onClose={() => setShowSettings(false)} onAgentsChange={loadAgents} />}
+      {showFirstRun && <FirstRunOverlay onClose={() => setShowFirstRun(false)} />}
       </div>
     </div>
   );

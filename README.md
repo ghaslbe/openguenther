@@ -52,6 +52,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 **Chat & Interface**
 - **Chat-Interface** mit Markdown-Rendering, Code-Highlighting und Bilddarstellung
 - **Light/Dark Theme**: umschaltbar per Button in der Titelleiste, Auswahl wird gespeichert
+- **Sprachumschalter DE/EN**: GUI in Deutsch oder Englisch — Button in der Titelleiste, Auswahl wird gespeichert
 - **Kopieren-Button**: jede Nachricht hat ein Kopieren-Icon (Zwischenablage)
 - **Live Tool-Anzeige**: während Guenther denkt, wird das aktive Tool + Log-Status neben den Punkten angezeigt
 - **Guenther-Terminal**: Live-Ansicht aller API-Kommunikation im DOS-Stil mit Syntax-Highlighting und einklappbaren Blöcken
@@ -338,6 +339,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 **Chat & Interface**
 - **Chat interface** with Markdown rendering, code highlighting and image display
 - **Light/Dark Theme**: toggle via button in the title bar, preference is saved
+- **Language switch DE/EN**: GUI in German or English — button in the title bar, preference is saved
 - **Copy button**: every message has a copy icon (clipboard)
 - **Live tool display**: while Guenther is thinking, the active tool + log status is shown next to the typing dots
 - **Guenther Terminal**: live view of all API communication in DOS style with syntax highlighting and collapsible blocks

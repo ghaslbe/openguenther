@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchAgents, createAgent, updateAgent, deleteAgent } from '../../services/api';
 
 const EMPTY_FORM = { name: '', description: '', system_prompt: '' };
 
 export default function SettingsAgents({ onAgentsChange }) {
+  const { t } = useTranslation();
   const [agents, setAgents] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
@@ -37,10 +39,10 @@ export default function SettingsAgents({ onAgentsChange }) {
     if (!form.name.trim() || !form.system_prompt.trim()) return;
     if (editingId) {
       await updateAgent(editingId, form);
-      showMessage('Agent aktualisiert!');
+      showMessage(t('settings.agents.updated'));
     } else {
       await createAgent(form);
-      showMessage('Agent erstellt!');
+      showMessage(t('settings.agents.created'));
     }
     setEditingId(null);
     setForm(EMPTY_FORM);
@@ -58,11 +60,11 @@ export default function SettingsAgents({ onAgentsChange }) {
     <div>
       {message && <div className="settings-message">{message}</div>}
       <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-        Agenten haben einen eigenen System-Prompt. Beim Start eines neuen Chats kannst du einen Agenten auswählen.
+        {t('settings.agents.description')}
       </p>
 
       <div className="settings-section">
-        <h3>Konfigurierte Agenten</h3>
+        <h3>{t('settings.agents.configured')}</h3>
         <div className="agents-list">
           {agents.map(a => (
             <div key={a.id} className="agent-item">
@@ -71,48 +73,50 @@ export default function SettingsAgents({ onAgentsChange }) {
                 {a.description && <span className="agent-item-desc">{a.description}</span>}
               </div>
               <div className="agent-item-actions">
-                <button className="btn-edit-agent" onClick={() => startEdit(a)}>Bearbeiten</button>
-                <button className="btn-delete-agent" onClick={() => handleDelete(a.id)}>Löschen</button>
+                <button className="btn-edit-agent" onClick={() => startEdit(a)}>{t('settings.agents.edit')}</button>
+                <button className="btn-delete-agent" onClick={() => handleDelete(a.id)}>{t('settings.agents.delete')}</button>
               </div>
             </div>
           ))}
           {agents.length === 0 && (
-            <div className="agents-empty">Keine Agenten konfiguriert</div>
+            <div className="agents-empty">{t('settings.agents.empty')}</div>
           )}
         </div>
       </div>
 
       <div className="settings-section">
-        <h3>{editingId ? 'Agent bearbeiten' : 'Neuen Agenten erstellen'}</h3>
+        <h3>{editingId ? t('settings.agents.editTitle') : t('settings.agents.newTitle')}</h3>
         <div className="agent-form">
-          <label className="agent-form-label">Name</label>
+          <label className="agent-form-label">{t('settings.agents.name')}</label>
           <input
             type="text"
-            placeholder="z.B. Poet"
+            placeholder={t('settings.agents.namePlaceholder')}
             value={form.name}
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
           />
-          <label className="agent-form-label">Kurzbeschreibung <span className="agent-form-optional">(optional)</span></label>
+          <label className="agent-form-label">
+            {t('settings.agents.descField')} <span className="agent-form-optional">{t('settings.agents.optional')}</span>
+          </label>
           <input
             type="text"
-            placeholder="z.B. Antwortet in Reimen"
+            placeholder={t('settings.agents.descPlaceholder')}
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           />
-          <label className="agent-form-label">System-Prompt</label>
+          <label className="agent-form-label">{t('settings.agents.systemPrompt')}</label>
           <textarea
             className="agent-prompt-textarea"
-            placeholder="z.B. Antworte immer in Reimen."
+            placeholder={t('settings.agents.systemPromptPlaceholder')}
             value={form.system_prompt}
             rows={6}
             onChange={e => setForm(f => ({ ...f, system_prompt: e.target.value }))}
           />
           <div className="agent-form-actions">
             <button className="btn-save-agent" onClick={handleSave} disabled={!form.name.trim() || !form.system_prompt.trim()}>
-              {editingId ? 'Speichern' : 'Erstellen'}
+              {editingId ? t('settings.agents.save') : t('settings.agents.create')}
             </button>
             {editingId && (
-              <button className="btn-cancel-agent" onClick={cancelEdit}>Abbrechen</button>
+              <button className="btn-cancel-agent" onClick={cancelEdit}>{t('settings.agents.cancel')}</button>
             )}
           </div>
         </div>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchSettings, updateSettings, fetchProviderModels } from '../../services/api';
 
 export default function SettingsGeneral({ providers }) {
+  const { t } = useTranslation();
   const [model, setModel] = useState('openai/gpt-4o-mini');
   const [temperature, setTemperature] = useState(0.5);
   const [defaultProvider, setDefaultProvider] = useState('openrouter');
@@ -42,9 +44,9 @@ export default function SettingsGeneral({ providers }) {
     setLoadingModels(false);
     if (result.success) {
       setAvailableModels((result.models || []).slice().sort());
-      if (!result.models?.length) setModelsError('Keine Modelle gefunden');
+      if (!result.models?.length) setModelsError(t('settings.general.noModels'));
     } else {
-      setModelsError(result.error || 'Fehler beim Laden');
+      setModelsError(result.error || t('settings.general.loadError'));
     }
   }
 
@@ -58,7 +60,7 @@ export default function SettingsGeneral({ providers }) {
     };
     if (openaiKey) data.openai_api_key = openaiKey;
     await updateSettings(data);
-    setMessage('Gespeichert!');
+    setMessage(t('settings.general.saved'));
     setSaving(false);
     setTimeout(() => setMessage(''), 3000);
   }
@@ -70,9 +72,9 @@ export default function SettingsGeneral({ providers }) {
       {message && <div className="settings-message">{message}</div>}
 
       <div className="settings-section">
-        <h3>LLM</h3>
+        <h3>{t('settings.general.llmSection')}</h3>
         <label>
-          Standard-Provider
+          {t('settings.general.defaultProvider')}
           <select
             className="settings-select"
             value={defaultProvider}
@@ -85,10 +87,10 @@ export default function SettingsGeneral({ providers }) {
               <option key={pid} value={pid}>{p.name}</option>
             ))}
           </select>
-          <small>Welcher Provider standardmäßig für den Chat verwendet wird</small>
+          <small>{t('settings.general.defaultProviderHelp')}</small>
         </label>
         <label>
-          Standard-Modell
+          {t('settings.general.defaultModel')}
           <div className="input-group">
             <input
               type="text"
@@ -102,7 +104,7 @@ export default function SettingsGeneral({ providers }) {
               onClick={handleLoadModels}
               disabled={loadingModels}
             >
-              {loadingModels ? '...' : 'Laden'}
+              {loadingModels ? '...' : t('settings.general.load')}
             </button>
           </div>
           {modelsError && <small style={{ color: 'var(--accent-red, #e05252)' }}>{modelsError}</small>}
@@ -112,29 +114,29 @@ export default function SettingsGeneral({ providers }) {
               value=""
               onChange={(e) => { if (e.target.value) setModel(e.target.value); }}
             >
-              <option value="">— Modell aus Liste wählen —</option>
+              <option value="">{t('settings.general.selectModel')}</option>
               {availableModels.map(m => (
                 <option key={m} value={m}>{m}</option>
               ))}
             </select>
           )}
-          <small>z.B. openai/gpt-4o, anthropic/claude-3.5-sonnet, llama3.2 — je nach Provider</small>
+          <small>{t('settings.general.modelHelp')}</small>
         </label>
         <label>
-          Kreativität (Temperatur)
+          {t('settings.general.temperature')}
           <select
             value={temperature}
             onChange={(e) => setTemperature(parseFloat(e.target.value))}
             className="settings-select"
           >
-            <option value={0.1}>Genau (0.1) — präzise, deterministisch</option>
-            <option value={0.5}>Mittel (0.5) — ausgewogen</option>
-            <option value={0.8}>Frei (0.8) — kreativ, variabel</option>
+            <option value={0.1}>{t('settings.general.tempExact')}</option>
+            <option value={0.5}>{t('settings.general.tempMid')}</option>
+            <option value={0.8}>{t('settings.general.tempFree')}</option>
           </select>
-          <small>Bestimmt wie kreativ / unvorhersehbar die Antworten sind</small>
+          <small>{t('settings.general.temperatureHelp')}</small>
         </label>
         <label>
-          LLM Timeout (Sekunden)
+          {t('settings.general.timeout')}
           <input
             type="number"
             value={llmTimeout}
@@ -143,12 +145,12 @@ export default function SettingsGeneral({ providers }) {
             min="10"
             max="600"
           />
-          <small>Maximale Wartezeit für LLM-Antworten — bei langsamen lokalen Modellen erhöhen (Standard: 120s)</small>
+          <small>{t('settings.general.timeoutHelp')}</small>
         </label>
       </div>
 
       <div className="settings-section">
-        <h3>Audio / Sprache</h3>
+        <h3>{t('settings.general.audioSection')}</h3>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
           <input
             type="checkbox"
@@ -156,11 +158,11 @@ export default function SettingsGeneral({ providers }) {
             onChange={(e) => setUseWhisper(e.target.checked)}
             style={{ width: 'auto', margin: 0 }}
           />
-          OpenAI Whisper für Spracherkennung (STT) verwenden
+          {t('settings.general.useWhisper')}
         </label>
         {useWhisper ? (
           <label>
-            OpenAI API Key
+            {t('settings.general.openaiKey')}
             <div className="input-group">
               <input
                 type={showOpenaiKey ? 'text' : 'password'}
@@ -169,37 +171,37 @@ export default function SettingsGeneral({ providers }) {
                 placeholder={openaiKeyMasked || 'sk-...'}
               />
               <button type="button" className="btn-toggle-key" onClick={() => setShowOpenaiKey(!showOpenaiKey)}>
-                {showOpenaiKey ? 'Verbergen' : 'Anzeigen'}
+                {showOpenaiKey ? t('settings.general.hide') : t('settings.general.show')}
               </button>
             </div>
-            <small>Verwendet <code>whisper-1</code> — zuverlässiger als OpenRouter für Audio</small>
+            <small>{t('settings.general.whisperHelp')}</small>
           </label>
         ) : (
           <label>
-            Speech-to-Text Modell via OpenRouter
+            {t('settings.general.sttModel')}
             <input
               type="text"
               value={sttModel}
               onChange={(e) => setSttModel(e.target.value)}
-              placeholder={`leer = Chat-Modell (${model}) verwenden`}
+              placeholder={t('settings.general.sttPlaceholder', { model })}
             />
             <small>Empfohlen: <code>google/gemini-2.5-flash</code></small>
           </label>
         )}
         <label>
-          Text-to-Speech Modell (TTS)
+          {t('settings.general.ttsModel')}
           <input
             type="text"
             value={ttsModel}
             onChange={(e) => setTtsModel(e.target.value)}
-            placeholder={`leer = Chat-Modell (${model}) verwenden`}
+            placeholder={t('settings.general.ttsPlaceholder', { model })}
           />
-          <small>Für Sprachausgabe (zukünftige Funktion)</small>
+          <small>{t('settings.general.ttsModelHelp')}</small>
         </label>
       </div>
 
       <button className="btn-save" onClick={handleSave} disabled={saving}>
-        {saving ? 'Speichere...' : 'Speichern'}
+        {saving ? t('settings.general.saving') : t('settings.general.save')}
       </button>
     </div>
   );

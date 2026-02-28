@@ -1,6 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat, onDeleteChat, onOpenSettings, agents }) {
+  const { t } = useTranslation();
+
   function getAgentName(agentId) {
     if (!agentId || !agents) return null;
     const agent = agents.find(a => a.id === agentId);
@@ -11,7 +14,7 @@ export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat,
     <div className="chat-list">
       <div className="chat-list-header">
         <h2>Chats</h2>
-        <button className="btn-new-chat" onClick={onNewChat} title="Neuer Chat">+</button>
+        <button className="btn-new-chat" onClick={onNewChat} title={t('chatList.newChatTitle')}>+</button>
       </div>
       <div className="chat-list-items">
         {chats.map(chat => (
@@ -29,19 +32,19 @@ export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat,
             <button
               className="btn-delete-chat"
               onClick={(e) => { e.stopPropagation(); onDeleteChat(chat.id); }}
-              title="Chat loeschen"
+              title={t('chatList.deleteChatTitle')}
             >
               x
             </button>
           </div>
         ))}
         {chats.length === 0 && (
-          <div className="chat-list-empty">Keine Chats vorhanden</div>
+          <div className="chat-list-empty">{t('chatList.empty')}</div>
         )}
       </div>
       <div className="chat-list-footer">
         <button className="btn-settings" onClick={onOpenSettings}>
-          Einstellungen
+          {t('chatList.settings')}
         </button>
       </div>
     </div>

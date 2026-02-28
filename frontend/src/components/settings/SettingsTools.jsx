@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchMcpTools, fetchToolSettings, updateToolSettings, reloadMcpTools } from '../../services/api';
 
 export default function SettingsTools({ providers }) {
+  const { t } = useTranslation();
   const [tools, setTools] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [toolEdits, setToolEdits] = useState({});
@@ -19,16 +21,15 @@ export default function SettingsTools({ providers }) {
     setTools(data);
     // Initialize edit state from current values
     const edits = {};
-    for (const t of data) {
-      edits[t.name] = {
-        provider: t.current_provider || '',
-        model: t.current_model || '',
+    for (const tool of data) {
+      edits[tool.name] = {
+        provider: tool.current_provider || '',
+        model: tool.current_model || '',
         timeout: '',
       };
       // Add schema fields
-      for (const field of (t.settings_schema || [])) {
-        // Will be loaded when expanded — keep empty for now
-        edits[t.name][field.key] = '';
+      for (const field of (tool.settings_schema || [])) {
+        edits[tool.name][field.key] = '';
       }
     }
     setToolEdits(edits);
@@ -64,7 +65,7 @@ export default function SettingsTools({ providers }) {
     // Refresh tool list to get updated current_provider/current_model
     const updated = await fetchMcpTools();
     setTools(updated);
-    setMessage(`${tool.name} gespeichert!`);
+    setMessage(t('settings.tools.savedMsg', { name: tool.name }));
     setSaving(prev => ({ ...prev, [tool.name]: false }));
     setTimeout(() => setMessage(''), 3000);
   }
@@ -73,7 +74,7 @@ export default function SettingsTools({ providers }) {
     setReloading(true);
     await reloadMcpTools();
     await loadTools();
-    setMessage('MCP Tools neu geladen!');
+    setMessage(t('settings.tools.reloaded'));
     setReloading(false);
     setTimeout(() => setMessage(''), 3000);
   }
@@ -84,7 +85,7 @@ export default function SettingsTools({ providers }) {
     <div>
       {message && <div className="settings-message">{message}</div>}
       <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-        Pro Tool kannst du Provider und Modell überschreiben. Wenn alle ausgewählten Tools auf denselben Provider/Modell zeigen, wird dieser Override aktiviert.
+        {t('settings.tools.description')}
       </p>
 
       {tools.map((tool) => {
@@ -98,11 +99,11 @@ export default function SettingsTools({ providers }) {
             <div className="tool-accordion-header" onClick={() => toggleExpand(tool)}>
               <span className="tool-accordion-name">{tool.name}</span>
               <span className={`tool-accordion-badge ${hasOverride ? 'override' : ''}`}>
-                {tool.builtin ? 'Built-in' : 'Extern'}
+                {tool.builtin ? t('settings.tools.builtin') : t('settings.tools.external')}
               </span>
               {hasOverride && (
                 <span className="tool-accordion-badge override" title={`${tool.current_provider || 'std'} / ${tool.current_model || 'std'}`}>
-                  Override
+                  {t('settings.tools.override')}
                 </span>
               )}
               <span className={`tool-accordion-chevron ${isOpen ? 'open' : ''}`}>▼</span>
@@ -113,36 +114,36 @@ export default function SettingsTools({ providers }) {
                 {tool.agent_overridable !== false && (
                   <>
                     <div className="tool-field-row">
-                      <label>Provider Override</label>
+                      <label>{t('settings.tools.providerOverride')}</label>
                       <select
                         value={edit.provider || ''}
                         onChange={(e) => setField(tool.name, 'provider', e.target.value)}
                       >
-                        <option value="">Standard verwenden</option>
+                        <option value="">{t('settings.tools.useDefault')}</option>
                         {activeProviders.map(([pid, p]) => (
                           <option key={pid} value={pid}>{p.name}</option>
                         ))}
                       </select>
                     </div>
                     <div className="tool-field-row">
-                      <label>Modell Override</label>
+                      <label>{t('settings.tools.modelOverride')}</label>
                       <input
                         type="text"
                         value={edit.model || ''}
                         onChange={(e) => setField(tool.name, 'model', e.target.value)}
-                        placeholder="leer = Standard-Modell verwenden"
+                        placeholder={t('settings.tools.modelPlaceholder')}
                       />
                     </div>
                   </>
                 )}
 
                 <div className="tool-field-row">
-                  <label>Timeout (Sekunden)</label>
+                  <label>{t('settings.tools.timeoutLabel')}</label>
                   <input
                     type="number"
                     value={edit.timeout || ''}
                     onChange={(e) => setField(tool.name, 'timeout', e.target.value)}
-                    placeholder="leer = Standard"
+                    placeholder={t('settings.tools.timeoutPlaceholder')}
                     min="1"
                     max="600"
                   />
@@ -168,7 +169,7 @@ export default function SettingsTools({ providers }) {
                                 ...prev, [`${tool.name}.${field.key}`]: !prev[`${tool.name}.${field.key}`]
                               }))}
                             >
-                              {showPasswords[`${tool.name}.${field.key}`] ? 'Verbergen' : 'Anzeigen'}
+                              {showPasswords[`${tool.name}.${field.key}`] ? t('settings.tools.hide') : t('settings.tools.show')}
                             </button>
                           </div>
                         ) : (
@@ -188,7 +189,7 @@ export default function SettingsTools({ providers }) {
                 )}
 
                 <button className="btn-tool-save" onClick={() => handleSave(tool)} disabled={saving[tool.name]}>
-                  {saving[tool.name] ? 'Speichere...' : 'Speichern'}
+                  {saving[tool.name] ? t('settings.tools.saving') : t('settings.tools.save')}
                 </button>
               </div>
             )}
@@ -201,7 +202,7 @@ export default function SettingsTools({ providers }) {
       })}
 
       <button className="btn-reload-mcp" onClick={handleReload} disabled={reloading}>
-        {reloading ? 'Lade...' : 'MCP Tools neu laden'}
+        {reloading ? t('settings.tools.reloading') : t('settings.tools.reload')}
       </button>
     </div>
   );

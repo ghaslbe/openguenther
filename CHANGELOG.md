@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.11] — 2026-02-28
+
+### i18n: GUI-Übersetzung Deutsch / Englisch + First-Run-Overlay
+
+- **Sprachumschalter** in der Topbar: Button `EN` / `DE` neben dem Theme-Toggle, Sprache wird in `localStorage` gespeichert (Standard: Deutsch)
+- **i18next + react-i18next**: alle UI-Strings in `frontend/src/i18n/de.json` und `en.json` ausgelagert
+- **Alle Komponenten übersetzt**: ChatList, ChatWindow, GuentherBox, ToolSettings, Settings, SettingsGeneral, SettingsAgents, SettingsAutoprompts, SettingsProviders, SettingsTools, SettingsMcp, SettingsTelegram — SettingsHilfe bleibt auf Deutsch
+- **First-Run-Overlay**: beim ersten Start (keine Sprache gespeichert + kein Provider konfiguriert) erscheint ein zweisprachiges Willkommensfenster — Sprachauswahl + Hinweis auf OpenRouter / Ollama / LM Studio
+- `frontend/src/i18n/index.js` — i18next-Initialisierung mit Fallback auf Deutsch
+
+---
+
 ## [1.4.10] — 2026-02-28
 
 ### Beta-Label + fetch_url Tool + README

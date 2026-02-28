@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   fetchAutoprompts, createAutoprompt, updateAutoprompt,
   deleteAutoprompt, runAutopromptNow, fetchAgents, fetchServerTime
 } from '../../services/api';
-
-const WEEKDAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
 
 const EMPTY_FORM = {
   name: '',
@@ -18,19 +17,8 @@ const EMPTY_FORM = {
   save_to_chat: false,
 };
 
-function scheduleLabel(ap) {
-  if (ap.schedule_type === 'interval') {
-    const m = parseInt(ap.interval_minutes, 10);
-    if (m >= 60 && m % 60 === 0) return `Alle ${m / 60}h`;
-    return `Alle ${m} min`;
-  }
-  if (ap.schedule_type === 'weekly') {
-    return `${WEEKDAYS[ap.weekly_day] || 'Mo'} ${ap.daily_time} UTC`;
-  }
-  return `Täglich ${ap.daily_time} UTC`;
-}
-
 export default function SettingsAutoprompts() {
+  const { t } = useTranslation();
   const [autoprompts, setAutoprompts] = useState([]);
   const [agents, setAgents] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -54,6 +42,19 @@ export default function SettingsAutoprompts() {
   function showMessage(msg) {
     setMessage(msg);
     setTimeout(() => setMessage(''), 3000);
+  }
+
+  function scheduleLabel(ap) {
+    const weekdays = t('settings.autoprompts.weekdays', { returnObjects: true });
+    if (ap.schedule_type === 'interval') {
+      const m = parseInt(ap.interval_minutes, 10);
+      if (m >= 60 && m % 60 === 0) return t('settings.autoprompts.scheduleEveryH', { n: m / 60 });
+      return t('settings.autoprompts.scheduleEveryMin', { n: m });
+    }
+    if (ap.schedule_type === 'weekly') {
+      return t('settings.autoprompts.scheduleWeeklyAt', { day: weekdays[ap.weekly_day] || weekdays[0], time: ap.daily_time });
+    }
+    return t('settings.autoprompts.scheduleDailyAt', { time: ap.daily_time });
   }
 
   function startEdit(ap) {
@@ -81,10 +82,10 @@ export default function SettingsAutoprompts() {
     const payload = { ...form, agent_id: form.agent_id || null };
     if (editingId) {
       await updateAutoprompt(editingId, payload);
-      showMessage('Autoprompt aktualisiert!');
+      showMessage(t('settings.autoprompts.updated'));
     } else {
       await createAutoprompt(payload);
-      showMessage('Autoprompt erstellt!');
+      showMessage(t('settings.autoprompts.created'));
     }
     setEditingId(null);
     setForm(EMPTY_FORM);
@@ -92,7 +93,7 @@ export default function SettingsAutoprompts() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Autoprompt wirklich löschen?')) return;
+    if (!window.confirm(t('settings.autoprompts.deleteConfirm'))) return;
     await deleteAutoprompt(id);
     await load();
   }
@@ -104,19 +105,21 @@ export default function SettingsAutoprompts() {
 
   async function handleRunNow(id) {
     await runAutopromptNow(id);
-    showMessage('Wird ausgeführt...');
+    showMessage(t('settings.autoprompts.running'));
     setTimeout(load, 2000);
   }
+
+  const weekdays = t('settings.autoprompts.weekdays', { returnObjects: true });
 
   return (
     <div>
       {message && <div className="settings-message">{message}</div>}
       <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-        Autoprompts werden automatisch zu festgelegten Zeiten ausgeführt. Das Ergebnis landet in einem dedizierten Chat im Verlauf.
+        {t('settings.autoprompts.description')}
       </p>
 
       <div className="settings-section">
-        <h3>Konfigurierte Autoprompts</h3>
+        <h3>{t('settings.autoprompts.configured')}</h3>
         <div className="agents-list">
           {autoprompts.map(ap => (
             <div key={ap.id} className="agent-item" style={{ flexWrap: 'wrap', gap: '8px' }}>
@@ -133,8 +136,8 @@ export default function SettingsAutoprompts() {
                 </strong>
                 <span className="agent-item-desc" style={{ fontSize: '12px' }}>
                   {scheduleLabel(ap)}
-                  {ap.save_to_chat ? ' · Chat' : ' · Still'}
-                  {ap.last_run && ` · Zuletzt: ${new Date(ap.last_run).toLocaleString('de-DE')}`}
+                  {ap.save_to_chat ? ` · ${t('settings.autoprompts.chatLabel')}` : ` · ${t('settings.autoprompts.silentLabel')}`}
+                  {ap.last_run && ` · ${t('settings.autoprompts.lastRun')} ${new Date(ap.last_run).toLocaleString()}`}
                   {ap.last_status === 'success' && !ap.last_error && (
                     <button
                       onClick={() => setLogPopup({ name: ap.name, log: ap.last_log || '(kein Log)' })}
@@ -143,7 +146,7 @@ export default function SettingsAutoprompts() {
                         color: '#66bb6a', cursor: 'pointer', fontSize: 'inherit',
                         textDecoration: 'underline', fontFamily: 'inherit',
                       }}
-                    >· Erfolgreich</button>
+                    >· {t('settings.autoprompts.success')}</button>
                   )}
                   {ap.last_error && (<>
                     <button
@@ -153,7 +156,7 @@ export default function SettingsAutoprompts() {
                         color: '#ef5350', cursor: 'pointer', fontSize: 'inherit',
                         textDecoration: 'underline', fontFamily: 'inherit',
                       }}
-                    >· Fehler</button>
+                    >· {t('settings.autoprompts.error')}</button>
                     {ap.last_log && (
                       <button
                         onClick={() => setLogPopup({ name: ap.name, log: ap.last_log })}
@@ -162,61 +165,61 @@ export default function SettingsAutoprompts() {
                           color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 'inherit',
                           textDecoration: 'underline', fontFamily: 'inherit',
                         }}
-                      >Log</button>
+                      >{t('settings.autoprompts.log')}</button>
                     )}
                   </>)}
                 </span>
               </div>
               <div className="agent-item-actions">
-                <button className="btn-edit-agent" onClick={() => handleRunNow(ap.id)} title="Jetzt ausführen">▶</button>
+                <button className="btn-edit-agent" onClick={() => handleRunNow(ap.id)} title={t('settings.autoprompts.runNow')}>▶</button>
                 <button className="btn-edit-agent" onClick={() => handleToggle(ap)}>
-                  {ap.enabled ? 'Pause' : 'Aktiv'}
+                  {ap.enabled ? t('settings.autoprompts.pause') : t('settings.autoprompts.activate')}
                 </button>
-                <button className="btn-edit-agent" onClick={() => startEdit(ap)}>Bearbeiten</button>
-                <button className="btn-delete-agent" onClick={() => handleDelete(ap.id)}>Löschen</button>
+                <button className="btn-edit-agent" onClick={() => startEdit(ap)}>{t('settings.autoprompts.edit')}</button>
+                <button className="btn-delete-agent" onClick={() => handleDelete(ap.id)}>{t('settings.autoprompts.delete')}</button>
               </div>
             </div>
           ))}
           {autoprompts.length === 0 && (
-            <div className="agents-empty">Keine Autoprompts konfiguriert</div>
+            <div className="agents-empty">{t('settings.autoprompts.empty')}</div>
           )}
         </div>
       </div>
 
       <div className="settings-section">
-        <h3>{editingId ? 'Autoprompt bearbeiten' : 'Neuen Autoprompt erstellen'}</h3>
+        <h3>{editingId ? t('settings.autoprompts.editTitle') : t('settings.autoprompts.newTitle')}</h3>
         <div className="agent-form">
-          <label className="agent-form-label">Name</label>
+          <label className="agent-form-label">{t('settings.autoprompts.name')}</label>
           <input
             type="text"
-            placeholder="z.B. Tagesüberblick"
+            placeholder={t('settings.autoprompts.namePlaceholder')}
             value={form.name}
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
           />
 
-          <label className="agent-form-label">Prompt</label>
+          <label className="agent-form-label">{t('settings.autoprompts.prompt')}</label>
           <textarea
             className="agent-prompt-textarea"
-            placeholder={"z.B. Gib mir eine Zusammenfassung der heutigen Nachrichten und sende sie mit Telegram an @mama75.\n\n(Hinweis: Der Empfänger muss dem Bot vorher mindestens einmal geschrieben haben, damit Telegram das erlaubt.)"}
+            placeholder={t('settings.autoprompts.promptPlaceholder')}
             value={form.prompt}
             rows={5}
             onChange={e => setForm(f => ({ ...f, prompt: e.target.value }))}
           />
 
-          <label className="agent-form-label">Zeitplan</label>
+          <label className="agent-form-label">{t('settings.autoprompts.schedule')}</label>
           <select
             value={form.schedule_type}
             onChange={e => setForm(f => ({ ...f, schedule_type: e.target.value }))}
             style={{ marginBottom: '8px' }}
           >
-            <option value="interval">Intervall (alle X Minuten/Stunden)</option>
-            <option value="daily">Täglich zu einer Uhrzeit</option>
-            <option value="weekly">Wöchentlich</option>
+            <option value="interval">{t('settings.autoprompts.scheduleInterval')}</option>
+            <option value="daily">{t('settings.autoprompts.scheduleDaily')}</option>
+            <option value="weekly">{t('settings.autoprompts.scheduleWeekly')}</option>
           </select>
 
           {form.schedule_type === 'interval' && (
             <>
-              <label className="agent-form-label">Intervall (Minuten)</label>
+              <label className="agent-form-label">{t('settings.autoprompts.intervalMinutes')}</label>
               <input
                 type="number"
                 min={1}
@@ -230,21 +233,21 @@ export default function SettingsAutoprompts() {
             <>
               {form.schedule_type === 'weekly' && (
                 <>
-                  <label className="agent-form-label">Wochentag</label>
+                  <label className="agent-form-label">{t('settings.autoprompts.weekday')}</label>
                   <select
                     value={form.weekly_day}
                     onChange={e => setForm(f => ({ ...f, weekly_day: parseInt(e.target.value) }))}
                     style={{ marginBottom: '8px' }}
                   >
-                    {WEEKDAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
+                    {weekdays.map((d, i) => <option key={i} value={i}>{d}</option>)}
                   </select>
                 </>
               )}
               <label className="agent-form-label">
-                Uhrzeit (HH:MM, UTC)
+                {t('settings.autoprompts.time')}
                 {serverTime && (
                   <span style={{ fontWeight: 'normal', color: 'var(--text-secondary)', marginLeft: '10px', fontSize: '12px' }}>
-                    Aktuelle Server-Zeit: <strong style={{ color: 'var(--accent)' }}>{serverTime} UTC</strong>
+                    {t('settings.autoprompts.serverTime')} <strong style={{ color: 'var(--accent)' }}>{serverTime} UTC</strong>
                   </span>
                 )}
               </label>
@@ -256,12 +259,14 @@ export default function SettingsAutoprompts() {
             </>
           )}
 
-          <label className="agent-form-label">Agent <span className="agent-form-optional">(optional)</span></label>
+          <label className="agent-form-label">
+            {t('settings.autoprompts.agent')} <span className="agent-form-optional">{t('settings.agents.optional')}</span>
+          </label>
           <select
             value={form.agent_id}
             onChange={e => setForm(f => ({ ...f, agent_id: e.target.value }))}
           >
-            <option value="">Standard (kein Agent)</option>
+            <option value="">{t('settings.autoprompts.defaultAgent')}</option>
             {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
 
@@ -272,7 +277,7 @@ export default function SettingsAutoprompts() {
               onChange={e => setForm(f => ({ ...f, enabled: e.target.checked }))}
               style={{ marginRight: '6px' }}
             />
-            Aktiviert
+            {t('settings.autoprompts.enabled')}
           </label>
 
           <label className="agent-form-label" style={{ marginTop: '4px' }}>
@@ -282,10 +287,10 @@ export default function SettingsAutoprompts() {
               onChange={e => setForm(f => ({ ...f, save_to_chat: e.target.checked }))}
               style={{ marginRight: '6px' }}
             />
-            Ergebnis in Chat speichern
+            {t('settings.autoprompts.saveToChat')}
           </label>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0 0 22px' }}>
-            Deaktiviert: Agent läuft still (z.B. nur Telegram-Versand). Aktiviert: Ergebnis landet in einem dedizierten Chat im Verlauf.
+            {t('settings.autoprompts.saveToChatDesc')}
           </p>
 
           <div className="agent-form-actions">
@@ -294,14 +299,15 @@ export default function SettingsAutoprompts() {
               onClick={handleSave}
               disabled={!form.name.trim() || !form.prompt.trim()}
             >
-              {editingId ? 'Speichern' : 'Erstellen'}
+              {editingId ? t('settings.autoprompts.save') : t('settings.autoprompts.create')}
             </button>
             {editingId && (
-              <button className="btn-cancel-agent" onClick={cancelEdit}>Abbrechen</button>
+              <button className="btn-cancel-agent" onClick={cancelEdit}>{t('settings.autoprompts.cancel')}</button>
             )}
           </div>
         </div>
       </div>
+
       {logPopup && (
         <div
           onClick={() => setLogPopup(null)}
@@ -320,7 +326,7 @@ export default function SettingsAutoprompts() {
             }}
           >
             <p style={{ fontWeight: '700', color: 'var(--text-primary)', marginBottom: '12px', fontSize: '14px' }}>
-              Log: {logPopup.name}
+              {t('settings.autoprompts.logTitle')} {logPopup.name}
             </p>
             <pre style={{
               background: 'var(--bg-dark)', border: '1px solid var(--border)',
@@ -331,7 +337,7 @@ export default function SettingsAutoprompts() {
               {logPopup.log}
             </pre>
             <button onClick={() => setLogPopup(null)} className="btn-save-agent" style={{ marginTop: '16px' }}>
-              Schließen
+              {t('settings.autoprompts.close')}
             </button>
           </div>
         </div>
@@ -355,7 +361,7 @@ export default function SettingsAutoprompts() {
             }}
           >
             <p style={{ fontWeight: '700', color: '#ef5350', marginBottom: '12px', fontSize: '14px' }}>
-              Fehler: {errorPopup.name}
+              {t('settings.autoprompts.errorTitle')} {errorPopup.name}
             </p>
             <pre style={{
               background: 'var(--bg-dark)', border: '1px solid var(--border)',
@@ -370,7 +376,7 @@ export default function SettingsAutoprompts() {
               className="btn-save-agent"
               style={{ marginTop: '16px' }}
             >
-              Schließen
+              {t('settings.autoprompts.close')}
             </button>
           </div>
         </div>

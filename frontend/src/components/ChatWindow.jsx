@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Split message content into text parts and embedded base64 images.
@@ -71,6 +72,7 @@ function parseContent(content) {
 }
 
 function PdfDownloadButton({ src }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   async function handleDownload() {
@@ -98,12 +100,13 @@ function PdfDownloadButton({ src }) {
 
   return (
     <button className="btn-pdf-download" onClick={handleDownload} disabled={loading}>
-      {loading ? 'Erstelle PDF...' : '📄 PDF herunterladen'}
+      {loading ? t('chat.pdfCreating') : t('chat.pdfDownload')}
     </button>
   );
 }
 
 function PptxDownloadButton({ filename, b64 }) {
+  const { t } = useTranslation();
   function handleDownload() {
     const bytes = atob(b64);
     const arr = new Uint8Array(bytes.length);
@@ -118,12 +121,13 @@ function PptxDownloadButton({ filename, b64 }) {
   }
   return (
     <button className="btn-pdf-download" onClick={handleDownload}>
-      📊 {filename || 'Präsentation'} herunterladen
+      📊 {filename || t('chat.presentation')} {t('chat.pptxDownload')}
     </button>
   );
 }
 
 function MessageContent({ content }) {
+  const { t } = useTranslation();
   const parts = parseContent(content);
 
   return (
@@ -134,7 +138,7 @@ function MessageContent({ content }) {
             <img
               key={i}
               src={part.src}
-              alt={part.alt || 'Generiertes Bild'}
+              alt={part.alt || t('chat.generatedImage')}
               style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '8px', display: 'block' }}
             />
           );
@@ -194,6 +198,7 @@ function getTextForCopy(content) {
 }
 
 function CopyButton({ text, align }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = React.useState(false);
   const handleCopy = () => {
     navigator.clipboard.writeText(text).then(() => {
@@ -203,7 +208,7 @@ function CopyButton({ text, align }) {
   };
   return (
     <div className={`message-copy-row message-copy-row--${align}`}>
-      <button className="btn-copy-msg" onClick={handleCopy} title="Kopieren">
+      <button className="btn-copy-msg" onClick={handleCopy} title={t('chat.copy')}>
         {copied ? <span className="copy-check">✓</span> : <CopyIcon />}
       </button>
     </div>
@@ -211,6 +216,7 @@ function CopyButton({ text, align }) {
 }
 
 export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoading, currentTool, currentToolLog, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [attachedFile, setAttachedFile] = useState(null); // {name, content}
@@ -302,14 +308,14 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoadi
         {messages.length === 0 && (
           <div className="chat-empty">
             <div className="chat-empty-icon">G</div>
-            <p>Willkommen bei Guenther!</p>
-            <p className="chat-empty-sub">Sende eine Nachricht, um zu beginnen.</p>
+            <p>{t('chat.welcome')}</p>
+            <p className="chat-empty-sub">{t('chat.welcomeSub')}</p>
           </div>
         )}
         {messages.map((msg, idx) => (
           <div key={idx} className={`message message-${msg.role}`}>
             <div className="message-role">
-              {msg.role === 'user' ? 'Du' : (activeAgentName || 'Guenther')}
+              {msg.role === 'user' ? t('chat.you') : (activeAgentName || 'Guenther')}
             </div>
             <div className="message-content">
               <MessageContent content={msg.content} />
@@ -343,7 +349,7 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoadi
             value={selectedAgentId}
             onChange={e => onAgentChange(e.target.value)}
           >
-            <option value="">Kein Agent (Standard)</option>
+            <option value="">{t('chat.noAgent')}</option>
             {agents.map(a => (
               <option key={a.id} value={a.id}>{a.name}</option>
             ))}
@@ -372,7 +378,7 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoadi
           type="button"
           className="btn-upload"
           onClick={() => fileInputRef.current?.click()}
-          title="Datei hochladen"
+          title={t('chat.uploadFile')}
           disabled={isLoading}
         >
           📎
@@ -381,7 +387,7 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoadi
           ref={inputRef}
           type="text"
           className="chat-input"
-          placeholder="Nachricht eingeben... oder frag Guenther was er kann"
+          placeholder={t('chat.placeholder')}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={isLoading}
@@ -391,7 +397,7 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoadi
             type="button"
             className={`btn-mic${isRecording ? ' btn-mic--active' : ''}`}
             onClick={toggleRecording}
-            title={isRecording ? 'Aufnahme stoppen' : 'Spracheingabe starten'}
+            title={isRecording ? t('chat.stopRecording') : t('chat.startRecording')}
             disabled={isLoading}
           >
             {isRecording ? (
@@ -406,7 +412,7 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoadi
           </button>
         )}
         <button type="submit" className="btn-send" disabled={isLoading || (!input.trim() && !attachedFile)}>
-          Senden
+          {t('chat.send')}
         </button>
       </form>
     </div>

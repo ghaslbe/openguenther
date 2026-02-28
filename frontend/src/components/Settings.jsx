@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchProviders } from '../services/api';
 import SettingsGeneral from './settings/SettingsGeneral';
 import SettingsProviders from './settings/SettingsProviders';
@@ -9,31 +10,8 @@ import SettingsHilfe from './settings/SettingsHilfe';
 import SettingsAgents from './settings/SettingsAgents';
 import SettingsAutoprompts from './settings/SettingsAutoprompts';
 
-const NAV_ITEMS = [
-  { id: 'general',      label: 'Allgemein' },
-  { id: 'agents',       label: 'Agenten' },
-  { id: 'autoprompts',  label: 'Autoprompts' },
-  { id: 'providers',    label: 'LLM Provider' },
-  { id: 'tools',        label: 'MCP Tools' },
-  { id: 'mcp',          label: 'MCP Server' },
-  { id: 'telegram',     label: 'Telegram' },
-  { id: 'hilfe',        label: 'Hilfe' },
-  { id: 'info',         label: 'Info' },
-];
-
-const SECTION_TITLES = {
-  general:     'Allgemein',
-  agents:      'Agenten',
-  autoprompts: 'Autoprompts',
-  providers:   'LLM Provider',
-  tools:       'Enthaltene MCP Tools',
-  mcp:         'Externe MCP Server',
-  telegram:    'Telegram Gateway',
-  hilfe:       'Hilfe',
-  info:        'Info',
-};
-
 export default function Settings({ onClose, onAgentsChange }) {
+  const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState('general');
   const [providers, setProviders] = useState({});
 
@@ -45,6 +23,18 @@ export default function Settings({ onClose, onAgentsChange }) {
     const data = await fetchProviders();
     setProviders(data);
   }
+
+  const NAV_ITEMS = [
+    { id: 'general',      label: t('settings.nav.general') },
+    { id: 'agents',       label: t('settings.nav.agents') },
+    { id: 'autoprompts',  label: t('settings.nav.autoprompts') },
+    { id: 'providers',    label: t('settings.nav.providers') },
+    { id: 'tools',        label: t('settings.nav.tools') },
+    { id: 'mcp',          label: t('settings.nav.mcp') },
+    { id: 'telegram',     label: t('settings.nav.telegram') },
+    { id: 'hilfe',        label: t('settings.nav.hilfe') },
+    { id: 'info',         label: t('settings.nav.info') },
+  ];
 
   function renderSection() {
     switch (activeSection) {
@@ -73,7 +63,7 @@ export default function Settings({ onClose, onAgentsChange }) {
             </p>
             <p style={{ marginBottom: '20px' }}>Version <code style={{ color: 'var(--accent)' }}>v{__APP_VERSION__}</code></p>
 
-            <p style={{ marginBottom: '16px' }}>Open-Source KI-Agent mit MCP-Tool-Unterstützung, selbst gehostet via Docker.</p>
+            <p style={{ marginBottom: '16px' }}>{t('settings.info.description')}</p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '28px' }}>
               <a href="https://github.com/ghaslbe/openguenther" target="_blank" rel="noopener noreferrer"
@@ -95,16 +85,16 @@ export default function Settings({ onClose, onAgentsChange }) {
               lineHeight: '1.7',
             }}>
               <p style={{ fontWeight: '700', color: '#ef5350', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                ⚠ Haftungsausschluss
+                ⚠ {t('settings.info.disclaimer')}
               </p>
               <p style={{ marginBottom: '8px' }}>
-                Diese Software wird ohne jegliche Gewährleistung bereitgestellt. Die Nutzung geschieht vollständig auf eigenes Risiko.
+                {t('settings.info.disclaimerText1')}
               </p>
               <p style={{ marginBottom: '8px' }}>
-                Der Autor übernimmt <strong style={{ color: 'var(--text-primary)' }}>keinerlei Haftung</strong> — weder für direkte noch indirekte Schäden, Datenverlust, Sicherheitsvorfälle, Kosten durch API-Nutzung bei Drittanbietern (OpenRouter, OpenAI etc.), Schäden durch KI-generierte Inhalte oder fehlerhafte Tool-Ausführungen.
+                {t('settings.info.disclaimerText2')}
               </p>
               <p style={{ margin: 0, opacity: 0.8 }}>
-                API-Keys mit Ausgabelimit versehen. Keine sensiblen Daten in Chats eingeben. Software nicht ohne Authentifizierung öffentlich zugänglich machen.
+                {t('settings.info.disclaimerText3')}
               </p>
             </div>
           </div>
@@ -118,8 +108,8 @@ export default function Settings({ onClose, onAgentsChange }) {
     <div className="settings-panel">
       <nav className="settings-nav">
         <div className="settings-nav-header">
-          <h2>Einstellungen</h2>
-          <button className="btn-close" onClick={onClose} title="Schließen">✕</button>
+          <h2>{t('settings.title')}</h2>
+          <button className="btn-close" onClick={onClose} title={t('settings.close')}>✕</button>
         </div>
         {NAV_ITEMS.map(item => (
           <button
@@ -134,7 +124,7 @@ export default function Settings({ onClose, onAgentsChange }) {
 
       <div className="settings-content">
         <div className="settings-content-header">
-          <h3>{SECTION_TITLES[activeSection]}</h3>
+          <h3>{t(`settings.sections.${activeSection}`)}</h3>
         </div>
         {renderSection()}
       </div>
