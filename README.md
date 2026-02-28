@@ -66,7 +66,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **Provider- & Modell-Override pro Tool**: jedes Tool kann einen eigenen Provider/Modell verwenden
 
 **KI-Features**
-- **Agenten-System**: eigene KI-Agenten mit individuellem System-Prompt anlegen — per Dropdown im Chat wählen, Name erscheint statt „Guenther"
+- **Agenten-System**: eigene KI-Agenten mit individuellem System-Prompt anlegen — per Dropdown im Chat wählen, Name erscheint statt „Guenther"; optionaler Provider- und Modell-Override pro Agent
 - **Code-Interpreter** (`run_code`): Python-Code per LLM generieren und ausführen, mit Selbstkorrektur-Loop
 - **Datei-Upload** (📎): Textdateien (CSV, JSON, XML, TXT etc.) hochladen — Inhalt wird als Kontext ans LLM übergeben
 - **Bildgenerierung**: via OpenRouter (Flux, Gemini Image, etc.)
@@ -355,7 +355,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **Per-tool provider & model override**: each tool can use its own provider and model
 
 **AI Features**
-- **Agent system**: create custom AI agents with individual system prompts — select via dropdown in chat, name replaces "Guenther"
+- **Agent system**: create custom AI agents with individual system prompts — select via dropdown in chat, name replaces "Guenther"; optional per-agent provider and model override
 - **Code interpreter** (`run_code`): generate and execute Python code via LLM, with self-correction loop
 - **File upload** (📎): upload text files (CSV, JSON, XML, TXT etc.) — content is passed as context to the LLM
 - **Image generation**: via OpenRouter (Flux, Gemini Image, etc.)

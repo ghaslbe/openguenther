@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.20] — 2026-02-28
+
+### Eigener LLM-Provider + Modell pro Agent
+
+- Jeder Agent kann jetzt optional einen eigenen Provider und ein eigenes Modell verwenden — unabhängig von der globalen Standard-Einstellung
+- Provider-Dropdown (nur aktive Provider) + Modell-Freitextfeld im Agenten-Formular (Einstellungen → Agenten)
+- Konfigurierter Override wird als `monospace`-Badge in der Agenten-Liste angezeigt
+- Priorität: Tool-Override > Agent-Override > Globale Einstellung
+
+---
+
 ## [1.4.19] — 2026-02-28
 
 ### Externe MCP Server: npx-Support + Env-Variablen + Bugfixes
