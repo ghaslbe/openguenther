@@ -87,7 +87,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 **Erweiterbarkeit**
 - **Custom Tools per Chat**: eigene MCP-Tools direkt im Chat erstellen, bearbeiten und löschen (`create_mcp_tool`, `edit_mcp_tool`, `delete_mcp_tool`) — kein Neustart nötig
 - **Custom Tools manuell**: Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen (siehe `CUSTOM_TOOL_GUIDE.md`)
-- **Externe MCP-Server**: beliebige stdio-basierte MCP-Server (JSON-RPC 2.0) anbindbar
+- **Externe MCP-Server**: beliebige stdio-basierte MCP-Server (JSON-RPC 2.0) anbindbar — inkl. `npx`-basierter Pakete (Node.js im Image enthalten), Umgebungsvariablen pro Server konfigurierbar, Inline-Bearbeitung, Reload-Button
 - **SSH-Tunnel-Guide**: Anleitung in Provider-Einstellungen für Ollama/LM Studio (Reverse-Tunnel vom Heimrechner zum Server)
 
 ---
@@ -376,7 +376,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 **Extensibility**
 - **Custom tools via chat**: create, edit and delete MCP tools directly from chat (`create_mcp_tool`, `edit_mcp_tool`, `delete_mcp_tool`) — no restart needed
 - **Custom tools manually**: drop Python files into `/app/data/custom_tools/` — loaded automatically (see `CUSTOM_TOOL_GUIDE.md`)
-- **External MCP servers**: connect any stdio-based MCP server (JSON-RPC 2.0)
+- **External MCP servers**: connect any stdio-based MCP server (JSON-RPC 2.0) — including `npx`-based packages (Node.js included in image), per-server environment variables, inline editing, reload button
 - **SSH tunnel guide**: instructions in provider settings for Ollama/LM Studio (reverse tunnel from home machine to server)
 
 ---

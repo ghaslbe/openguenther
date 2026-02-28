@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.4.19] — 2026-02-28
+
+### Externe MCP Server: npx-Support + Env-Variablen + Bugfixes
+
+**Neue Features**
+- **Umgebungsvariablen pro MCP Server**: KEY=VALUE-Paare (eine pro Zeile) direkt in den Einstellungen hinterlegen — ermöglicht API-Key-basierte MCP Server wie Firecrawl
+- **Bearbeiten bestehender MCP Server**: Inline-Edit-Formular pro Server (Name, Command, Argumente, Env-Vars)
+- **Node.js 20 im Docker-Image**: `npx`-basierte MCP Server (der Standard auf mcpmarket.com) funktionieren jetzt out-of-the-box
+- **Reload-Button direkt in MCP Server-Einstellungen**: Tools neu laden ohne in den Tools-Tab zu wechseln
+- **Externe MCP Server werden beim Container-Start automatisch geladen**
+- **mcpmarket.com-Hinweis** als Infokasten in den MCP Server-Einstellungen
+
+**Bugfixes**
+- MCP Client liest jetzt alle Antwort-Zeilen bis zur passenden Request-ID — behebt "No response from MCP server" bei Servern die Notifications vor dem Ergebnis senden (z.B. Firecrawl)
+- Tool-Router-Aufrufe wurden in der Nutzungsstatistik als "unknown" angezeigt — `provider_id` wird jetzt korrekt weitergegeben
+- Mistral-Links in Provider-Einstellungen korrigiert und Nutzungs-Link ergänzt (`admin.mistral.ai`)
+- Usage-Popup und Stats-Buttons hatten transparenten Hintergrund (`--bg-secondary` existiert nicht)
+
+---
+
 ## [1.4.18] — 2026-02-28
 
 ### LLM Nutzungsstatistik
