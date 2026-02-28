@@ -1,4 +1,5 @@
 import base64
+import json
 import logging
 import requests
 
@@ -20,7 +21,7 @@ Antworte auf Deutsch, es sei denn, der Benutzer schreibt in einer anderen Sprach
 Sei praezise und hilfreich."""
 
 
-def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini', temperature=0.5, base_url=None, timeout=120, provider_name='OpenRouter'):
+def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini', temperature=0.5, base_url=None, timeout=120, provider_name='OpenRouter', provider_id=''):
     if base_url is None:
         url = OPENROUTER_API_URL
     elif base_url.endswith('/chat/completions'):
@@ -44,6 +45,8 @@ def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'
     if tools:
         payload["tools"] = tools
         payload["tool_choice"] = "auto"
+
+    bytes_sent = len(json.dumps(payload).encode('utf-8'))
 
     response = requests.post(
         url,
@@ -71,7 +74,23 @@ def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'
             response=response
         )
 
-    return response.json()
+    bytes_received = len(response.content)
+    data = response.json()
+    usage = data.get('usage', {})
+    try:
+        from models import log_usage
+        log_usage(
+            provider_id=provider_id or 'unknown',
+            model=model,
+            bytes_sent=bytes_sent,
+            bytes_received=bytes_received,
+            prompt_tokens=usage.get('prompt_tokens'),
+            completion_tokens=usage.get('completion_tokens'),
+        )
+    except Exception:
+        pass  # logging never breaks the LLM call
+
+    return data
 
 
 def transcribe_audio(audio_bytes, audio_format, api_key, model):

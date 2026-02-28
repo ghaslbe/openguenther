@@ -199,3 +199,12 @@ export async function updateProvider(providerId, data) {
   });
   return res.json();
 }
+
+export async function fetchUsageStats(period = 'today') {
+  const res = await fetch(`${BASE}/api/usage/stats?period=${period}`);
+  return res.json();
+}
+
+export async function resetUsageStats() {
+  await fetch(`${BASE}/api/usage/stats`, { method: 'DELETE' });
+}

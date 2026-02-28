@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.18] — 2026-02-28
+
+### LLM Nutzungsstatistik
+
+- Neue `usage_log`-Tabelle in SQLite: speichert pro LLM-Aufruf Timestamp, Provider, Modell, gesendete/empfangene Bytes, Prompt- und Completion-Tokens
+- Byte-Messung in `call_openrouter()` — jeder Aufruf wird automatisch geloggt
+- REST-API: `GET /api/usage/stats?period=today|week|month|all`, `GET /api/usage/timeline?granularity=hour|day|month`, `DELETE /api/usage/stats`
+- **📊-Button in der Topbar**: öffnet Popup mit Heute- und Gesamt-Statistik pro Provider
+- **Nutzungsstatistik in Einstellungen → LLM Provider**: Tabelle mit Period-Tabs (Heute/Woche/Monat/Gesamt), Anfragen, gesendete/empfangene Bytes, Tokens; Reset-Button mit Bestätigung
+- i18n: neue Keys unter `settings.usage` in DE + EN
+
+---
+
 ## [1.4.17] — 2026-02-28
 
 ### Persistente Datei-Speicherung für generierte Inhalte (PPTX)

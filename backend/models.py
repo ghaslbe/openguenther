@@ -40,6 +40,19 @@ def init_db():
             FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE
         )
     ''')
+
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS usage_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT NOT NULL,
+            provider_id TEXT NOT NULL,
+            model TEXT NOT NULL,
+            bytes_sent INTEGER DEFAULT 0,
+            bytes_received INTEGER DEFAULT 0,
+            prompt_tokens INTEGER,
+            completion_tokens INTEGER
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -103,5 +116,75 @@ def add_message(chat_id, role, content, message_type='text'):
 def update_chat_title(chat_id, title):
     conn = get_db()
     conn.execute('UPDATE chats SET title = ? WHERE id = ?', (title, chat_id))
+    conn.commit()
+    conn.close()
+
+
+def log_usage(provider_id, model, bytes_sent, bytes_received, prompt_tokens=None, completion_tokens=None):
+    conn = get_db()
+    now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
+    conn.execute(
+        'INSERT INTO usage_log (timestamp, provider_id, model, bytes_sent, bytes_received, prompt_tokens, completion_tokens) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        (now, provider_id, model, bytes_sent, bytes_received, prompt_tokens, completion_tokens)
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_usage_stats(period='today'):
+    where = ''
+    if period == 'today':
+        where = "WHERE timestamp >= strftime('%Y-%m-%dT00:00:00', 'now')"
+    elif period == 'week':
+        where = "WHERE timestamp >= datetime('now', '-7 days')"
+    elif period == 'month':
+        where = "WHERE timestamp >= datetime('now', '-30 days')"
+
+    conn = get_db()
+    rows = conn.execute(f'''
+        SELECT provider_id, model,
+               COUNT(*) as requests,
+               SUM(bytes_sent) as bytes_sent,
+               SUM(bytes_received) as bytes_received,
+               SUM(prompt_tokens) as prompt_tokens,
+               SUM(completion_tokens) as completion_tokens
+        FROM usage_log
+        {where}
+        GROUP BY provider_id, model
+        ORDER BY bytes_sent DESC
+    ''').fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_usage_timeline(granularity='day'):
+    if granularity == 'hour':
+        fmt = '%Y-%m-%dT%H:00:00'
+        where = "timestamp >= datetime('now', '-24 hours')"
+    elif granularity == 'month':
+        fmt = '%Y-%m'
+        where = "timestamp >= datetime('now', '-12 months')"
+    else:  # day
+        fmt = '%Y-%m-%d'
+        where = "timestamp >= datetime('now', '-30 days')"
+
+    conn = get_db()
+    rows = conn.execute(f'''
+        SELECT strftime('{fmt}', timestamp) as period,
+               SUM(bytes_sent) as bytes_sent,
+               SUM(bytes_received) as bytes_received,
+               COUNT(*) as requests
+        FROM usage_log
+        WHERE {where}
+        GROUP BY period
+        ORDER BY period
+    ''').fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def reset_usage_stats():
+    conn = get_db()
+    conn.execute('DELETE FROM usage_log')
     conn.commit()
     conn.close()

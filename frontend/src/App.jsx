@@ -5,8 +5,68 @@ import ChatWindow from './components/ChatWindow';
 import GuentherBox from './components/GuentherBox';
 import Settings from './components/Settings';
 import FirstRunOverlay from './components/FirstRunOverlay';
-import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders } from './services/api';
+import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders, fetchUsageStats } from './services/api';
 import { getSocket } from './services/socket';
+
+function formatBytes(n) {
+  if (n == null || n === 0) return '0 B';
+  if (n >= 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + ' MB';
+  if (n >= 1024) return (n / 1024).toFixed(1) + ' KB';
+  return n + ' B';
+}
+
+function UsagePopup({ onClose }) {
+  const [todayStats, setTodayStats] = useState([]);
+  const [allStats, setAllStats] = useState([]);
+
+  useEffect(() => {
+    fetchUsageStats('today').then(d => setTodayStats(Array.isArray(d) ? d : [])).catch(() => {});
+    fetchUsageStats('all').then(d => setAllStats(Array.isArray(d) ? d : [])).catch(() => {});
+  }, []);
+
+  function renderRows(stats) {
+    if (stats.length === 0) return <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0' }}>—</p>;
+    return stats.map((r, i) => (
+      <div key={i} style={{ fontSize: '12px', color: 'var(--text-primary)', marginBottom: '2px' }}>
+        <span style={{ fontWeight: 600 }}>{r.provider_id}</span>
+        {': '}
+        {r.requests} Anfragen · {formatBytes(r.bytes_sent)} gesendet · {formatBytes(r.bytes_received)} empfangen
+      </div>
+    ));
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 1000 }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          position: 'absolute',
+          top: '48px',
+          right: '12px',
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border)',
+          borderRadius: '8px',
+          padding: '16px',
+          minWidth: '320px',
+          maxWidth: '420px',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <strong style={{ fontSize: '13px' }}>📊 Nutzung</strong>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '16px', lineHeight: 1 }}>×</button>
+        </div>
+        <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', margin: '0 0 4px' }}>HEUTE</p>
+        {renderRows(todayStats)}
+        <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', margin: '10px 0 4px' }}>GESAMT</p>
+        {renderRows(allStats)}
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [chats, setChats] = useState([]);
@@ -22,6 +82,7 @@ export default function App() {
   const [selectedAgentId, setSelectedAgentId] = useState('');
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [showFirstRun, setShowFirstRun] = useState(false);
+  const [showUsage, setShowUsage] = useState(false);
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
@@ -215,6 +276,9 @@ export default function App() {
         <span className="topbar-open">OPEN</span><span className="topbar-guenther">guenther</span>
         <span className="topbar-version">v{__APP_VERSION__}</span><span className="topbar-beta">beta</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <button className="btn-theme-toggle" style={{ marginLeft: 0 }} onClick={() => setShowUsage(v => !v)}>
+            📊
+          </button>
           <button className="btn-theme-toggle" style={{ marginLeft: 0 }} onClick={toggleLang}>
             {i18n.language === 'de' ? 'EN' : 'DE'}
           </button>
@@ -254,6 +318,7 @@ export default function App() {
       />
       {showSettings && <Settings onClose={() => setShowSettings(false)} onAgentsChange={loadAgents} />}
       {showFirstRun && <FirstRunOverlay onClose={() => setShowFirstRun(false)} />}
+      {showUsage && <UsagePopup onClose={() => setShowUsage(false)} />}
       </div>
     </div>
   );

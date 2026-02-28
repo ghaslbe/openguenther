@@ -241,6 +241,23 @@
       "added": "Server added!",
       "add": "Add"
     },
+    "usage": {
+      "title": "Usage statistics",
+      "today": "Today",
+      "week": "Week",
+      "month": "Month",
+      "all": "Total",
+      "requests": "Requests",
+      "sent": "Sent",
+      "received": "Received",
+      "tokens": "Tokens",
+      "provider": "Provider",
+      "model": "Model",
+      "noData": "No data for this period",
+      "reset": "Reset statistics",
+      "resetConfirm": "Really delete all statistics?",
+      "resetCancel": "Cancel"
+    },
     "telegram": {
       "gatewayStatus": "Gateway status:",
       "active": "ACTIVE",

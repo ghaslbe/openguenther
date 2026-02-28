@@ -241,7 +241,7 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
         emit_log({"type": "json", "label": "payload", "data": request_payload})
 
         try:
-            response = call_openrouter(messages, tools if tools else None, api_key, model, temperature, base_url=base_url, timeout=llm_timeout, provider_name=provider_display)
+            response = call_openrouter(messages, tools if tools else None, api_key, model, temperature, base_url=base_url, timeout=llm_timeout, provider_name=provider_display, provider_id=provider_id)
         except Exception as e:
             error_msg = f"Fehler bei LLM-Anfrage: {str(e)}"
             emit_log({"type": "text", "message": f"[{_ts()}] FEHLER: {error_msg}"})

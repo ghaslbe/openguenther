@@ -241,6 +241,23 @@
       "added": "Server hinzugefügt!",
       "add": "Hinzufügen"
     },
+    "usage": {
+      "title": "Nutzungsstatistik",
+      "today": "Heute",
+      "week": "Woche",
+      "month": "Monat",
+      "all": "Gesamt",
+      "requests": "Anfragen",
+      "sent": "Gesendet",
+      "received": "Empfangen",
+      "tokens": "Tokens",
+      "provider": "Provider",
+      "model": "Modell",
+      "noData": "Keine Daten für diesen Zeitraum",
+      "reset": "Statistiken zurücksetzen",
+      "resetConfirm": "Wirklich alle Statistiken löschen?",
+      "resetCancel": "Abbrechen"
+    },
     "telegram": {
       "gatewayStatus": "Gateway-Status:",
       "active": "AKTIV",
