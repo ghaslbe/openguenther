@@ -9,18 +9,23 @@ TOOL_DEFINITION = {
     "name": "send_telegram",
     "description": (
         "Sendet eine Textnachricht über Telegram an einen bestimmten Nutzer. "
-        "Der Nutzer muss dem Bot vorher mindestens einmal geschrieben haben. "
+        "Akzeptiert als Empfänger entweder einen @username (z.B. '@mama75') "
+        "oder direkt die numerische Telegram-Chat-ID (z.B. '5761888867'). "
+        "Bei @username muss der Nutzer dem Bot vorher mindestens einmal geschrieben haben. "
         "Verwende dieses Tool wenn der Nutzer möchte, dass Guenther ein Ergebnis "
         "(z.B. Wetterdaten, Aktienkurs, Zusammenfassung) per Telegram weiterleitet."
     ),
     "input_schema": {
         "type": "object",
         "properties": {
-            "username": {
+            "recipient": {
                 "type": "string",
                 "description": (
-                    "Telegram-Username des Empfängers (mit oder ohne @), z.B. '@meinname' oder 'meinname'. "
-                    "Der Nutzer muss dem Bot bereits mindestens einmal geschrieben haben."
+                    "Empfänger: entweder @username (z.B. '@mama75' oder 'mama75') "
+                    "oder direkt die numerische Telegram-Chat-ID (z.B. '5761888867'). "
+                    "Bei @username wird die ID aus dem gespeicherten Mapping gelesen — "
+                    "der Nutzer muss dem Bot dafür vorher mindestens einmal geschrieben haben. "
+                    "Mit der numerischen ID funktioniert es sofort ohne vorherigen Kontakt."
                 )
             },
             "message": {
@@ -28,12 +33,12 @@ TOOL_DEFINITION = {
                 "description": "Der Nachrichtentext der gesendet werden soll (max. 4096 Zeichen)."
             }
         },
-        "required": ["username", "message"]
+        "required": ["recipient", "message"]
     }
 }
 
 
-def handler(username: str, message: str) -> dict:
+def handler(recipient: str, message: str) -> dict:
     emit_log = get_emit_log()
 
     def log(msg):
@@ -44,9 +49,7 @@ def handler(username: str, message: str) -> dict:
         if emit_log:
             emit_log({"type": "header", "message": msg})
 
-    # Normalize username
-    username = username.lstrip('@').strip()
-    header(f"TELEGRAM → @{username}")
+    recipient = recipient.strip()
 
     # Get bot token from settings
     settings = get_settings()
@@ -54,18 +57,26 @@ def handler(username: str, message: str) -> dict:
     if not token:
         return {"success": False, "error": "Kein Telegram Bot Token konfiguriert. Bitte in den Einstellungen → Telegram eintragen."}
 
-    # Look up Telegram chat_id for the username
-    from services.telegram_gateway import get_telegram_chat_id
-    telegram_chat_id = get_telegram_chat_id(username)
-    if not telegram_chat_id:
-        return {
-            "success": False,
-            "error": (
-                f"Kein Telegram-Chat für '@{username}' gefunden. "
-                f"Der Nutzer muss dem Bot zuerst mindestens einmal schreiben, "
-                f"damit die Verbindung bekannt ist."
-            )
-        }
+    # Determine telegram_chat_id: numeric ID directly, or lookup by username
+    if recipient.lstrip('-').isdigit():
+        telegram_chat_id = int(recipient)
+        display = str(telegram_chat_id)
+    else:
+        username = recipient.lstrip('@')
+        display = f"@{username}"
+        from services.telegram_gateway import get_telegram_chat_id
+        telegram_chat_id = get_telegram_chat_id(username)
+        if not telegram_chat_id:
+            return {
+                "success": False,
+                "error": (
+                    f"Kein Telegram-Chat für '@{username}' gefunden. "
+                    f"Entweder muss der Nutzer dem Bot zuerst einmal schreiben, "
+                    f"oder du kannst die numerische Chat-ID direkt angeben (z.B. '5761888867')."
+                )
+            }
+
+    header(f"TELEGRAM → {display}")
 
     # Truncate if necessary
     if len(message) > 4096:
@@ -80,9 +91,9 @@ def handler(username: str, message: str) -> dict:
         )
         result = r.json()
         if result.get("ok"):
-            log(f"Nachricht an @{username} gesendet ({len(message)} Zeichen)")
+            log(f"Nachricht an {display} gesendet ({len(message)} Zeichen)")
             header("TELEGRAM: GESENDET")
-            return {"success": True, "recipient": f"@{username}", "chars": len(message)}
+            return {"success": True, "recipient": display, "chars": len(message)}
         else:
             err = result.get("description", "Unbekannter Fehler")
             log(f"Telegram-Fehler: {err}")
