@@ -238,7 +238,7 @@ export default function SettingsAutoprompts() {
                 </>
               )}
               <label className="agent-form-label">
-                Uhrzeit (HH:MM)
+                Uhrzeit (HH:MM, UTC)
                 {serverTime && (
                   <span style={{ fontWeight: 'normal', color: 'var(--text-secondary)', marginLeft: '10px', fontSize: '12px' }}>
                     Aktuelle Server-Zeit: <strong style={{ color: 'var(--accent)' }}>{serverTime} UTC</strong>
