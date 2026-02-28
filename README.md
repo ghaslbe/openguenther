@@ -39,21 +39,43 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 
 ### Features
 
-- **Chat-Interface** mit Markdown-Rendering und Bilddarstellung
-- **MCP-Tools** (Model Context Protocol): Wetter, Bildgenerierung, Bildbearbeitung, QR-Codes, Passwörter, Rechner, E-Mail, Webseiten-Info u.v.m.
-- **Guenther-Terminal**: Live-Ansicht aller API-Kommunikation im DOS-Stil
-- **Telegram-Gateway**: Chatten via Telegram, inkl. Foto- und Sprachnachrichten
-- **Spracherkennung**: OpenAI Whisper oder OpenRouter-kompatible Modelle
-- **Bildgenerierung**: via OpenRouter (Flux, Gemini Image, etc.)
-- **Externe MCP-Server**: beliebige stdio-basierte MCP-Server anbindbar
-- **Tool-Router**: automatische Vorauswahl relevanter Tools pro Anfrage
+**Chat & Interface**
+- **Chat-Interface** mit Markdown-Rendering, Code-Highlighting und Bilddarstellung
 - **Light/Dark Theme**: umschaltbar per Button in der Titelleiste, Auswahl wird gespeichert
-- **Kopieren-Button**: Jede Nachricht hat ein Kopieren-Icon (Zwischenablage)
-- **Live Tool-Anzeige**: Während Guenther denkt, wird das aktive Tool + Log-Status neben den Punkten angezeigt
-- **SSH-Tunnel-Guide**: Anleitung in Provider-Einstellungen für Ollama/LM Studio (Reverse-Tunnel vom Heimrechner zum Server)
-- **Custom Tools**: eigene MCP-Tools als Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen, keine Code-Änderung nötig (siehe `CUSTOM_TOOL_GUIDE.md`)
+- **Kopieren-Button**: jede Nachricht hat ein Kopieren-Icon (Zwischenablage)
+- **Live Tool-Anzeige**: während Guenther denkt, wird das aktive Tool + Log-Status neben den Punkten angezeigt
+- **Guenther-Terminal**: Live-Ansicht aller API-Kommunikation im DOS-Stil mit Syntax-Highlighting und einklappbaren Blöcken
+- **`/new`-Befehl**: neue Chat-Session direkt per Texteingabe starten
+
+**LLM-Provider**
+- **OpenRouter**: Zugang zu hunderten Modellen (OpenAI, Anthropic, Google, Meta, …) mit einem API-Key
+- **Ollama** (lokal, kostenlos): LLMs lokal auf eigenem Rechner ausführen — komplett offline
+- **LM Studio** (lokal, kostenlos): GGUF-Modelle via grafischer Desktop-App
+- **Provider- & Modell-Override pro Tool**: jedes Tool kann einen eigenen Provider/Modell verwenden
+
+**KI-Features**
+- **Agenten-System**: eigene KI-Agenten mit individuellem System-Prompt anlegen — per Dropdown im Chat wählen, Name erscheint statt „Guenther"
+- **Code-Interpreter** (`run_code`): Python-Code per LLM generieren und ausführen, mit Selbstkorrektur-Loop
+- **Datei-Upload** (📎): Textdateien (CSV, JSON, XML, TXT etc.) hochladen — Inhalt wird als Kontext ans LLM übergeben
+- **Bildgenerierung**: via OpenRouter (Flux, Gemini Image, etc.)
+- **Bildbearbeitung**: via process_image (blur, grayscale, rotate, …)
 - **Präsentations-Generator**: PowerPoint-Dateien (.pptx) direkt aus dem Chat erstellen — Guenther strukturiert das Thema und liefert einen Download-Button
-- **Autoprompts**: Prompts mit Zeitplan hinterlegen (Intervall / täglich / wöchentlich) — Ergebnisse landen automatisch in einem dedizierten Chat
+
+**Automatisierung**
+- **Autoprompts**: Prompts mit Zeitplan hinterlegen (Intervall / täglich / wöchentlich, Zeiten in UTC) — per Default still ausgeführt (kein Chat-Eintrag), optional in dedizierten Chat speichern; ▶ Button zum sofortigen manuellen Ausführen mit Log-Anzeige
+- **Tool-Router**: automatische Vorauswahl relevanter Tools pro Anfrage (spart Tokens)
+
+**Telegram**
+- **Telegram-Gateway**: Chatten via Telegram, inkl. Foto- und Sprachnachrichten; `/new` startet neue Chat-Session
+- **Spracherkennung** (STT): OpenAI Whisper oder OpenRouter-kompatible Modelle für Telegram-Sprachnachrichten
+- **Sprachausgabe** (TTS): via ElevenLabs, Ergebnisse auch als Telegram-Audio sendbar
+- **`send_telegram`-Tool**: Guenther kann aktiv Telegram-Nachrichten senden — per `@username` oder numerischer Chat-ID (ideal für Autoprompts)
+
+**Erweiterbarkeit**
+- **Custom Tools per Chat**: eigene MCP-Tools direkt im Chat erstellen, bearbeiten und löschen (`create_mcp_tool`, `edit_mcp_tool`, `delete_mcp_tool`) — kein Neustart nötig
+- **Custom Tools manuell**: Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen (siehe `CUSTOM_TOOL_GUIDE.md`)
+- **Externe MCP-Server**: beliebige stdio-basierte MCP-Server (JSON-RPC 2.0) anbindbar
+- **SSH-Tunnel-Guide**: Anleitung in Provider-Einstellungen für Ollama/LM Studio (Reverse-Tunnel vom Heimrechner zum Server)
 
 ---
 
@@ -238,22 +260,32 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 
 | Tool | Beschreibung |
 |------|-------------|
+| `get_weather` | Wetter & Vorhersage via Open-Meteo (kein API-Key) |
+| `wikipedia_search` | Wikipedia-Artikel suchen inkl. Weiterleitungen, Ortsteil-Treffern und automatischem Fallback auf Englisch |
 | `get_stock_price` | Aktienkurs, Tagesveränderung, Kennzahlen via Yahoo Finance (kein API-Key) |
-| `resolve_callsign` | Flugzeug-Rufzeichen auflösen: Airline-Name via OpenFlights + Live-Daten via adsb.one (kein API-Key) |
 | `geocode_location` | Geokoordinaten für PLZ, Ortsnamen oder Adressen via OpenStreetMap Nominatim (kein API-Key) |
 | `get_flights_nearby` | Live-Flugzeuge in der Nähe von Koordinaten via OpenSky Network ADS-B (kein API-Key) |
-| `get_weather` | Wetter & Vorhersage via Open-Meteo (kein API-Key) |
-| `generate_image` | Bildgenerierung via OpenRouter |
-| `process_image` | Bildbearbeitung via ImageMagick (blur, grayscale, rotate, …) |
-| `text_to_image` | Text als PNG rendern |
-| `generate_qr_code` | QR-Code generieren |
+| `resolve_callsign` | Flugzeug-Rufzeichen auflösen: Airline-Name via OpenFlights + Live-Daten via adsb.one (kein API-Key) |
+| `fetch_website_info` | Titel, Description und Meta-Daten einer Webseite abrufen |
+| `run_code` | Python-Code per LLM generieren und ausführen — Dateikonvertierung, Datenanalyse, Berechnungen |
+| `generate_image` | Bildgenerierung via OpenRouter (Flux, Gemini Image, etc.) |
+| `process_image` | Bildbearbeitung via ImageMagick (blur, grayscale, rotate, crop, …) |
+| `text_to_image` | Text als PNG rendern (konfigurierbare Schrift, Farben, Hintergrund) |
+| `generate_qr_code` | QR-Code als PNG generieren |
 | `analyze_seo` | SEO-Analyse einer URL oder eines HTML-Codes — Score, Title, Meta, Headings, OG-Tags, JSON-LD u.v.m. als visueller HTML-Report |
 | `generate_presentation` | PowerPoint-Präsentation (.pptx) aus Thema oder Quelltext — 8 Layouts, 2 Themes, Download-Button im Chat |
 | `send_email` | E-Mail via SMTP senden |
+| `send_telegram` | Telegram-Nachricht senden — per `@username` oder numerischer Chat-ID |
+| `text_to_speech` | Text vorlesen via ElevenLabs (API Key in Tool-Einstellungen) |
 | `generate_password` | Sichere Passwörter generieren |
-| `calculate` | Mathematische Ausdrücke auswerten |
-| `roll_dice` | Würfeln |
-| `get_current_time` | Aktuelle Uhrzeit |
+| `calculate` | Mathematische Ausdrücke sicher auswerten (AST-basiert, kein eval) |
+| `roll_dice` | Würfeln (n Würfel mit m Seiten) |
+| `get_current_time` | Aktuelle Uhrzeit mit Zeitzone |
+| `create_mcp_tool` | Neues Custom Tool direkt im Chat anlegen und sofort registrieren |
+| `edit_mcp_tool` | Bestehendes Custom Tool bearbeiten und neu laden |
+| `delete_mcp_tool` | Custom Tool dauerhaft löschen und aus Registry entfernen |
+| `list_available_tools` | Alle aktuell registrierten Tools auflisten |
+| `get_help` | Hilfe und Erklärungen zu Guenther und seinen Funktionen |
 
 ---
 
@@ -290,21 +322,43 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 
 ### Features
 
-- **Chat interface** with Markdown rendering and image display
-- **MCP Tools** (Model Context Protocol): weather, image generation, image editing, QR codes, passwords, calculator, email, website info and more
-- **Guenther Terminal**: live view of all API communication in DOS style
-- **Telegram Gateway**: chat via Telegram, including photos and voice messages
-- **Speech recognition**: OpenAI Whisper or OpenRouter-compatible models
-- **Image generation**: via OpenRouter (Flux, Gemini Image, etc.)
-- **External MCP servers**: connect any stdio-based MCP server
-- **Tool router**: automatic pre-selection of relevant tools per request
+**Chat & Interface**
+- **Chat interface** with Markdown rendering, code highlighting and image display
 - **Light/Dark Theme**: toggle via button in the title bar, preference is saved
 - **Copy button**: every message has a copy icon (clipboard)
 - **Live tool display**: while Guenther is thinking, the active tool + log status is shown next to the typing dots
-- **SSH tunnel guide**: instructions in provider settings for Ollama/LM Studio (reverse tunnel from home machine to server)
-- **Custom tools**: drop your own MCP tools as Python files into `/app/data/custom_tools/` — loaded automatically, no code changes needed (see `CUSTOM_TOOL_GUIDE.md`)
+- **Guenther Terminal**: live view of all API communication in DOS style with syntax highlighting and collapsible blocks
+- **`/new` command**: start a new chat session directly by typing in the chat
+
+**LLM Providers**
+- **OpenRouter**: access hundreds of models (OpenAI, Anthropic, Google, Meta, …) with a single API key
+- **Ollama** (local, free): run LLMs locally on your own machine — fully offline
+- **LM Studio** (local, free): GGUF models via a graphical desktop app
+- **Per-tool provider & model override**: each tool can use its own provider and model
+
+**AI Features**
+- **Agent system**: create custom AI agents with individual system prompts — select via dropdown in chat, name replaces "Guenther"
+- **Code interpreter** (`run_code`): generate and execute Python code via LLM, with self-correction loop
+- **File upload** (📎): upload text files (CSV, JSON, XML, TXT etc.) — content is passed as context to the LLM
+- **Image generation**: via OpenRouter (Flux, Gemini Image, etc.)
+- **Image editing**: via process_image (blur, grayscale, rotate, …)
 - **Presentation generator**: create PowerPoint files (.pptx) directly from chat — Guenther structures the topic and delivers a download button
-- **Autoprompts**: schedule prompts to run automatically (interval / daily / weekly) — results are saved to a dedicated chat automatically
+
+**Automation**
+- **Autoprompts**: schedule prompts to run automatically (interval / daily / weekly, times in UTC) — runs silently by default (no chat entry), optionally save results to a dedicated chat; ▶ button to run immediately with log display
+- **Tool router**: automatic pre-selection of relevant tools per request (saves tokens)
+
+**Telegram**
+- **Telegram Gateway**: chat via Telegram, including photos and voice messages; `/new` starts a new chat session
+- **Speech recognition** (STT): OpenAI Whisper or OpenRouter-compatible models for Telegram voice messages
+- **Text-to-speech** (TTS): via ElevenLabs, results can also be sent as Telegram audio
+- **`send_telegram` tool**: Guenther can actively send Telegram messages — via `@username` or numeric chat ID (ideal for autoprompts)
+
+**Extensibility**
+- **Custom tools via chat**: create, edit and delete MCP tools directly from chat (`create_mcp_tool`, `edit_mcp_tool`, `delete_mcp_tool`) — no restart needed
+- **Custom tools manually**: drop Python files into `/app/data/custom_tools/` — loaded automatically (see `CUSTOM_TOOL_GUIDE.md`)
+- **External MCP servers**: connect any stdio-based MCP server (JSON-RPC 2.0)
+- **SSH tunnel guide**: instructions in provider settings for Ollama/LM Studio (reverse tunnel from home machine to server)
 
 ---
 
@@ -489,22 +543,32 @@ Data is stored persistently in a Docker volume (`/app/data`).
 
 | Tool | Description |
 |------|-------------|
+| `get_weather` | Weather & forecast via Open-Meteo (no API key needed) |
+| `wikipedia_search` | Search Wikipedia articles including redirects, sub-locality matches and automatic English fallback |
 | `get_stock_price` | Stock price, daily change, key figures via Yahoo Finance (no API key needed) |
-| `resolve_callsign` | Resolve aircraft callsign: airline name via OpenFlights + live data via adsb.one (no API key) |
 | `geocode_location` | Geocoordinates for postal codes, place names or addresses via OpenStreetMap Nominatim (no API key) |
 | `get_flights_nearby` | Live aircraft near given coordinates via OpenSky Network ADS-B (no API key) |
-| `get_weather` | Weather & forecast via Open-Meteo (no API key needed) |
-| `generate_image` | Image generation via OpenRouter |
-| `process_image` | Image editing via ImageMagick (blur, grayscale, rotate, …) |
-| `text_to_image` | Render text as PNG |
-| `generate_qr_code` | Generate QR codes |
+| `resolve_callsign` | Resolve aircraft callsign: airline name via OpenFlights + live data via adsb.one (no API key) |
+| `fetch_website_info` | Fetch title, description and meta data from any website |
+| `run_code` | Generate and execute Python code via LLM — file conversion, data analysis, calculations |
+| `generate_image` | Image generation via OpenRouter (Flux, Gemini Image, etc.) |
+| `process_image` | Image editing via ImageMagick (blur, grayscale, rotate, crop, …) |
+| `text_to_image` | Render text as PNG (configurable font, colours, background) |
+| `generate_qr_code` | Generate QR codes as PNG |
 | `analyze_seo` | SEO analysis of a URL or HTML code — score, title, meta, headings, OG tags, JSON-LD and more as a visual HTML report |
 | `generate_presentation` | PowerPoint presentation (.pptx) from a topic or source text — 8 layouts, 2 themes, download button in chat |
 | `send_email` | Send email via SMTP |
+| `send_telegram` | Send a Telegram message — via `@username` or numeric chat ID |
+| `text_to_speech` | Text-to-speech via ElevenLabs (API key in tool settings) |
 | `generate_password` | Generate secure passwords |
-| `calculate` | Evaluate mathematical expressions |
-| `roll_dice` | Roll dice |
-| `get_current_time` | Get current time |
+| `calculate` | Evaluate mathematical expressions safely (AST-based, no eval) |
+| `roll_dice` | Roll dice (n dice with m sides) |
+| `get_current_time` | Get current time with timezone |
+| `create_mcp_tool` | Create a new custom tool directly in chat and register it immediately |
+| `edit_mcp_tool` | Edit an existing custom tool and reload it |
+| `delete_mcp_tool` | Permanently delete a custom tool and remove it from the registry |
+| `list_available_tools` | List all currently registered tools |
+| `get_help` | Get help and explanations about Guenther and its capabilities |
 
 ---
 
