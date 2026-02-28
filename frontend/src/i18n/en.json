@@ -204,6 +204,7 @@
       "openrouterKeys": "API Keys at OpenRouter",
       "openrouterUsage": "Usage at OpenRouter",
       "mistralKeys": "API Keys at Mistral",
+      "mistralUsage": "Usage at Mistral",
       "mistralDocs": "Mistral API documentation",
       "subtitles": {
         "openrouter": "via USA, models worldwide",

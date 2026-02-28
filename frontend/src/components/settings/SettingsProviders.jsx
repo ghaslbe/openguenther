@@ -244,7 +244,8 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
                   )}
                   {pid === 'mistral' && (
                     <div className="provider-help-links">
-                      <a href="https://console.mistral.ai/api-keys" target="_blank" rel="noopener noreferrer">{t('settings.providers.mistralKeys')}</a>
+                      <a href="https://admin.mistral.ai/organization/api-keys" target="_blank" rel="noopener noreferrer">{t('settings.providers.mistralKeys')}</a>
+                      <a href="https://admin.mistral.ai/organization/usage" target="_blank" rel="noopener noreferrer">{t('settings.providers.mistralUsage')}</a>
                       <a href="https://docs.mistral.ai/api" target="_blank" rel="noopener noreferrer">{t('settings.providers.mistralDocs')}</a>
                     </div>
                   )}
