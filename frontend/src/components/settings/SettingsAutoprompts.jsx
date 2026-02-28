@@ -35,6 +35,7 @@ export default function SettingsAutoprompts() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
+  const [errorPopup, setErrorPopup] = useState(null);
 
   useEffect(() => {
     load();
@@ -128,7 +129,16 @@ export default function SettingsAutoprompts() {
                 <span className="agent-item-desc" style={{ fontSize: '12px' }}>
                   {scheduleLabel(ap)}
                   {ap.last_run && ` · Zuletzt: ${new Date(ap.last_run).toLocaleString('de-DE')}`}
-                  {ap.last_error && <span style={{ color: '#ef5350' }}> · Fehler!</span>}
+                  {ap.last_error && (
+                    <button
+                      onClick={() => setErrorPopup({ name: ap.name, error: ap.last_error })}
+                      style={{
+                        background: 'none', border: 'none', padding: '0 0 0 4px',
+                        color: '#ef5350', cursor: 'pointer', fontSize: 'inherit',
+                        textDecoration: 'underline', fontFamily: 'inherit',
+                      }}
+                    >· Fehler</button>
+                  )}
                 </span>
               </div>
               <div className="agent-item-actions">
@@ -246,6 +256,44 @@ export default function SettingsAutoprompts() {
           </div>
         </div>
       </div>
+      {errorPopup && (
+        <div
+          onClick={() => setErrorPopup(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+              borderRadius: '8px', padding: '24px', maxWidth: '560px', width: '90%',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+            }}
+          >
+            <p style={{ fontWeight: '700', color: '#ef5350', marginBottom: '12px', fontSize: '14px' }}>
+              Fehler: {errorPopup.name}
+            </p>
+            <pre style={{
+              background: 'var(--bg-primary)', border: '1px solid var(--border)',
+              borderRadius: '4px', padding: '12px', fontSize: '12px',
+              color: 'var(--text-primary)', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+              maxHeight: '300px', overflowY: 'auto', margin: 0,
+            }}>
+              {errorPopup.error}
+            </pre>
+            <button
+              onClick={() => setErrorPopup(null)}
+              className="btn-save-agent"
+              style={{ marginTop: '16px' }}
+            >
+              Schließen
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
