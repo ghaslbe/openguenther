@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from services.autoprompt import (
     get_autoprompts, get_autoprompt, save_autoprompt, delete_autoprompt
@@ -13,6 +14,12 @@ _service = None
 def set_service(service):
     global _service
     _service = service
+
+
+@autoprompts_bp.route('/api/server-time', methods=['GET'])
+def server_time():
+    now = datetime.now(timezone.utc)
+    return jsonify({"utc": now.strftime("%H:%M"), "local": datetime.now().strftime("%H:%M"), "tz": "UTC"})
 
 
 @autoprompts_bp.route('/api/autoprompts', methods=['GET'])

@@ -135,6 +135,11 @@ export async function deleteAgent(id) {
   await fetch(`${BASE}/api/agents/${id}`, { method: 'DELETE' });
 }
 
+export async function fetchServerTime() {
+  const res = await fetch(`/api/server-time`);
+  return res.json();
+}
+
 export async function fetchAutoprompts() {
   const res = await fetch(`${BASE}/api/autoprompts`);
   return res.json();

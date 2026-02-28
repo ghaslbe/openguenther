@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   fetchAutoprompts, createAutoprompt, updateAutoprompt,
-  deleteAutoprompt, runAutopromptNow, fetchAgents
+  deleteAutoprompt, runAutopromptNow, fetchAgents, fetchServerTime
 } from '../../services/api';
 
 const WEEKDAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
@@ -37,9 +37,11 @@ export default function SettingsAutoprompts() {
   const [message, setMessage] = useState('');
   const [errorPopup, setErrorPopup] = useState(null);
   const [logPopup, setLogPopup] = useState(null);
+  const [serverTime, setServerTime] = useState('');
 
   useEffect(() => {
     load();
+    fetchServerTime().then(d => setServerTime(d.utc || '')).catch(() => {});
   }, []);
 
   async function load() {
@@ -235,7 +237,14 @@ export default function SettingsAutoprompts() {
                   </select>
                 </>
               )}
-              <label className="agent-form-label">Uhrzeit (HH:MM)</label>
+              <label className="agent-form-label">
+                Uhrzeit (HH:MM)
+                {serverTime && (
+                  <span style={{ fontWeight: 'normal', color: 'var(--text-secondary)', marginLeft: '10px', fontSize: '12px' }}>
+                    Aktuelle Server-Zeit: <strong style={{ color: 'var(--accent)' }}>{serverTime} UTC</strong>
+                  </span>
+                )}
+              </label>
               <input
                 type="time"
                 value={form.daily_time}
