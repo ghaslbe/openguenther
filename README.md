@@ -60,6 +60,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 
 **LLM-Provider**
 - **OpenRouter**: Zugang zu hunderten Modellen (OpenAI, Anthropic, Google, Meta, …) mit einem API-Key
+- **Mistral** (Europa): europäischer KI-Anbieter, eigene Modelle (Mistral, Codestral, …), API Key erforderlich
 - **Ollama** (lokal, kostenlos): LLMs lokal auf eigenem Rechner ausführen — komplett offline
 - **LM Studio** (lokal, kostenlos): GGUF-Modelle via grafischer Desktop-App
 - **Provider- & Modell-Override pro Tool**: jedes Tool kann einen eigenen Provider/Modell verwenden
@@ -347,6 +348,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 
 **LLM Providers**
 - **OpenRouter**: access hundreds of models (OpenAI, Anthropic, Google, Meta, …) with a single API key
+- **Mistral** (Europe): European AI provider, own models (Mistral, Codestral, …), API key required
 - **Ollama** (local, free): run LLMs locally on your own machine — fully offline
 - **LM Studio** (local, free): GGUF models via a graphical desktop app
 - **Per-tool provider & model override**: each tool can use its own provider and model
