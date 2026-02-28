@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchMcpServers, addMcpServer, updateMcpServer, deleteMcpServer } from '../../services/api';
+import { fetchMcpServers, addMcpServer, updateMcpServer, deleteMcpServer, reloadMcpTools } from '../../services/api';
 
 function envToText(env) {
   if (!env) return '';
@@ -26,6 +26,7 @@ export default function SettingsMcp() {
   const [editId, setEditId] = useState(null);
   const [editState, setEditState] = useState({});
   const [message, setMessage] = useState('');
+  const [reloading, setReloading] = useState(false);
 
   useEffect(() => {
     loadMcpServers();
@@ -80,6 +81,14 @@ export default function SettingsMcp() {
     await loadMcpServers();
   }
 
+  async function handleReload() {
+    setReloading(true);
+    await reloadMcpTools();
+    setReloading(false);
+    setMessage(t('settings.mcp.reloaded'));
+    setTimeout(() => setMessage(''), 3000);
+  }
+
   return (
     <div>
       {message && <div className="settings-message">{message}</div>}
@@ -88,7 +97,12 @@ export default function SettingsMcp() {
       </p>
 
       <div className="settings-section">
-        <h3>{t('settings.mcp.configured')}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <h3 style={{ margin: 0 }}>{t('settings.mcp.configured')}</h3>
+          <button className="btn-test-provider" onClick={handleReload} disabled={reloading}>
+            {reloading ? t('settings.mcp.reloading') : t('settings.mcp.reload')}
+          </button>
+        </div>
         <div className="mcp-servers-list">
           {mcpServers.map(s => (
             <div key={s.id} className="mcp-server-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
