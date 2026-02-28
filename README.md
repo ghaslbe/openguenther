@@ -6,6 +6,16 @@
 
 ---
 
+## Schnellinstallation / Quick Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ghaslbe/openguenther/master/install.sh | bash
+```
+
+Funktioniert auf **Linux** und **macOS** — prüft und installiert Git & Docker automatisch, klont das Repo, baut das Image und startet den Container. Danach unter `http://localhost:3333` erreichbar.
+
+---
+
 ## Inhaltsverzeichnis / Table of Contents
 
 - 🇩🇪 [Deutsch](#-deutsch)
