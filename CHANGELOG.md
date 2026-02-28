@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.7] — 2026-02-28
+
+### Telegram-Tool + Autoprompt-Verbesserungen
+
+- Neues Tool `send_telegram`: sendet eine Nachricht über Telegram an einen Nutzer
+  - Akzeptiert `@username` (Lookup aus gespeichertem Mapping) **oder** direkte numerische Chat-ID (z.B. `5761888867`)
+  - Prompt-Beispiel: „Rufe den Wetterbericht ab und sende ihn per Telegram an 5761888867"
+  - `TelegramGateway` persistiert `username → telegram_chat_id` automatisch in `/app/data/telegram_users.json`
+- Autoprompts — Ausführungs-Log und Status-Anzeige:
+  - Nach jedem Lauf: vollständiger Agent-Log gespeichert (`last_log`, `last_status`)
+  - **Erfolgreich**: grüner Link → öffnet Log-Popup mit allen Agent-Schritten
+  - **Fehler**: roter Link → Fehlerdetail-Popup + grauer „Log"-Link → vollständiger Ausführungs-Log
+- Fehler-Popup in Autoprompts: Hintergrund war transparent (fehlende CSS-Variable) — behoben
+- Autoprompts: `'NoneType' object is not callable` bei Ausführung behoben (`emit_log=None` → No-op Lambda)
+
+---
+
 ## [1.4.6] — 2026-02-28
 
 ### Autoprompts — geplante Prompts
