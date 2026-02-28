@@ -10,7 +10,7 @@ RUN npm run build
 FROM python:3.12-slim
 WORKDIR /app
 
-# Install system dependencies (fonts, ImageMagick, WeasyPrint HTML→PDF)
+# Install system dependencies (fonts, ImageMagick, WeasyPrint HTML→PDF, Node.js for npx-based MCP servers)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
@@ -20,6 +20,9 @@ RUN apt-get update && \
     libcairo2 \
     libffi8 \
     shared-mime-info \
+    curl \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
