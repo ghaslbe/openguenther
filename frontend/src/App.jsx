@@ -214,12 +214,14 @@ export default function App() {
       <div className="app-topbar">
         <span className="topbar-open">OPEN</span><span className="topbar-guenther">guenther</span>
         <span className="topbar-version">v{__APP_VERSION__}</span><span className="topbar-beta">beta</span>
-        <button className="btn-theme-toggle" onClick={toggleLang}>
-          {i18n.language === 'de' ? 'EN' : 'DE'}
-        </button>
-        <button className="btn-theme-toggle" onClick={toggleTheme}>
-          {theme === 'dark' ? t('topbar.light') : t('topbar.dark')}
-        </button>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <button className="btn-theme-toggle" style={{ marginLeft: 0 }} onClick={toggleLang}>
+            {i18n.language === 'de' ? 'EN' : 'DE'}
+          </button>
+          <button className="btn-theme-toggle" style={{ marginLeft: 0 }} onClick={toggleTheme}>
+            {theme === 'dark' ? t('topbar.light') : t('topbar.dark')}
+          </button>
+        </div>
       </div>
       <div className="app">
         <ChatList

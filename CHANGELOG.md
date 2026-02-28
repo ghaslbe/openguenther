@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.12] — 2026-02-28
+
+### Info-Seite: vollständiger Haftungsausschluss (DE + EN) + Sprachumschalter-Fix
+
+- **Einstellungen → Info**: Haftungsausschluss jetzt vollständig in Deutsch **und** Englisch — identisch mit README.md (inkl. Bullet-Listen, Empfehlungen, Softwarequalitäts-Hinweis)
+- **Topbar-Fix**: Sprachumschalter (`DE`/`EN`) war durch CSS-Konflikt (`margin-left: auto` auf beiden Buttons) außerhalb des sichtbaren Bereichs — beide Buttons jetzt in einem Wrapper-`div` zusammengefasst und korrekt sichtbar
+
+---
+
 ## [1.4.11] — 2026-02-28
 
 ### i18n: GUI-Übersetzung Deutsch / Englisch + First-Run-Overlay
