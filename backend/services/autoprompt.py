@@ -134,7 +134,7 @@ class AutopromptService:
                 agent_system_prompt = agent_cfg.get('system_prompt') or None
 
         try:
-            response = run_agent(messages, settings, emit_log=None, system_prompt=agent_system_prompt)
+            response = run_agent(messages, settings, emit_log=lambda _: None, system_prompt=agent_system_prompt)
             add_message(chat_id, 'user', ap['prompt'])
             add_message(chat_id, 'assistant', response)
             ap['last_run'] = now_iso
