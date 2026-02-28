@@ -38,6 +38,7 @@ init_db()
 # Register built-in and custom MCP tools via auto-discovery
 load_builtin_tools()
 load_custom_tools()
+load_external_tools()
 
 
 # ── Static file serving ──
