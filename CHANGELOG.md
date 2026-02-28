@@ -2,44 +2,30 @@
 
 ## [1.4.14] — 2026-02-28
 
-### Mistral als LLM Provider
+### i18n: GUI Deutsch / Englisch + Mistral Provider + First-Run-Overlay
 
-- **Mistral (Europa)** als zweiter Provider in den Einstellungen — zwischen OpenRouter und Ollama
-- Base URL: `https://api.mistral.ai/v1` (OpenAI-kompatibel), API Key erforderlich
-- Hilfe-Links: API Keys + Dokumentation direkt in den Provider-Einstellungen
-- Untertitel: `(Europa)` / `(Europe)` via i18n
-- Bestehende Installationen: Mistral wird beim nächsten Start automatisch zu `settings.json` hinzugefügt (disabled)
+**Sprachumschalter**
+- Button `DE` / `EN` in der Topbar (neben Theme-Toggle), Sprache wird in `localStorage` gespeichert (Standard: Deutsch)
+- `react-i18next`: alle UI-Strings ausgelagert in `frontend/src/i18n/de.json` + `en.json`
+- Übersetzte Komponenten: ChatList, ChatWindow, GuentherBox, ToolSettings, Settings, SettingsGeneral, SettingsAgents, SettingsAutoprompts, SettingsProviders, SettingsTools, SettingsMcp, SettingsTelegram — SettingsHilfe bleibt Deutsch
 
----
+**First-Run-Overlay**
+- Erscheint beim ersten Start wenn keine Sprache gespeichert und kein Provider konfiguriert ist
+- Zweisprachig DE + EN: Sprachauswahl per Flaggen-Button, Hinweis auf OpenRouter / Ollama / LM Studio mit Link
 
-## [1.4.13] — 2026-02-28
+**Einstellungen → Info**
+- Haftungsausschluss vollständig in Deutsch **und** Englisch — identisch mit README (Bullet-Listen, Empfehlungen, Softwarequalitäts-Hinweis)
 
-### Provider-Untertitel in LLM Provider-Einstellungen
+**Mistral als LLM Provider**
+- **Mistral (Europa)** in den Provider-Einstellungen — zwischen OpenRouter und Ollama
+- Base URL `https://api.mistral.ai/v1` (OpenAI-kompatibel), API Key erforderlich
+- Direkte Links zu `console.mistral.ai` (API Keys) und `docs.mistral.ai`
+- Bestehende Installationen: Mistral wird beim nächsten Start automatisch zu `settings.json` hinzugefügt (deaktiviert)
 
-- OpenRouter zeigt jetzt `(via USA, Modelle weltweit)` / `(via USA, models worldwide)`
-- Ollama und LM Studio zeigen `(lokale KI)` / `(local AI)`
-- Untertitel in `de.json` + `en.json` unter `settings.providers.subtitles`
-
----
-
-## [1.4.12] — 2026-02-28
-
-### Info-Seite: vollständiger Haftungsausschluss (DE + EN) + Sprachumschalter-Fix
-
-- **Einstellungen → Info**: Haftungsausschluss jetzt vollständig in Deutsch **und** Englisch — identisch mit README.md (inkl. Bullet-Listen, Empfehlungen, Softwarequalitäts-Hinweis)
-- **Topbar-Fix**: Sprachumschalter (`DE`/`EN`) war durch CSS-Konflikt (`margin-left: auto` auf beiden Buttons) außerhalb des sichtbaren Bereichs — beide Buttons jetzt in einem Wrapper-`div` zusammengefasst und korrekt sichtbar
-
----
-
-## [1.4.11] — 2026-02-28
-
-### i18n: GUI-Übersetzung Deutsch / Englisch + First-Run-Overlay
-
-- **Sprachumschalter** in der Topbar: Button `EN` / `DE` neben dem Theme-Toggle, Sprache wird in `localStorage` gespeichert (Standard: Deutsch)
-- **i18next + react-i18next**: alle UI-Strings in `frontend/src/i18n/de.json` und `en.json` ausgelagert
-- **Alle Komponenten übersetzt**: ChatList, ChatWindow, GuentherBox, ToolSettings, Settings, SettingsGeneral, SettingsAgents, SettingsAutoprompts, SettingsProviders, SettingsTools, SettingsMcp, SettingsTelegram — SettingsHilfe bleibt auf Deutsch
-- **First-Run-Overlay**: beim ersten Start (keine Sprache gespeichert + kein Provider konfiguriert) erscheint ein zweisprachiges Willkommensfenster — Sprachauswahl + Hinweis auf OpenRouter / Ollama / LM Studio
-- `frontend/src/i18n/index.js` — i18next-Initialisierung mit Fallback auf Deutsch
+**Provider-Untertitel**
+- OpenRouter: `(via USA, Modelle weltweit)` / `(via USA, models worldwide)`
+- Mistral: `(Europa)` / `(Europe)`
+- Ollama + LM Studio: `(lokale KI)` / `(local AI)`
 
 ---
 
