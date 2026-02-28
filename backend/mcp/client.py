@@ -64,12 +64,25 @@ class MCPStdioClient:
     def _send(self, message):
         if not self.process or not self.process.stdin or not self.process.stdout:
             raise RuntimeError("Not connected to MCP server")
+        request_id = message.get('id')
         self.process.stdin.write(json.dumps(message) + '\n')
         self.process.stdin.flush()
-        line = self.process.stdout.readline()
-        if line:
-            return json.loads(line.strip())
-        return None
+        # Keep reading until we get the response matching our request id.
+        # MCP servers may send progress notifications before the actual result.
+        while True:
+            line = self.process.stdout.readline()
+            if not line:
+                return None
+            try:
+                data = json.loads(line.strip())
+            except json.JSONDecodeError:
+                continue
+            # Notification (no id) — skip
+            if 'id' not in data:
+                continue
+            # Response to our request
+            if request_id is None or data.get('id') == request_id:
+                return data
 
     def list_tools(self):
         response = self._send_request("tools/list", {})
