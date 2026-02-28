@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.10] — 2026-02-28
+
+### Beta-Label + fetch_url Tool + README
+
+- Topbar zeigt jetzt `beta`-Label neben der Versionsnummer
+- README: Titel zu `OPENguenther (beta)` geändert
+- README: Haftungsausschluss um Hinweis auf Fehler und Sicherheitslücken erweitert (DE + EN)
+- README: Schnellinstallation (`curl ... | bash`) ganz oben ergänzt
+- README: Features und Built-in-Tools-Tabellen vollständig aktualisiert (DE + EN)
+- Neues Tool `fetch_url`: beliebige URL per GET/POST abrufen, JSON automatisch geparst, Text auf `max_chars` kürzbar
+
+---
+
 ## [1.4.9] — 2026-02-28
 
 ### Hilfe-Updates: Autoprompts + send_telegram
