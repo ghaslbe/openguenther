@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.8] — 2026-02-28
+
+### Autoprompts — UTC-Klarheit
+
+- Aktuelle Server-Zeit (UTC) wird neben dem Uhrzeit-Eingabefeld angezeigt (`Aktuelle Server-Zeit: HH:MM UTC`)
+- Label zeigt jetzt explizit `Uhrzeit (HH:MM, UTC)` — Scheduler läuft in UTC
+- In der Autoprompt-Liste steht die Uhrzeit nun mit UTC-Suffix (z.B. `Täglich 07:15 UTC`)
+
+---
+
 ## [1.4.7] — 2026-02-28
 
 ### Telegram-Tool + Autoprompt-Verbesserungen
