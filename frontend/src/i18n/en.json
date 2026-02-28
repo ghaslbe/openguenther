@@ -240,6 +240,7 @@
       "addTitle": "Add new server",
       "added": "Server added!",
       "add": "Add",
+      "envPlaceholder": "Environment variables (optional, one per line):\nFIRECRAWL_API_KEY=fc-xxx\nOTHER_VAR=value",
       "marketplaceHint": "Find MCP servers on various marketplaces, e.g.",
       "marketplaceHintSuffix": " — one of many."
     },

@@ -8,6 +8,7 @@ export default function SettingsMcp() {
   const [newName, setNewName] = useState('');
   const [newCommand, setNewCommand] = useState('');
   const [newArgs, setNewArgs] = useState('');
+  const [newEnv, setNewEnv] = useState('');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -22,10 +23,16 @@ export default function SettingsMcp() {
   async function handleAddServer() {
     if (!newName || !newCommand) return;
     const args = newArgs ? newArgs.split(' ').filter(Boolean) : [];
-    await addMcpServer({ name: newName, transport: 'stdio', command: newCommand, args });
+    const env = {};
+    newEnv.split('\n').forEach(line => {
+      const idx = line.indexOf('=');
+      if (idx > 0) env[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+    });
+    await addMcpServer({ name: newName, transport: 'stdio', command: newCommand, args, env });
     setNewName('');
     setNewCommand('');
     setNewArgs('');
+    setNewEnv('');
     await loadMcpServers();
     setMessage(t('settings.mcp.added'));
     setTimeout(() => setMessage(''), 3000);
@@ -51,6 +58,11 @@ export default function SettingsMcp() {
               <div className="mcp-server-info">
                 <strong>{s.name}</strong>
                 <span className="mcp-server-cmd">{s.command} {(s.args || []).join(' ')}</span>
+                {s.env && Object.keys(s.env).length > 0 && (
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', display: 'block' }}>
+                    ENV: {Object.keys(s.env).join(', ')}
+                  </span>
+                )}
               </div>
               <button className="btn-delete-server" onClick={() => handleDeleteServer(s.id)}>
                 {t('settings.mcp.remove')}
@@ -83,6 +95,13 @@ export default function SettingsMcp() {
             placeholder="Argumente (z.B. -y @weather/mcp)"
             value={newArgs}
             onChange={(e) => setNewArgs(e.target.value)}
+          />
+          <textarea
+            placeholder={t('settings.mcp.envPlaceholder')}
+            value={newEnv}
+            onChange={(e) => setNewEnv(e.target.value)}
+            rows={3}
+            style={{ fontFamily: 'monospace', fontSize: '12px', resize: 'vertical' }}
           />
           <button className="btn-add-server" onClick={handleAddServer}>
             {t('settings.mcp.add')}

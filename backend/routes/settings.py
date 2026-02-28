@@ -195,6 +195,7 @@ def add_mcp_server():
         'transport': data.get('transport', 'stdio'),
         'command': data.get('command', ''),
         'args': data.get('args', []),
+        'env': data.get('env', {}),
         'url': data.get('url', ''),
         'enabled': True
     }

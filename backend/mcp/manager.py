@@ -33,7 +33,8 @@ def load_external_tools(emit_log=None):
             if server.get('transport', 'stdio') == 'stdio':
                 client = MCPStdioClient(
                     server['command'],
-                    server.get('args', [])
+                    server.get('args', []),
+                    env=server.get('env') or None
                 )
                 client.connect()
                 tools = client.list_tools()

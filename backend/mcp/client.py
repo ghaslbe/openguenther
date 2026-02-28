@@ -1,3 +1,4 @@
+import os
 import subprocess
 import json
 
@@ -17,13 +18,16 @@ class MCPStdioClient:
         return self._id
 
     def connect(self):
+        env = os.environ.copy()
+        if self.env:
+            env.update(self.env)
         self.process = subprocess.Popen(
             [self.command] + self.args,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            env=self.env
+            env=env
         )
         response = self._send_request("initialize", {
             "protocolVersion": "2024-11-05",
