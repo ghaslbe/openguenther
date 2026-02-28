@@ -20,7 +20,7 @@ def _ts():
     return datetime.now().strftime("%H:%M:%S")
 
 
-def _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=None, timeout=120):
+def _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=None, timeout=120, provider_id=''):
     """
     Pre-filter: Ask LLM which tools are relevant for this request.
     Uses only tool names + descriptions (no full schemas) to save tokens.
@@ -63,7 +63,7 @@ def _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=N
     }})
 
     try:
-        response = call_openrouter(router_messages, None, api_key, model, temperature=0.1, base_url=base_url, timeout=timeout)
+        response = call_openrouter(router_messages, None, api_key, model, temperature=0.1, base_url=base_url, timeout=timeout, provider_id=provider_id)
         content = response.get("choices", [{}])[0].get("message", {}).get("content", "[]")
 
         emit_log({"type": "json", "label": "router_response_raw", "data": response})
@@ -181,7 +181,7 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
     emit_log({"type": "text", "message": f"[{_ts()}] LLM Timeout: {llm_timeout}s"})
 
     # ── Tool Router: Pre-filter ──
-    tools = _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=base_url, timeout=llm_timeout)
+    tools = _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=base_url, timeout=llm_timeout, provider_id=provider_id)
 
     # ── Provider+Model override: use tool-specific overrides if all tools agree ──
     effective_provider_cfg, effective_model = _pick_provider_and_model_for_tools(tools, settings)
