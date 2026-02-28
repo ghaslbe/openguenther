@@ -320,6 +320,9 @@ Dies umfasst insbesondere, aber nicht ausschließlich:
 - Die Software nicht ohne Authentifizierung öffentlich zugänglich zu machen
 - Keine sensiblen Daten in Chats einzugeben
 
+**Hinweis zur Softwarequalität:**
+Diese Software befindet sich in aktiver Entwicklung und wird ohne Anspruch auf Fehlerfreiheit, Vollständigkeit oder Sicherheit veröffentlicht. Es ist davon auszugehen, dass die Software — wie jede Software vergleichbarer Komplexität — Fehler, Unzulänglichkeiten und mit hoher Wahrscheinlichkeit auch Sicherheitslücken enthält, die zum Zeitpunkt der Veröffentlichung weder bekannt noch behoben sind. Der Betreiber ist sich dieser inhärenten Unvollkommenheit bewusst und trägt die alleinige Verantwortung dafür, die damit verbundenen Risiken im Kontext seines konkreten Einsatzszenarios zu bewerten und geeignete Schutzmaßnahmen zu ergreifen. Die Nutzung der Software setzt das ausdrückliche Einverständnis mit diesem Umstand voraus.
+
 ---
 
 ## 🇬🇧 English
@@ -602,6 +605,9 @@ This includes but is not limited to:
 - Setting spending limits on API keys
 - Not exposing the software publicly without authentication
 - Not entering sensitive data in chats
+
+**Notice on software quality:**
+This software is under active development and is released without any claim of correctness, completeness or security. It should be assumed that the software — like any software of comparable complexity — contains bugs, deficiencies and, in all likelihood, security vulnerabilities that are neither known nor remediated at the time of release. The operator acknowledges this inherent imperfection and bears sole responsibility for assessing the associated risks in the context of their specific deployment scenario and for implementing appropriate protective measures. Use of the software constitutes explicit acceptance of this condition.
 
 ---
 
