@@ -194,7 +194,7 @@ export default function App() {
     <div className="app-wrapper">
       <div className="app-topbar">
         <span className="topbar-open">OPEN</span><span className="topbar-guenther">guenther</span>
-        <span className="topbar-version">v{__APP_VERSION__}</span>
+        <span className="topbar-version">v{__APP_VERSION__}</span><span className="topbar-beta">beta</span>
         <button className="btn-theme-toggle" onClick={toggleTheme}>
           {theme === 'dark' ? 'LIGHT' : 'DARK'}
         </button>

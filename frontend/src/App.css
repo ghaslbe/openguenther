@@ -73,6 +73,17 @@ html, body, #root {
   padding-bottom: 2px;
 }
 
+.topbar-beta {
+  margin-left: 6px;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  color: var(--accent);
+  opacity: 0.6;
+  letter-spacing: 0.5px;
+  align-self: flex-end;
+  padding-bottom: 2px;
+}
+
 .app {
   display: flex;
   flex: 1;

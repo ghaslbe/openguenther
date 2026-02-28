@@ -1,4 +1,4 @@
-# OPENguenther
+# OPENguenther (beta)
 
 **🌐 [openguenther.de](https://www.openguenther.de)**
 
