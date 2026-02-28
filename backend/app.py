@@ -181,15 +181,20 @@ def handle_message(data):
 
     emit('agent_start', {'chat_id': chat_id})
 
-    # Resolve optional agent system_prompt
+    # Resolve optional agent system_prompt + provider/model overrides
     agent_system_prompt = None
+    agent_provider_id = None
+    agent_model = None
     if agent_id:
         agent_cfg = get_agent(agent_id)
         if agent_cfg:
             agent_system_prompt = agent_cfg.get('system_prompt') or None
+            agent_provider_id = agent_cfg.get('provider_id') or None
+            agent_model = agent_cfg.get('model') or None
 
     try:
-        response = run_agent(messages, settings, emit_log, system_prompt=agent_system_prompt)
+        response = run_agent(messages, settings, emit_log, system_prompt=agent_system_prompt,
+                             agent_provider_id=agent_provider_id, agent_model=agent_model)
         response = file_store.extract_and_store(response, chat_id)
         add_message(chat_id, 'assistant', response)
         emit('agent_response', {

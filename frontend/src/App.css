@@ -1641,6 +1641,17 @@ html, body, #root {
   color: var(--text-secondary);
 }
 
+.agent-item-llm {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-top: 2px;
+  display: inline-block;
+  font-family: monospace;
+}
+
 .agent-item-actions {
   display: flex;
   gap: 6px;

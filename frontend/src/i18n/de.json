@@ -119,6 +119,10 @@
       "descPlaceholder": "z.B. Antwortet in Reimen",
       "systemPrompt": "System-Prompt",
       "systemPromptPlaceholder": "z.B. Antworte immer in Reimen.",
+      "providerOverride": "Provider (Override)",
+      "providerDefault": "— Standard (globale Einstellung) —",
+      "modelOverride": "Modell (Override)",
+      "modelPlaceholder": "leer = Standard-Modell verwenden",
       "save": "Speichern",
       "create": "Erstellen",
       "cancel": "Abbrechen"

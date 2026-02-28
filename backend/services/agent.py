@@ -132,7 +132,7 @@ def _pick_provider_and_model_for_tools(selected_tools, settings):
     return override_provider_cfg or default_provider_cfg, override_model
 
 
-def run_agent(chat_messages, settings, emit_log, system_prompt=None):
+def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provider_id=None, agent_model=None):
     """
     Run the agent loop: send messages to LLM, handle tool calls, iterate.
     Logs ALL communication to Guenther terminal.
@@ -150,6 +150,16 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None):
     model = settings.get('model', 'openai/gpt-4o-mini')
     temperature = float(settings.get('temperature', 0.5))
     llm_timeout = int(settings.get('llm_timeout', 120))
+
+    # Agent-level provider/model override (takes priority over global defaults)
+    if agent_provider_id and agent_provider_id in providers:
+        agent_prov_cfg = providers[agent_provider_id]
+        provider_id = agent_provider_id
+        provider_cfg = agent_prov_cfg
+        api_key = agent_prov_cfg.get('api_key', '') or api_key
+        base_url = agent_prov_cfg.get('base_url', base_url)
+    if agent_model:
+        model = agent_model
 
     if not api_key and provider_id == 'openrouter':
         return "Fehler: Kein OpenRouter API-Key konfiguriert. Bitte in den Einstellungen hinterlegen."

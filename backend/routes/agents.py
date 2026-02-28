@@ -19,6 +19,8 @@ def create_agent():
         'name': data.get('name', '').strip(),
         'description': data.get('description', '').strip(),
         'system_prompt': data.get('system_prompt', '').strip(),
+        'provider_id': data.get('provider_id', '').strip(),
+        'model': data.get('model', '').strip(),
     }
     agents.append(agent)
     save_agents(agents)
@@ -34,6 +36,8 @@ def update_agent(agent_id):
             a['name'] = data.get('name', a['name']).strip()
             a['description'] = data.get('description', a.get('description', '')).strip()
             a['system_prompt'] = data.get('system_prompt', a['system_prompt']).strip()
+            a['provider_id'] = data.get('provider_id', a.get('provider_id', '')).strip()
+            a['model'] = data.get('model', a.get('model', '')).strip()
             save_agents(agents)
             return jsonify(a)
     return jsonify({'error': 'Agent nicht gefunden'}), 404

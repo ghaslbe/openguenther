@@ -119,6 +119,10 @@
       "descPlaceholder": "e.g. Answers in rhymes",
       "systemPrompt": "System prompt",
       "systemPromptPlaceholder": "e.g. Always answer in rhymes.",
+      "providerOverride": "Provider (override)",
+      "providerDefault": "— Default (global setting) —",
+      "modelOverride": "Model (override)",
+      "modelPlaceholder": "empty = use default model",
       "save": "Save",
       "create": "Create",
       "cancel": "Cancel"
