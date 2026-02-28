@@ -161,7 +161,7 @@ export default function SettingsAutoprompts() {
           <label className="agent-form-label">Prompt</label>
           <textarea
             className="agent-prompt-textarea"
-            placeholder="z.B. Gib mir eine kurze Zusammenfassung der heutigen Nachrichten."
+            placeholder={"z.B. Gib mir eine Zusammenfassung der heutigen Nachrichten und sende sie mit Telegram an @mama75.\n\n(Hinweis: Der Empfänger muss dem Bot vorher mindestens einmal geschrieben haben, damit Telegram das erlaubt.)"}
             value={form.prompt}
             rows={5}
             onChange={e => setForm(f => ({ ...f, prompt: e.target.value }))}
