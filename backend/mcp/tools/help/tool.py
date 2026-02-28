@@ -39,7 +39,8 @@ def get_help(topic="general"):
             "- 'Konvertiere diese CSV zu JSON' -> run_code (Code-Interpreter)\n"
             "- 'Erstelle ein neues Tool namens X' -> create_mcp_tool\n"
             "- 'Bearbeite das Tool X, es soll jetzt...' -> edit_mcp_tool\n"
-            "- 'Loesche das Tool X' -> delete_mcp_tool\n\n"
+            "- 'Loesche das Tool X' -> delete_mcp_tool\n"
+            "- 'Sende eine Telegram-Nachricht an @nutzer' -> send_telegram\n\n"
             "AGENTEN-SYSTEM:\n"
             "In Einstellungen -> Agenten kannst du eigene Agenten mit individuellem System-Prompt "
             "erstellen. Beim Start eines neuen Chats waehle einen Agenten aus — er bestimmt dann "
@@ -56,9 +57,17 @@ def get_help(topic="general"):
             "Zeigt alle Kommunikation live: System-Prompt, API-Requests/Responses, "
             "Tool-Calls und Ergebnisse. JSON wird mit Syntax-Highlighting dargestellt "
             "und grosse Bloecke sind einklappbar.\n\n"
+            "AUTOPROMPTS:\n"
+            "In Einstellungen -> Autoprompts kannst du Prompts hinterlegen, die automatisch zu "
+            "festgelegten Zeiten ausgefuehrt werden (wie Cron-Jobs). Zeitplan-Typen: Intervall "
+            "(alle X Minuten), taeglich (HH:MM UTC), woechentlich (Wochentag + Uhrzeit UTC). "
+            "Per Default laeuft der Agent still — kein Chat wird angelegt. Mit 'Ergebnis in Chat "
+            "speichern' landet die Antwort in einem dedizierten Chat im Verlauf. Der Play-Button "
+            "fuehrt den Autoprompt sofort aus (unabhaengig vom Zeitplan).\n\n"
             "TELEGRAM GATEWAY:\n"
             "Guenther kann als Telegram-Bot betrieben werden (Einstellungen -> Telegram Gateway). "
-            "Bilder (QR-Codes, text_to_image) werden als echte Foto-Nachrichten gesendet.\n\n"
+            "Bilder (QR-Codes, text_to_image) werden als echte Foto-Nachrichten gesendet. "
+            "Mit send_telegram kann Guenther aktiv Nachrichten senden (z.B. aus Autoprompts).\n\n"
             "In den Einstellungen kannst du:\n"
             "- OpenRouter API-Key und Standard-Modell konfigurieren\n"
             "- Pro Tool ein eigenes Modell festlegen (z.B. guenstiges Modell fuer einfache Tools)\n"
@@ -87,9 +96,7 @@ def get_help(topic="general"):
             "- create_mcp_tool: Neues Custom Tool anlegen und sofort registrieren\n"
             "- edit_mcp_tool: Bestehendes Custom Tool bearbeiten und neu laden\n"
             "- delete_mcp_tool: Custom Tool dauerhaft loeschen und aus Registry entfernen\n"
-            "- create_mcp_tool: Neues Custom Tool anlegen und sofort registrieren\n"
-            "- edit_mcp_tool: Bestehendes Custom Tool bearbeiten und neu laden\n"
-            "- delete_mcp_tool: Custom Tool dauerhaft loeschen\n"
+            "- send_telegram: Telegram-Nachricht an @username oder numerische Chat-ID senden\n"
             "- list_available_tools: Alle Tools auflisten\n"
             "- get_help: Diese Hilfe anzeigen\n\n"
             "PRO-TOOL MODELL-OVERRIDE:\n"
@@ -148,7 +155,39 @@ def get_help(topic="general"):
             "- Bilder (QR-Codes, text_to_image) werden als Foto gesendet\n"
             "- Sprachnachrichten werden per STT transkribiert\n"
             "- Polling-basiert (kein Webhook noetig)\n"
-            "- Nachrichten auf 4096 Zeichen gekuerzt (Telegram-Limit)"
+            "- Nachrichten auf 4096 Zeichen gekuerzt (Telegram-Limit)\n\n"
+            "SEND_TELEGRAM TOOL:\n"
+            "Guenther kann aktiv Telegram-Nachrichten senden — z.B. aus Autoprompts heraus.\n"
+            "Empfaenger: '@username' (Nutzer muss dem Bot mind. einmal geschrieben haben) "
+            "oder direkte numerische Chat-ID (z.B. '5761888867').\n"
+            "Beispiel-Prompt: 'Ruf den Wetterbericht ab und sende ihn an @mama75.'"
+        ),
+        "autoprompts": (
+            "Autoprompts sind geplante Aufgaben die Guenther automatisch ausfuehrt — aehnlich wie Cron-Jobs.\n\n"
+            "KONFIGURATION (Einstellungen -> Autoprompts):\n"
+            "- Name: Bezeichnung des Autoprompts\n"
+            "- Prompt: Die Aufgabe die Guenther ausfuehren soll\n"
+            "- Zeitplan: Intervall, Taeglich oder Woechentlich\n"
+            "- Agent: Optional einen eigenen Agenten auswaehlen\n"
+            "- 'Ergebnis in Chat speichern': Aktiviert -> Antwort landet in dediziertem Chat\n\n"
+            "ZEITPLAN-TYPEN:\n"
+            "- Intervall: Alle X Minuten, z.B. alle 60 min oder alle 2h\n"
+            "- Taeglich: Einmal pro Tag zu einer bestimmten Uhrzeit (UTC)\n"
+            "- Woechentlich: Einmal pro Woche (Wochentag + Uhrzeit UTC)\n"
+            "Hinweis: Alle Zeiten sind UTC. Die aktuelle Server-Zeit wird im Formular angezeigt.\n\n"
+            "AUSFUEHRUNGSMODUS:\n"
+            "- Still (Standard): Agent laeuft im Hintergrund, kein Chat-Eintrag wird erstellt.\n"
+            "  Ideal fuer Autoprompts die z.B. per send_telegram Ergebnisse weiterleiten.\n"
+            "- 'Ergebnis in Chat speichern': Ein dedizierter Chat wird beim ersten Lauf angelegt\n"
+            "  und bei jedem weiteren Lauf wiederverwendet.\n\n"
+            "JETZT AUSFUEHREN:\n"
+            "Der Play-Button (▶) fuehrt den Autoprompt sofort aus — unabhaengig vom Zeitplan.\n"
+            "Nach dem Lauf erscheint 'Erfolgreich' (klickbar -> Log-Popup) oder 'Fehler' "
+            "(klickbar -> Fehlermeldung) + 'Log' (alle Agent-Schritte).\n\n"
+            "BEISPIEL-PROMPTS:\n"
+            "'Ruf den Wetterbericht fuer Muenchen ab und sende ihn per Telegram an @mama75.'\n"
+            "'Hole die aktuellen Schlagzeilen von tagesschau.de und speichere sie im Chat.'\n"
+            "'Pruefe ob example.com erreichbar ist und informiere mich per Telegram falls nicht.'"
         ),
         "wikipedia": (
             "Das wikipedia_search Tool sucht Wikipedia-Artikel und liefert deren Inhalt.\n\n"
@@ -278,13 +317,13 @@ LIST_TOOLS_DEFINITION = {
 
 HELP_DEFINITION = {
     "name": "get_help",
-    "description": "Gibt Hilfe und Erklaerungen zu Guenther und seinen Funktionen. Themen: general, tools, settings, mcp, telegram, voice, wikipedia, code, agents, custom_tools.",
+    "description": "Gibt Hilfe und Erklaerungen zu Guenther und seinen Funktionen. Themen: general, tools, settings, mcp, telegram, autoprompts, voice, wikipedia, code, agents, custom_tools.",
     "input_schema": {
         "type": "object",
         "properties": {
             "topic": {
                 "type": "string",
-                "description": "Hilfe-Thema: 'general', 'tools', 'settings', 'mcp', 'telegram', 'voice', 'wikipedia', 'code', 'agents' oder 'custom_tools'",
+                "description": "Hilfe-Thema: 'general', 'tools', 'settings', 'mcp', 'telegram', 'autoprompts', 'voice', 'wikipedia', 'code', 'agents' oder 'custom_tools'",
                 "default": "general"
             }
         },

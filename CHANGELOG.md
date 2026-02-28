@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.9] — 2026-02-28
+
+### Hilfe-Updates: Autoprompts + send_telegram
+
+- **Einstellungen → Hilfe**: neuer Abschnitt „Autoprompts" beschreibt Zeitplan-Typen, Silent-Modus, `save_to_chat`, UTC-Hinweis und Play-Button
+- **Einstellungen → Hilfe**: Telegram-Gateway-Abschnitt erwähnt jetzt `send_telegram` mit Hinweis auf numerische Chat-ID
+- **`get_help` MCP-Tool** (help/tool.py): neues Thema `autoprompts` abrufbar
+- **`get_help` MCP-Tool**: `send_telegram` in Tool-Übersicht (general + tools) ergänzt
+- **`get_help` MCP-Tool**: doppelte Einträge (`create_mcp_tool`, `edit_mcp_tool`, `delete_mcp_tool`) bereinigt
+- **Autoprompts** — Silent-Modus als Standard: Agent läuft ohne Chat-Eintrag; optionale Checkbox „Ergebnis in Chat speichern" aktiviert dedizierten Chat
+
+---
+
 ## [1.4.8] — 2026-02-28
 
 ### Autoprompts — UTC-Klarheit

@@ -183,6 +183,22 @@ export default function SettingsHilfe() {
         <Hint>📄 Vollständige Schnittstellenbeschreibung: <strong>CUSTOM_TOOL_GUIDE.md</strong> im Projektverzeichnis</Hint>
       </Section>
 
+      <Section title="Autoprompts">
+        <P>Unter <em>Autoprompts</em> kannst du Prompts hinterlegen, die automatisch zu bestimmten Zeiten ausgeführt werden — ähnlich wie ein Cron-Job.</P>
+        <ul style={{ paddingLeft: '18px', marginBottom: '10px' }}>
+          <Li><strong>Intervall</strong>: alle X Minuten, z.B. alle 60 min</Li>
+          <Li><strong>Täglich</strong>: einmal pro Tag zu einer bestimmten Uhrzeit (UTC)</Li>
+          <Li><strong>Wöchentlich</strong>: einmal pro Woche (Wochentag + Uhrzeit UTC)</Li>
+        </ul>
+        <P><strong style={{ color: 'var(--text-primary)' }}>Ausführungsmodus</strong></P>
+        <P>Standard: <strong>Still</strong> — der Agent läuft im Hintergrund ohne Chat-Eintrag. Das Ergebnis kann z.B. per Telegram weitergeleitet werden:</P>
+        <Block>{'Ruf den Wetterbericht für München ab und sende ihn per Telegram an 5761888867.'}</Block>
+        <P>Optional: <strong>„Ergebnis in Chat speichern"</strong> aktivieren — dann landet das Ergebnis in einem dedizierten Chat der beim ersten Lauf angelegt und danach immer wiederverwendet wird.</P>
+        <Hint>Alle Zeiten sind UTC. Die aktuelle Server-Zeit wird neben dem Zeitfeld angezeigt.</Hint>
+        <P><strong style={{ color: 'var(--text-primary)' }}>▶ Jetzt ausführen</strong></P>
+        <P>Der ▶-Button führt den Autoprompt sofort aus — unabhängig vom Zeitplan. Nach dem Lauf erscheint <span style={{ color: '#66bb6a' }}>Erfolgreich</span> oder <span style={{ color: '#ef5350' }}>Fehler</span> mit einem klickbaren Log der alle Agent-Schritte zeigt.</P>
+      </Section>
+
       <Section title="Telegram Gateway">
         <P>Guenther lässt sich als Telegram-Bot betreiben. Nachrichten, Bilder und Sprachnachrichten werden direkt an den Agent weitergeleitet.</P>
         <ul style={{ paddingLeft: '18px' }}>
@@ -190,6 +206,7 @@ export default function SettingsHilfe() {
           <Li>Telegram-Usernames in die Whitelist eintragen (ohne @)</Li>
           <Li><Code>/new Mein Chat</Code> startet eine neue Chat-Session im Bot</Li>
           <Li>Bilder (QR-Codes, generierte Bilder) werden als echte Fotos gesendet</Li>
+          <Li>Tool <Code>send_telegram</Code>: Guenther kann aktiv Nachrichten senden — per <Code>@username</Code> oder numerischer Chat-ID</Li>
         </ul>
       </Section>
 
