@@ -77,7 +77,7 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
     }
     setTesting(prev => ({ ...prev, [pid]: true }));
     setTestResult(prev => ({ ...prev, [pid]: null }));
-    const result = await testProvider(base_url, api_key);
+    const result = await testProvider(base_url, api_key, pid);
     setTesting(prev => ({ ...prev, [pid]: false }));
     setTestResult(prev => ({ ...prev, [pid]: result }));
   }

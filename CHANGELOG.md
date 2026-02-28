@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.15] — 2026-02-28
+
+### Fix: Provider-Test nutzt gespeicherten API Key
+- "Verbindung testen" schlug mit 401 fehl, wenn der Key nicht neu eingegeben wurde — das Eingabefeld startet immer leer (aus Sicherheitsgründen)
+- Backend fällt jetzt auf den gespeicherten Key zurück, wenn kein neuer Key übergeben wird
+
+---
+
 ## [1.4.14] — 2026-02-28
 
 ### i18n: GUI Deutsch / Englisch + Mistral Provider + First-Run-Overlay

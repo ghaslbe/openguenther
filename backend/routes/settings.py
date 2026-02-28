@@ -100,6 +100,12 @@ def test_provider():
     data = request.get_json()
     base_url = (data.get('base_url') or '').rstrip('/')
     api_key = data.get('api_key') or ''
+    provider_id = data.get('provider_id') or ''
+
+    # Fall back to saved key if no new key was entered
+    if not api_key and provider_id:
+        settings = get_settings()
+        api_key = settings.get('providers', {}).get(provider_id, {}).get('api_key', '')
 
     if not base_url:
         return jsonify({'success': False, 'error': 'Keine Base URL angegeben'})

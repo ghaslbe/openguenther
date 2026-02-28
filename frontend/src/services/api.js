@@ -177,11 +177,11 @@ export async function fetchProviders() {
   return res.json();
 }
 
-export async function testProvider(base_url, api_key = '') {
+export async function testProvider(base_url, api_key = '', provider_id = '') {
   const res = await fetch(`${BASE}/api/providers/test`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ base_url, api_key })
+    body: JSON.stringify({ base_url, api_key, provider_id })
   });
   return res.json();
 }
