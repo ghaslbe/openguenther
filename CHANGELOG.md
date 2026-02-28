@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.13] — 2026-02-28
+
+### Provider-Untertitel in LLM Provider-Einstellungen
+
+- OpenRouter zeigt jetzt `(via USA, Modelle weltweit)` / `(via USA, models worldwide)`
+- Ollama und LM Studio zeigen `(lokale KI)` / `(local AI)`
+- Untertitel in `de.json` + `en.json` unter `settings.providers.subtitles`
+
+---
+
 ## [1.4.12] — 2026-02-28
 
 ### Info-Seite: vollständiger Haftungsausschluss (DE + EN) + Sprachumschalter-Fix

@@ -117,7 +117,14 @@ export default function SettingsProviders({ providers, onProvidersChange }) {
         return (
           <div key={pid} className="provider-card">
             <div className="provider-card-header" onClick={() => toggleExpand(pid)}>
-              <span className="provider-name">{p.name || pid}</span>
+              <span className="provider-name">
+                {p.name || pid}
+                {t(`settings.providers.subtitles.${pid}`, { defaultValue: '' }) && (
+                  <span style={{ opacity: 0.5, fontSize: '11px', fontWeight: 'normal', marginLeft: '7px' }}>
+                    ({t(`settings.providers.subtitles.${pid}`)})
+                  </span>
+                )}
+              </span>
               <span className={`provider-badge ${p.enabled ? 'active' : 'inactive'}`}>
                 {p.enabled ? t('settings.providers.active') : t('settings.providers.inactive')}
               </span>

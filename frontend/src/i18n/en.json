@@ -202,7 +202,12 @@
       "sshPrereqDesc": "For the reverse tunnel to work, /etc/ssh/sshd_config on the server must contain:",
       "sshRestartDesc": "GatewayPorts yes is needed so the forwarded port is not only accessible on 127.0.0.1 of the server but also from the Docker container. Then restart the SSH service:",
       "openrouterKeys": "API Keys at OpenRouter",
-      "openrouterUsage": "Usage at OpenRouter"
+      "openrouterUsage": "Usage at OpenRouter",
+      "subtitles": {
+        "openrouter": "via USA, models worldwide",
+        "ollama": "local AI",
+        "lmstudio": "local AI"
+      }
     },
     "tools": {
       "description": "Per tool you can override the provider and model. If the override is set, it will be used for that tool.",
