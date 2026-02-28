@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.16] — 2026-02-28
+
+### Fix: Präsentation via Telegram als .pptx-Datei senden
+- Bisher wurde die Präsentation als roher Base64-Text gesendet statt als Datei
+- Telegram Gateway erkennt jetzt `[PPTX_DOWNLOAD]`-Marker und sendet die .pptx korrekt als Dokument
+
+---
+
 ## [1.4.15] — 2026-02-28
 
 ### Fix: Provider-Test nutzt gespeicherten API Key
