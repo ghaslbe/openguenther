@@ -15,6 +15,7 @@ const EMPTY_FORM = {
   daily_time: '08:00',
   weekly_day: 0,
   agent_id: '',
+  save_to_chat: false,
 };
 
 function scheduleLabel(ap) {
@@ -66,6 +67,7 @@ export default function SettingsAutoprompts() {
       daily_time: ap.daily_time,
       weekly_day: ap.weekly_day,
       agent_id: ap.agent_id || '',
+      save_to_chat: ap.save_to_chat || false,
     });
   }
 
@@ -131,6 +133,7 @@ export default function SettingsAutoprompts() {
                 </strong>
                 <span className="agent-item-desc" style={{ fontSize: '12px' }}>
                   {scheduleLabel(ap)}
+                  {ap.save_to_chat ? ' · Chat' : ' · Still'}
                   {ap.last_run && ` · Zuletzt: ${new Date(ap.last_run).toLocaleString('de-DE')}`}
                   {ap.last_status === 'success' && !ap.last_error && (
                     <button
@@ -271,6 +274,19 @@ export default function SettingsAutoprompts() {
             />
             Aktiviert
           </label>
+
+          <label className="agent-form-label" style={{ marginTop: '4px' }}>
+            <input
+              type="checkbox"
+              checked={form.save_to_chat}
+              onChange={e => setForm(f => ({ ...f, save_to_chat: e.target.checked }))}
+              style={{ marginRight: '6px' }}
+            />
+            Ergebnis in Chat speichern
+          </label>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0 0 22px' }}>
+            Deaktiviert: Agent läuft still (z.B. nur Telegram-Versand). Aktiviert: Ergebnis landet in einem dedizierten Chat im Verlauf.
+          </p>
 
           <div className="agent-form-actions">
             <button

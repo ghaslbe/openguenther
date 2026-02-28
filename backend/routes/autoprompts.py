@@ -40,6 +40,7 @@ def create_autoprompt():
         'daily_time': data.get('daily_time', '08:00'),
         'weekly_day': data.get('weekly_day', 0),
         'agent_id': data.get('agent_id') or None,
+        'save_to_chat': data.get('save_to_chat', False),
         'chat_id': None,
         'last_run': None,
         'last_error': None,
@@ -65,6 +66,7 @@ def update_autoprompt(ap_id):
         'daily_time': data.get('daily_time', existing['daily_time']),
         'weekly_day': data.get('weekly_day', existing['weekly_day']),
         'agent_id': data.get('agent_id') or None,
+        'save_to_chat': data.get('save_to_chat', existing.get('save_to_chat', False)),
     })
     save_autoprompt(existing)
     if _service:

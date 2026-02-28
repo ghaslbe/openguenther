@@ -109,22 +109,26 @@ class AutopromptService:
         log.info(f"Autoprompt '{ap['name']}' läuft...")
         now_iso = datetime.now(timezone.utc).isoformat()
 
-        # Ensure a dedicated chat exists — create once, reuse always
-        chat_id = ap.get('chat_id')
-        if not chat_id or not get_chat(chat_id):
-            chat_id = create_chat(f"Autoprompt: {ap['name']}")
-            update_chat_title(chat_id, f"Autoprompt: {ap['name']}")
-            ap['chat_id'] = chat_id
-
         settings = get_settings()
+        save_to_chat = ap.get('save_to_chat', False)
 
-        # Build message history for agent (full chat history)
-        chat = get_chat(chat_id)
-        messages = [
-            {'role': m['role'], 'content': m['content']}
-            for m in chat.get('messages', [])
-            if m['role'] in ('user', 'assistant')
-        ]
+        # Build message history for agent
+        if save_to_chat:
+            chat_id = ap.get('chat_id')
+            if not chat_id or not get_chat(chat_id):
+                chat_id = create_chat(f"Autoprompt: {ap['name']}")
+                update_chat_title(chat_id, f"Autoprompt: {ap['name']}")
+                ap['chat_id'] = chat_id
+            chat = get_chat(chat_id)
+            messages = [
+                {'role': m['role'], 'content': m['content']}
+                for m in chat.get('messages', [])
+                if m['role'] in ('user', 'assistant')
+            ]
+        else:
+            chat_id = None
+            messages = []
+
         messages.append({'role': 'user', 'content': ap['prompt']})
 
         agent_system_prompt = None
@@ -148,8 +152,9 @@ class AutopromptService:
 
         try:
             response = run_agent(messages, settings, emit_log=collect_log, system_prompt=agent_system_prompt)
-            add_message(chat_id, 'user', ap['prompt'])
-            add_message(chat_id, 'assistant', response)
+            if save_to_chat and chat_id:
+                add_message(chat_id, 'user', ap['prompt'])
+                add_message(chat_id, 'assistant', response)
             ap['last_run'] = now_iso
             ap['last_error'] = None
             ap['last_status'] = 'success'
