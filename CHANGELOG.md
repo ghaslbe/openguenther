@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.17] — 2026-02-28
+
+### Persistente Datei-Speicherung für generierte Inhalte (PPTX)
+
+- Generierte Dateien (PPTX) werden jetzt auf Disk gespeichert (`/app/data/files/<chat_id>/`) statt als Base64-Blob in SQLite
+- DB-Eintrag enthält nur noch einen leichtgewichtigen Marker `[STORED_FILE](filename)` — kein riesiger Base64-String mehr im LLM-Kontext
+- Neuer Download-Endpunkt `GET /api/chats/<id>/files/<filename>` — Download-Button im Chat nutzt Server-URL statt Data-URI
+- Chat löschen bereinigt automatisch alle zugehörigen Dateien
+- Fallback: Ältere Chats mit `[PPTX_DOWNLOAD]`-Marker funktionieren weiterhin (Telegram + Web)
+- Neue `backend/services/file_store.py` — wiederverwendbar für künftige Dateitypen
+
+---
+
 ## [1.4.16] — 2026-02-28
 
 ### Fix: Präsentation via Telegram als .pptx-Datei senden

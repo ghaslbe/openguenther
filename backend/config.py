@@ -7,6 +7,7 @@ DB_FILE = os.path.join(DATA_DIR, 'guenther.db')
 AGENTS_FILE = os.path.join(DATA_DIR, 'agents.json')
 AUTOPROMPTS_FILE = os.path.join(DATA_DIR, 'autoprompts.json')
 TELEGRAM_USERS_FILE = os.path.join(DATA_DIR, 'telegram_users.json')
+FILES_DIR = os.path.join(DATA_DIR, 'files')
 
 DEFAULT_SETTINGS = {
     'openrouter_api_key': '',

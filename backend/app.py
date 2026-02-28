@@ -15,6 +15,7 @@ from mcp.registry import registry, MCPTool
 from mcp.loader import load_builtin_tools, load_custom_tools
 from mcp.manager import load_external_tools
 from services.agent import run_agent
+from services import file_store
 from services.telegram_gateway import TelegramGateway
 from services.autoprompt import AutopromptService
 
@@ -186,6 +187,7 @@ def handle_message(data):
 
     try:
         response = run_agent(messages, settings, emit_log, system_prompt=agent_system_prompt)
+        response = file_store.extract_and_store(response, chat_id)
         add_message(chat_id, 'assistant', response)
         emit('agent_response', {
             'chat_id': chat_id,

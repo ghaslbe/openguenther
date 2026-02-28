@@ -10,7 +10,7 @@ import requests as http_requests
 
 from models import create_chat, add_message, get_chat, update_chat_title
 from services.agent import run_agent
-from services import image_store
+from services import image_store, file_store
 from services.openrouter import transcribe_audio
 from services.whisper import transcribe_with_whisper
 from config import get_settings, DATA_DIR, TELEGRAM_USERS_FILE
@@ -460,6 +460,7 @@ class TelegramGateway:
 
             self.socketio.emit("agent_start", {"chat_id": chat_id})
             response = run_agent(messages, settings, emit_log)
+            response = file_store.extract_and_store(response, chat_id)
             add_message(chat_id, "assistant", response)
             self.socketio.emit("agent_response", {"chat_id": chat_id, "content": response})
             self.socketio.emit("agent_end", {"chat_id": chat_id})
@@ -467,7 +468,7 @@ class TelegramGateway:
             text_part, images = self._extract_images(response)
             text_part, audio_clips = self._extract_audio(text_part)
             text_part, pdf_docs = self._extract_pdf_reports(text_part)
-            text_part, pptx_files = self._extract_pptx(text_part)
+            text_part, pptx_files = self._extract_stored_files(text_part, chat_id)
             clean = self._clean_text_for_telegram(text_part)
             if clean:
                 self._send_message(token, telegram_chat_id, clean)
@@ -527,6 +528,24 @@ class TelegramGateway:
         clean = re.sub(r'!\[audio\]\((data:audio/[^)]+)\)', replace_audio, text)
         clean = clean.strip()
         return clean, clips
+
+    def _extract_stored_files(self, text, chat_id):
+        """Extract [STORED_FILE](filename) markers, load from disk, return (clean_text, [(filename, bytes)])."""
+        files = []
+
+        def replace(m):
+            filename = m.group(1)
+            data = file_store.get_file(chat_id, filename)
+            if data:
+                files.append((filename, data))
+            return ""
+
+        clean = re.sub(r'\[STORED_FILE\]\(([^)]+)\)', replace, text)
+        # Fallback: handle old [PPTX_DOWNLOAD] markers from pre-1.4.17 chat history
+        clean, old_pptx = self._extract_pptx(clean)
+        for fn, fb in old_pptx:
+            files.append((fn, fb))
+        return clean.strip(), files
 
     def _extract_pptx(self, text):
         """Extract [PPTX_DOWNLOAD](filename::base64) markers, return (clean_text, [(filename, pptx_bytes)])."""

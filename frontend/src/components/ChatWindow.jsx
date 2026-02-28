@@ -14,6 +14,7 @@ function parseContent(content) {
   const htmlRegex = /\[HTML_REPORT\]\((data:text\/html;base64,[^)]+)\)/g;
   const pdfRegex = /\[PDF_REPORT\]\((data:text\/html;base64,[^)]+)\)/g;
   const pptxRegex = /\[PPTX_DOWNLOAD\]\(([^:)]+)::([A-Za-z0-9+/=]+)\)/g;
+  const storedFileRegex = /\[STORED_FILE\]\(([^)]+)\)/g;
 
   // Collect all matches with their positions
   const matches = [];
@@ -33,6 +34,9 @@ function parseContent(content) {
   }
   while ((m = pptxRegex.exec(content)) !== null) {
     matches.push({ index: m.index, end: m.index + m[0].length, type: 'pptx', filename: m[1], b64: m[2] });
+  }
+  while ((m = storedFileRegex.exec(content)) !== null) {
+    matches.push({ index: m.index, end: m.index + m[0].length, type: 'stored_file', filename: m[1] });
   }
 
   matches.sort((a, b) => a.index - b.index);
@@ -55,6 +59,8 @@ function parseContent(content) {
       parts.push({ type: 'pdf', src: match.src });
     } else if (match.type === 'pptx') {
       parts.push({ type: 'pptx', filename: match.filename, b64: match.b64 });
+    } else if (match.type === 'stored_file') {
+      parts.push({ type: 'stored_file', filename: match.filename });
     }
     lastIndex = match.end;
   }
@@ -126,7 +132,22 @@ function PptxDownloadButton({ filename, b64 }) {
   );
 }
 
-function MessageContent({ content }) {
+function StoredFileButton({ chatId, filename }) {
+  const { t } = useTranslation();
+  function handleDownload() {
+    const a = document.createElement('a');
+    a.href = `/api/chats/${chatId}/files/${encodeURIComponent(filename)}`;
+    a.download = filename;
+    a.click();
+  }
+  return (
+    <button className="btn-pdf-download" onClick={handleDownload}>
+      📊 {filename} {t('chat.pptxDownload')}
+    </button>
+  );
+}
+
+function MessageContent({ content, chatId }) {
   const { t } = useTranslation();
   const parts = parseContent(content);
 
@@ -166,6 +187,9 @@ function MessageContent({ content }) {
         }
         if (part.type === 'pptx') {
           return <PptxDownloadButton key={i} filename={part.filename} b64={part.b64} />;
+        }
+        if (part.type === 'stored_file') {
+          return <StoredFileButton key={i} chatId={chatId} filename={part.filename} />;
         }
         return (
           <ReactMarkdown key={i} components={{
@@ -318,7 +342,7 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoadi
               {msg.role === 'user' ? t('chat.you') : (activeAgentName || 'Guenther')}
             </div>
             <div className="message-content">
-              <MessageContent content={msg.content} />
+              <MessageContent content={msg.content} chatId={activeChatId} />
             </div>
             <CopyButton text={getTextForCopy(msg.content)} align={msg.role === 'user' ? 'right' : 'left'} />
           </div>

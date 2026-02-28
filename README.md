@@ -71,7 +71,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **Datei-Upload** (📎): Textdateien (CSV, JSON, XML, TXT etc.) hochladen — Inhalt wird als Kontext ans LLM übergeben
 - **Bildgenerierung**: via OpenRouter (Flux, Gemini Image, etc.)
 - **Bildbearbeitung**: via process_image (blur, grayscale, rotate, …)
-- **Präsentations-Generator**: PowerPoint-Dateien (.pptx) direkt aus dem Chat erstellen — Guenther strukturiert das Thema und liefert einen Download-Button
+- **Präsentations-Generator**: PowerPoint-Dateien (.pptx) direkt aus dem Chat erstellen — Guenther strukturiert das Thema, speichert die Datei persistent und liefert einen Download-Button
 
 **Automatisierung**
 - **Autoprompts**: Prompts mit Zeitplan hinterlegen (Intervall / täglich / wöchentlich, Zeiten in UTC) — per Default still ausgeführt (kein Chat-Eintrag), optional in dedizierten Chat speichern; ▶ Button zum sofortigen manuellen Ausführen mit Log-Anzeige
@@ -359,7 +359,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **File upload** (📎): upload text files (CSV, JSON, XML, TXT etc.) — content is passed as context to the LLM
 - **Image generation**: via OpenRouter (Flux, Gemini Image, etc.)
 - **Image editing**: via process_image (blur, grayscale, rotate, …)
-- **Presentation generator**: create PowerPoint files (.pptx) directly from chat — Guenther structures the topic and delivers a download button
+- **Presentation generator**: create PowerPoint files (.pptx) directly from chat — Guenther structures the topic, stores the file persistently and delivers a download button
 
 **Automation**
 - **Autoprompts**: schedule prompts to run automatically (interval / daily / weekly, times in UTC) — runs silently by default (no chat entry), optionally save results to a dedicated chat; ▶ button to run immediately with log display
