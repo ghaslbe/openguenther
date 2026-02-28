@@ -24,9 +24,9 @@ function scheduleLabel(ap) {
     return `Alle ${m} min`;
   }
   if (ap.schedule_type === 'weekly') {
-    return `${WEEKDAYS[ap.weekly_day] || 'Mo'} ${ap.daily_time}`;
+    return `${WEEKDAYS[ap.weekly_day] || 'Mo'} ${ap.daily_time} UTC`;
   }
-  return `Täglich ${ap.daily_time}`;
+  return `Täglich ${ap.daily_time} UTC`;
 }
 
 export default function SettingsAutoprompts() {
