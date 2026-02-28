@@ -1385,8 +1385,12 @@ html, body, #root {
   padding: 12px;
 }
 
-.mcp-add-form input {
+.mcp-add-form input,
+.mcp-add-form textarea {
+  display: block;
+  width: 100%;
   margin-bottom: 8px;
+  box-sizing: border-box;
 }
 
 /* ── Legacy modal (for ToolSettings popup) ── */
