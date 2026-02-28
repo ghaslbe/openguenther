@@ -268,7 +268,7 @@ export default function SettingsAutoprompts() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+              background: 'var(--bg-sidebar)', border: '1px solid var(--border)',
               borderRadius: '8px', padding: '24px', maxWidth: '560px', width: '90%',
               boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
             }}
@@ -277,7 +277,7 @@ export default function SettingsAutoprompts() {
               Fehler: {errorPopup.name}
             </p>
             <pre style={{
-              background: 'var(--bg-primary)', border: '1px solid var(--border)',
+              background: 'var(--bg-dark)', border: '1px solid var(--border)',
               borderRadius: '4px', padding: '12px', fontSize: '12px',
               color: 'var(--text-primary)', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
               maxHeight: '300px', overflowY: 'auto', margin: 0,
