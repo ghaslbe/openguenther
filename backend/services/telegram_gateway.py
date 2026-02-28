@@ -13,12 +13,34 @@ from services.agent import run_agent
 from services import image_store
 from services.openrouter import transcribe_audio
 from services.whisper import transcribe_with_whisper
-from config import get_settings
+from config import get_settings, DATA_DIR, TELEGRAM_USERS_FILE
 
 logger = logging.getLogger(__name__)
 
 TELEGRAM_API = "https://api.telegram.org/bot{token}/{method}"
 TELEGRAM_FILE_URL = "https://api.telegram.org/file/bot{token}/{file_path}"
+
+
+def _load_tg_users():
+    """Load persisted username -> telegram_chat_id mapping."""
+    try:
+        with open(TELEGRAM_USERS_FILE, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def _save_tg_users(mapping):
+    import os
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(TELEGRAM_USERS_FILE, 'w') as f:
+        json.dump(mapping, f)
+
+
+def get_telegram_chat_id(username):
+    """Look up the Telegram numeric chat_id for a given @username."""
+    username = username.lstrip('@')
+    return _load_tg_users().get(username)
 
 
 class TelegramGateway:
@@ -197,6 +219,13 @@ class TelegramGateway:
         settings = get_settings()
         telegram_cfg = settings.get("telegram", {})
         allowed_users = telegram_cfg.get("allowed_users", [])
+
+        # Persist username -> telegram_chat_id mapping for send_telegram tool
+        if username:
+            tg_users = _load_tg_users()
+            if tg_users.get(username) != telegram_chat_id:
+                tg_users[username] = telegram_chat_id
+                _save_tg_users(tg_users)
 
         # Whitelist check
         if not username or username not in allowed_users:
