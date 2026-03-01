@@ -32,6 +32,13 @@ def delete_chat_files(chat_id):
         shutil.rmtree(d)
 
 
+def list_chat_files(chat_id):
+    d = _chat_dir(chat_id)
+    if not os.path.exists(d):
+        return []
+    return sorted(os.listdir(d))
+
+
 def extract_and_store(response: str, chat_id: int) -> str:
     """
     Finds [PPTX_DOWNLOAD](filename::base64) markers in response,

@@ -5,41 +5,41 @@ import ChatWindow from './components/ChatWindow';
 import GuentherBox from './components/GuentherBox';
 import Settings from './components/Settings';
 import FirstRunOverlay from './components/FirstRunOverlay';
-import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders, fetchUsageStats } from './services/api';
+import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders, fetchChatInfo } from './services/api';
 import { getSocket } from './services/socket';
 
-function formatBytes(n) {
-  if (n == null || n === 0) return '0 B';
-  if (n >= 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + ' MB';
-  if (n >= 1024) return (n / 1024).toFixed(1) + ' KB';
-  return n + ' B';
-}
-
-function UsagePopup({ onClose }) {
-  const [todayStats, setTodayStats] = useState([]);
-  const [allStats, setAllStats] = useState([]);
+function ChatInfoPopup({ onClose, activeChatId, agents }) {
+  const [info, setInfo] = useState(null);
+  const [copiedId, setCopiedId] = useState(false);
 
   useEffect(() => {
-    fetchUsageStats('today').then(d => setTodayStats(Array.isArray(d) ? d : [])).catch(() => {});
-    fetchUsageStats('all').then(d => setAllStats(Array.isArray(d) ? d : [])).catch(() => {});
-  }, []);
+    if (!activeChatId) return;
+    fetchChatInfo(activeChatId).then(setInfo).catch(() => {});
+  }, [activeChatId]);
 
-  function renderRows(stats) {
-    if (stats.length === 0) return <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0' }}>—</p>;
-    return stats.map((r, i) => (
-      <div key={i} style={{ fontSize: '12px', color: 'var(--text-primary)', marginBottom: '2px' }}>
-        <span style={{ fontWeight: 600 }}>{r.provider_id}</span>
-        {': '}
-        {r.requests} Anfragen · {formatBytes(r.bytes_sent)} gesendet · {formatBytes(r.bytes_received)} empfangen
-      </div>
-    ));
+  function fmt(iso) {
+    if (!iso) return '—';
+    try {
+      return new Date(iso + 'Z').toLocaleString();
+    } catch { return iso; }
   }
 
+  function copyId() {
+    navigator.clipboard.writeText(String(activeChatId));
+    setCopiedId(true);
+    setTimeout(() => setCopiedId(false), 2000);
+  }
+
+  const agentName = info?.agent_id
+    ? (agents.find(a => a.id === info.agent_id)?.name || info.agent_id)
+    : null;
+
+  const rowStyle = { display: 'flex', justifyContent: 'space-between', fontSize: '12px', padding: '4px 0', borderBottom: '1px solid var(--border)' };
+  const labelStyle = { color: 'var(--text-secondary)' };
+  const valueStyle = { color: 'var(--text-primary)', fontWeight: 500, textAlign: 'right', maxWidth: '220px', wordBreak: 'break-word' };
+
   return (
-    <div
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 1000 }}
-    >
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1000 }}>
       <div
         onClick={e => e.stopPropagation()}
         style={{
@@ -50,19 +50,75 @@ function UsagePopup({ onClose }) {
           border: '1px solid var(--border)',
           borderRadius: '8px',
           padding: '16px',
-          minWidth: '320px',
-          maxWidth: '420px',
+          minWidth: '300px',
+          maxWidth: '400px',
           boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <strong style={{ fontSize: '13px' }}>📊 Nutzung</strong>
+          <strong style={{ fontSize: '13px' }}>ℹ Chat-Info</strong>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '16px', lineHeight: 1 }}>×</button>
         </div>
-        <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', margin: '0 0 4px' }}>HEUTE</p>
-        {renderRows(todayStats)}
-        <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', margin: '10px 0 4px' }}>GESAMT</p>
-        {renderRows(allStats)}
+
+        {!activeChatId ? (
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Kein Chat geöffnet.</p>
+        ) : !info ? (
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Lade…</p>
+        ) : (
+          <div>
+            <div style={rowStyle}>
+              <span style={labelStyle}>Chat-ID</span>
+              <span style={{ ...valueStyle, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <code style={{ fontFamily: 'monospace' }}>#{info.id}</code>
+                <button
+                  onClick={copyId}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', fontSize: '11px', padding: 0 }}
+                >
+                  {copiedId ? '✓' : '📋'}
+                </button>
+              </span>
+            </div>
+            <div style={rowStyle}>
+              <span style={labelStyle}>Titel</span>
+              <span style={valueStyle}>{info.title}</span>
+            </div>
+            <div style={rowStyle}>
+              <span style={labelStyle}>Erstellt</span>
+              <span style={valueStyle}>{fmt(info.created_at)}</span>
+            </div>
+            <div style={rowStyle}>
+              <span style={labelStyle}>Zuletzt aktiv</span>
+              <span style={valueStyle}>{fmt(info.updated_at)}</span>
+            </div>
+            <div style={rowStyle}>
+              <span style={labelStyle}>Nachrichten</span>
+              <span style={valueStyle}>{info.user_messages} Nutzer · {info.assistant_messages} Assistent</span>
+            </div>
+            {agentName && (
+              <div style={rowStyle}>
+                <span style={labelStyle}>Agent</span>
+                <span style={valueStyle}>{agentName}</span>
+              </div>
+            )}
+            {info.files && info.files.length > 0 && (
+              <div style={{ ...rowStyle, flexDirection: 'column', gap: '4px', alignItems: 'flex-start', borderBottom: 'none' }}>
+                <span style={labelStyle}>Dateien ({info.files.length})</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%' }}>
+                  {info.files.map(f => (
+                    <a
+                      key={f}
+                      href={`/api/chats/${info.id}/files/${f}`}
+                      download={f}
+                      style={{ fontSize: '11px', color: 'var(--accent)', textDecoration: 'none', fontFamily: 'monospace' }}
+                    >
+                      ↓ {f}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -318,7 +374,7 @@ export default function App() {
       />
       {showSettings && <Settings onClose={() => setShowSettings(false)} onAgentsChange={loadAgents} />}
       {showFirstRun && <FirstRunOverlay onClose={() => setShowFirstRun(false)} />}
-      {showUsage && <UsagePopup onClose={() => setShowUsage(false)} />}
+      {showUsage && <ChatInfoPopup onClose={() => setShowUsage(false)} activeChatId={activeChatId} agents={agents} />}
       </div>
     </div>
   );

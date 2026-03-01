@@ -218,6 +218,11 @@ export async function resetUsageStats() {
   await fetch(`${BASE}/api/usage/stats`, { method: 'DELETE' });
 }
 
+export async function fetchChatInfo(chatId) {
+  const res = await fetch(`${BASE}/api/chats/${chatId}/info`);
+  return res.json();
+}
+
 export async function fetchWebhooks() {
   const res = await fetch(`${BASE}/api/webhooks`);
   return res.json();

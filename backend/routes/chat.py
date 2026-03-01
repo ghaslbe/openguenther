@@ -46,6 +46,28 @@ def get_chat_file(chat_id, filename):
     )
 
 
+@chat_bp.route('/api/chats/<int:chat_id>/info', methods=['GET'])
+def get_chat_info(chat_id):
+    chat = get_chat(chat_id)
+    if not chat:
+        return jsonify({'error': 'Chat nicht gefunden'}), 404
+    msgs = chat.get('messages', [])
+    user_msgs = [m for m in msgs if m['role'] == 'user']
+    asst_msgs = [m for m in msgs if m['role'] == 'assistant']
+    files = file_store.list_chat_files(chat_id)
+    return jsonify({
+        'id': chat['id'],
+        'title': chat['title'],
+        'created_at': chat['created_at'],
+        'updated_at': chat['updated_at'],
+        'agent_id': chat.get('agent_id'),
+        'message_count': len(msgs),
+        'user_messages': len(user_msgs),
+        'assistant_messages': len(asst_msgs),
+        'files': files,
+    })
+
+
 @chat_bp.route('/api/chats/<int:chat_id>/title', methods=['PUT'])
 def rename_chat(chat_id):
     data = request.get_json() or {}
