@@ -49,6 +49,7 @@ def _register_module(mod, source_label='', custom=False):
     defs = getattr(mod, 'TOOL_DEFINITIONS', None)
     handlers_map = getattr(mod, 'HANDLERS', None)
     if defs is not None:
+        usage = getattr(mod, 'USAGE', None)
         for td in defs:
             name = td['name']
             h = (handlers_map or {}).get(name) or getattr(mod, name, None)
@@ -66,6 +67,7 @@ def _register_module(mod, source_label='', custom=False):
                 settings_schema=schema,
                 settings_info=info,
                 custom=is_custom,
+                usage=usage,
             ))
             logger.info(f"[loader] Registered '{name}' from {source_label}")
             count += 1
@@ -86,6 +88,7 @@ def _register_module(mod, source_label='', custom=False):
 
     schema = getattr(mod, 'SETTINGS_SCHEMA', None)
     info = getattr(mod, 'SETTINGS_INFO', None)
+    usage = getattr(mod, 'USAGE', None)
     is_custom = custom or bool(getattr(mod, 'IS_CUSTOM', False))
     registry.register(MCPTool(
         name=name,
@@ -95,6 +98,7 @@ def _register_module(mod, source_label='', custom=False):
         settings_schema=schema,
         settings_info=info,
         custom=is_custom,
+        usage=usage,
     ))
     logger.info(f"[loader] Registered '{name}' from {source_label}")
     return 1

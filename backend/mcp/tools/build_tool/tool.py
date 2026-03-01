@@ -324,7 +324,8 @@ def _build_gen_prompt(description: str, tool_name: str, existing_code: str, plan
             f"- handler_signature: {plan.get('handler_signature', '')}\n"
             f"- libraries: {', '.join(plan.get('libraries', [])) or 'none'}\n"
             f"- approach: {plan.get('approach', '')}\n"
-            f"- parameters: {json.dumps(plan.get('parameters', []))}"
+            f"- parameters: {json.dumps(plan.get('parameters', []))}\n"
+            f"- usage (for USAGE constant): {plan.get('usage', '')}"
         )
 
     return f"""You are an expert Python developer creating MCP tools for OpenGuenther, a self-hosted AI agent.
@@ -344,6 +345,13 @@ SETTINGS_SCHEMA = [
     {{"key": "api_key", "label": "API Key", "type": "password", "placeholder": "sk-...", "description": "Your API key"}},
     {{"key": "base_url", "label": "Base URL", "type": "text", "default": "https://...", "description": "API endpoint"}},
 ]
+
+# USAGE — shown to the AI model as part of the tool description
+# Explain how to call the tool: accepted parameter formats, example calls, typical use cases
+USAGE = """
+Rufe dieses Tool mit <param>=<wert> auf.
+Beispiel: {{"param": "beispiel_wert"}}
+"""
 
 TOOL_DEFINITION = {{
     "name": "tool_name",       # snake_case, descriptive, unique
@@ -472,6 +480,7 @@ Create a concise implementation plan. Respond ONLY with JSON:
 {{
   "tool_name": "snake_case_name",
   "summary": "One sentence: what this tool does",
+  "usage": "Short guide for the AI model: parameter examples, typical calls, accepted formats. E.g.: 'Call with url=<full URL>. Example: {{\"url\": \"https://example.com\"}}'",
   "parameters": [
     {{"name": "param_name", "type": "string|integer|number|boolean", "required": true, "description": "..."}}
   ],
@@ -486,6 +495,11 @@ CRITICAL for handler_signature:
 - NEVER write def handler(params) or def handler(data)
 - Example for a URL tool: "def handler(url):"
 - Example with optional: "def handler(query, max_results=10):"
+
+The "usage" field should help the AI model know how to call the tool correctly:
+- Include a concrete example call (JSON parameters)
+- Mention accepted formats (e.g. ISO date, full URL, IATA code)
+- Keep it short (2-4 sentences or bullet points)
 """
 
 
@@ -496,6 +510,7 @@ def _log_plan(plan: dict, emit_log) -> None:
     emit_log({"type": "header", "message": "BUILD MCP TOOL: PLAN"})
     emit_log({"type": "text", "message": f"Tool-Name : {plan.get('tool_name', '?')}"})
     emit_log({"type": "text", "message": f"Aufgabe   : {plan.get('summary', '?')}"})
+    emit_log({"type": "text", "message": f"Usage     : {plan.get('usage', '–')[:120]}"})
 
     params = plan.get("parameters", [])
     if params:
@@ -550,6 +565,13 @@ def _verify_plan(plan: dict, actual_name: str, mod, requirements: str, emit_log)
             emit_log({"type": "text", "message": f"✓ Library : {lib}"})
         else:
             emit_log({"type": "text", "message": f"~ Library : {lib} (nicht in requirements — ggf. schon vorinstalliert)"})
+
+    # USAGE constant
+    actual_usage = getattr(mod, 'USAGE', None)
+    if actual_usage:
+        emit_log({"type": "text", "message": f"✓ USAGE    : {actual_usage.strip()[:80]}"})
+    else:
+        emit_log({"type": "text", "message": "~ USAGE    : nicht vorhanden"})
 
     emit_log({"type": "text", "message": "Verifikation abgeschlossen." + (" Alles planmäßig." if ok else " Abweichungen siehe oben.")})
 
@@ -655,6 +677,9 @@ if td is not None:
                 f"handler missing required parameter '{req}' from input_schema. "
                 f"Fix: def handler({', '.join(props)})"
             )
+    usage = getattr(mod, 'USAGE', None)
+    if usage is None:
+        print("WARNING: No USAGE constant defined", file=sys.stderr)
     print(f"OK|{td['name']}|{td['description'][:70]}")
 else:
     assert isinstance(tds, list) and len(tds) > 0, \
