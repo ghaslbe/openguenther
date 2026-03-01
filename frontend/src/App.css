@@ -855,6 +855,9 @@ html, body, #root {
 .settings-section input[type="text"],
 .settings-section input[type="password"],
 .settings-section input[type="number"],
+.settings-section input[type="time"],
+.settings-section select,
+.settings-section textarea,
 .settings-select,
 .input {
   display: block;
@@ -870,6 +873,12 @@ html, body, #root {
   box-sizing: border-box;
 }
 
+.settings-section textarea {
+  font-family: inherit;
+  resize: vertical;
+}
+
+.settings-section select,
 .settings-select,
 select.input {
   cursor: pointer;
@@ -881,6 +890,8 @@ select.input {
 }
 
 .settings-section input:focus,
+.settings-section select:focus,
+.settings-section textarea:focus,
 .settings-select:focus,
 .input:focus {
   border-color: var(--accent);
@@ -1342,6 +1353,8 @@ select.input {
 }
 
 .tool-field-row input[type="text"],
+.tool-field-row input[type="number"],
+.tool-field-row input[type="password"],
 .tool-field-row select {
   width: 100%;
   padding: 8px 10px;

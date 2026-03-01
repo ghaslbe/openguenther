@@ -107,19 +107,6 @@ export default function SettingsTelegram() {
             value={tgAllowedUsers}
             onChange={(e) => setTgAllowedUsers(e.target.value)}
             placeholder={'maxmustermann\njohndoe'}
-            style={{
-              display: 'block',
-              width: '100%',
-              marginTop: '4px',
-              background: 'var(--bg-input)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              padding: '10px 12px',
-              fontFamily: 'inherit',
-              fontSize: '14px',
-              resize: 'vertical',
-            }}
           />
           <small>{t('settings.telegram.allowedUsersHelp')}</small>
         </label>
