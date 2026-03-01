@@ -854,7 +854,9 @@ html, body, #root {
 
 .settings-section input[type="text"],
 .settings-section input[type="password"],
-.settings-select {
+.settings-section input[type="number"],
+.settings-select,
+.input {
   display: block;
   width: 100%;
   padding: 10px 12px;
@@ -865,9 +867,11 @@ html, body, #root {
   color: var(--text-primary);
   font-size: 14px;
   outline: none;
+  box-sizing: border-box;
 }
 
-.settings-select {
+.settings-select,
+select.input {
   cursor: pointer;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238888aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -877,7 +881,8 @@ html, body, #root {
 }
 
 .settings-section input:focus,
-.settings-select:focus {
+.settings-select:focus,
+.input:focus {
   border-color: var(--accent);
 }
 
