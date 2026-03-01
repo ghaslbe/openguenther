@@ -5,8 +5,6 @@ import shutil
 from config import DATA_DIR
 from services.tool_context import get_emit_log
 
-IS_CUSTOM = True  # show in Custom Tools section in settings UI
-
 TOOL_DEFINITION = {
     "name": "delete_mcp_tool",
     "description": (
