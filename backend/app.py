@@ -18,7 +18,7 @@ from routes.usage import usage_bp
 from routes.webhooks import webhooks_bp
 from routes.custom_tools import custom_tools_bp
 from mcp.registry import registry, MCPTool
-from mcp.loader import load_builtin_tools, load_custom_tools
+from mcp.loader import load_builtin_tools, load_custom_tools, get_startup_errors
 from mcp.manager import load_external_tools
 from services.agent import run_agent
 from services import file_store
@@ -70,7 +70,11 @@ def serve_static(path):
 @app.route('/api/mcp/reload', methods=['POST'])
 def reload_mcp():
     logs = []
-    load_external_tools(emit_log=lambda msg: logs.append(msg))
+    def _log(entry):
+        logs.append(entry if isinstance(entry, dict) else {"type": "text", "message": str(entry)})
+        socketio.emit('guenther_log', entry if isinstance(entry, dict) else {"type": "text", "message": str(entry)})
+    load_custom_tools(emit_log=_log)
+    load_external_tools(emit_log=_log)
     return {"success": True, "logs": logs}
 
 
@@ -133,6 +137,9 @@ def handle_connect():
     emit('guenther_log', {'type': 'text', 'message': f'Registrierte Tools: {len(tools)}'})
     emit('guenther_log', {'type': 'json', 'label': 'tools', 'data': tool_info})
     emit('guenther_log', {'type': 'text', 'message': 'Warte auf Eingabe...'})
+
+    for err in get_startup_errors():
+        emit('guenther_log', {'type': 'text', 'message': err})
 
 
 @socketio.on('send_message')

@@ -24,6 +24,13 @@ from config import DATA_DIR
 
 logger = logging.getLogger(__name__)
 
+# Errors collected during startup (before any WebSocket client connects)
+_startup_errors = []
+
+
+def get_startup_errors():
+    return list(_startup_errors)
+
 
 def _load_module(tool_py_path, module_name):
     """Import a tool.py file by path and return the module."""
@@ -104,7 +111,7 @@ def _register_module(mod, source_label='', custom=False):
     return 1
 
 
-def load_builtin_tools():
+def load_builtin_tools(emit_log=None):
     """Scan backend/mcp/tools/<name>/tool.py and register all built-in tools."""
     tools_dir = os.path.join(os.path.dirname(__file__), 'tools')
     total = 0
@@ -116,12 +123,16 @@ def load_builtin_tools():
             mod = _load_module(tool_py, f'mcp.tools.{entry}')
             total += _register_module(mod, f'builtin/{entry}')
         except Exception as e:
+            msg = f"⚠ Tool-Ladefehler (builtin/{entry}): {e}"
             logger.error(f"[loader] Failed to load builtin tool '{entry}': {e}", exc_info=True)
+            _startup_errors.append(msg)
+            if emit_log:
+                emit_log({"type": "text", "message": msg})
     logger.info(f"[loader] {total} built-in tool(s) registered")
     return total
 
 
-def load_custom_tools():
+def load_custom_tools(emit_log=None):
     """Scan /app/data/custom_tools/<name>/tool.py and register custom tools."""
     custom_dir = os.path.join(DATA_DIR, 'custom_tools')
     os.makedirs(custom_dir, exist_ok=True)
@@ -134,7 +145,11 @@ def load_custom_tools():
             mod = _load_module(tool_py, f'custom_tools.{entry}')
             total += _register_module(mod, f'custom/{entry}', custom=True)
         except Exception as e:
+            msg = f"⚠ Tool-Ladefehler (custom/{entry}): {e}"
             logger.error(f"[loader] Failed to load custom tool '{entry}': {e}", exc_info=True)
+            _startup_errors.append(msg)
+            if emit_log:
+                emit_log({"type": "text", "message": msg})
     if total:
         logger.info(f"[loader] {total} custom tool(s) registered")
     return total
