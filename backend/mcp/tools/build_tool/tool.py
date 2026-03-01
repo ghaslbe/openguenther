@@ -12,6 +12,7 @@ from services.tool_context import get_emit_log
 
 MAX_LOOPS = 15
 CUSTOM_TOOLS_DIR = os.path.join(DATA_DIR, 'custom_tools')
+IS_CUSTOM = True  # show in Custom Tools section in settings UI
 
 SETTINGS_INFO = """**MCP Tool Builder**
 

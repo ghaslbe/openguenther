@@ -57,6 +57,7 @@ def _register_module(mod, source_label='', custom=False):
                 continue
             schema = getattr(mod, 'SETTINGS_SCHEMA', None)
             info = getattr(mod, 'SETTINGS_INFO', None)
+            is_custom = custom or bool(getattr(mod, 'IS_CUSTOM', False))
             registry.register(MCPTool(
                 name=name,
                 description=td['description'],
@@ -64,7 +65,7 @@ def _register_module(mod, source_label='', custom=False):
                 handler=h,
                 settings_schema=schema,
                 settings_info=info,
-                custom=custom,
+                custom=is_custom,
             ))
             logger.info(f"[loader] Registered '{name}' from {source_label}")
             count += 1
@@ -85,6 +86,7 @@ def _register_module(mod, source_label='', custom=False):
 
     schema = getattr(mod, 'SETTINGS_SCHEMA', None)
     info = getattr(mod, 'SETTINGS_INFO', None)
+    is_custom = custom or bool(getattr(mod, 'IS_CUSTOM', False))
     registry.register(MCPTool(
         name=name,
         description=td['description'],
@@ -92,7 +94,7 @@ def _register_module(mod, source_label='', custom=False):
         handler=h,
         settings_schema=schema,
         settings_info=info,
-        custom=custom,
+        custom=is_custom,
     ))
     logger.info(f"[loader] Registered '{name}' from {source_label}")
     return 1
