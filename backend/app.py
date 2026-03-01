@@ -1,6 +1,5 @@
 import os
 import json
-import base64
 import threading
 import uuid
 from flask import Flask, send_from_directory
@@ -66,6 +65,19 @@ def serve_static(path):
 
 
 # ── API: reload external MCP tools ──
+
+@app.route('/api/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in flask_request.files:
+        return {'error': 'No file provided'}, 400
+    f = flask_request.files['file']
+    uploads_dir = os.path.join(DATA_DIR, 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+    safe_name = f"{uuid.uuid4().hex}_{f.filename}"
+    file_path = os.path.join(uploads_dir, safe_name)
+    f.save(file_path)
+    return {'path': file_path}
+
 
 @app.route('/api/mcp/reload', methods=['POST'])
 def reload_mcp():
@@ -149,33 +161,14 @@ def handle_message(data):
     agent_id = data.get('agent_id') or None
     file_name = data.get('file_name', '')
     file_content = data.get('file_content', '')
-    file_is_binary = data.get('file_is_binary', False)
-
     if not content and not file_content:
         return
 
     # Prepend file content to message so the LLM can work with it
+    # Binary files are uploaded via /api/upload first; their path is already in content.
+    # Only text files still send file_content inline here.
     if file_name and file_content:
-        if file_is_binary:
-            # Decode data URL and save to disk; give LLM the file path
-            uploads_dir = os.path.join(DATA_DIR, 'uploads')
-            os.makedirs(uploads_dir, exist_ok=True)
-            try:
-                if ',' in file_content:
-                    b64_data = file_content.split(',', 1)[1]
-                else:
-                    b64_data = file_content
-                file_bytes = base64.b64decode(b64_data)
-                safe_name = f"{uuid.uuid4().hex}_{file_name}"
-                file_path = os.path.join(uploads_dir, safe_name)
-                with open(file_path, 'wb') as fh:
-                    fh.write(file_bytes)
-                file_hint = f"[Hochgeladene Datei: {file_name}]\nLokal gespeichert unter: {file_path}"
-            except Exception as e:
-                file_hint = f"[Hochgeladene Datei: {file_name}]\n(Fehler beim Speichern: {e})"
-            content = f"{file_hint}\n\n{content}" if content else file_hint
-        else:
-            content = f"[Datei: {file_name}]\n```\n{file_content}\n```\n\n{content}" if content else f"[Datei: {file_name}]\n```\n{file_content}\n```"
+        content = f"[Datei: {file_name}]\n```\n{file_content}\n```\n\n{content}" if content else f"[Datei: {file_name}]\n```\n{file_content}\n```"
 
     # Create new chat if needed
     if not chat_id:

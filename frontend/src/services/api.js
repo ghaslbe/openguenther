@@ -287,6 +287,15 @@ export async function fetchCustomTools() {
   return res.json();
 }
 
+export async function uploadBinaryFile(dataUrl, filename) {
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  const form = new FormData();
+  form.append('file', blob, filename);
+  const uploadRes = await fetch(`${BASE}/api/upload`, { method: 'POST', body: form });
+  return uploadRes.json();
+}
+
 export async function uploadCustomTool(file) {
   const form = new FormData();
   form.append('file', file);

@@ -5,7 +5,7 @@ import ChatWindow from './components/ChatWindow';
 import GuentherBox from './components/GuentherBox';
 import Settings from './components/Settings';
 import FirstRunOverlay from './components/FirstRunOverlay';
-import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders, fetchChatInfo, fetchChatUsage } from './services/api';
+import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders, fetchChatInfo, fetchChatUsage, uploadBinaryFile } from './services/api';
 import { getSocket } from './services/socket';
 
 function formatBytes(n) {
@@ -346,19 +346,37 @@ export default function App() {
     socket.emit('cancel_generation');
   }
 
-  function handleSendMessage(content, file = null) {
+  async function handleSendMessage(content, file = null) {
     const icon = file?.icon || (file?.isBinary ? '📄' : '📎');
     const displayContent = file
       ? `${icon} ${file.name}${content ? `\n${content}` : ''}`
       : content;
     setMessages(prev => [...prev, { role: 'user', content: displayContent }]);
+
+    let socketContent = content;
+    let fileName = '';
+    let fileContent = '';
+
+    if (file && file.isBinary) {
+      // Upload binary file via REST to avoid Socket.IO buffer limits
+      try {
+        const { path } = await uploadBinaryFile(file.content, file.name);
+        const hint = `[Hochgeladene Datei: ${file.name}]\nLokal gespeichert unter: ${path}`;
+        socketContent = content ? `${hint}\n\n${content}` : hint;
+      } catch (e) {
+        console.error('Binary upload failed', e);
+      }
+    } else if (file) {
+      fileName = file.name;
+      fileContent = file.content;
+    }
+
     socket.emit('send_message', {
       chat_id: activeChatId,
-      content,
+      content: socketContent,
       agent_id: activeChatId ? '' : selectedAgentId,
-      file_name: file ? file.name : '',
-      file_content: file ? file.content : '',
-      file_is_binary: file ? !!file.isBinary : false
+      file_name: fileName,
+      file_content: fileContent,
     });
   }
 
