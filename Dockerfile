@@ -20,6 +20,7 @@ RUN apt-get update && \
     libcairo2 \
     libffi8 \
     shared-mime-info \
+    ffmpeg \
     curl \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \

@@ -11,3 +11,4 @@ weasyprint
 python-pptx
 lxml
 apscheduler==3.10.4
+pydub
