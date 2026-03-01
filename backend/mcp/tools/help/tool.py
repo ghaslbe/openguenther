@@ -286,6 +286,39 @@ def get_help(topic="general"):
             "Der Agent-Prompt gilt fuer den gesamten Chat. Tools und Modell bleiben unveraendert — "
             "nur der System-Prompt wird ersetzt. Ohne Agent gilt der Standard-Guenther-Prompt."
         ),
+        "file_upload": (
+            "Das 📎-Symbol neben dem Eingabefeld öffnet den Datei-Dialog.\n\n"
+            "TEXTDATEIEN (Inhalt wird als Kontext ans LLM übergeben):\n"
+            "CSV, JSON, XML, TXT, YAML, LOG, TSV …\n"
+            "Das LLM kann den Inhalt direkt an run_code übergeben.\n\n"
+            "BINÄRDATEIEN (serverseitig gespeichert, LLM erhält nur den Pfad):\n"
+            "- Audio: MP3, WAV, OGG, FLAC, M4A, AAC, Opus\n"
+            "- Office: XLS, XLSX, DOC, DOCX\n"
+            "Pfad z.B.: /app/data/uploads/abc123_datei.mp3\n"
+            "Custom Tools können diesen Pfad direkt öffnen und verarbeiten.\n\n"
+            "Binärdateien werden per REST-Upload übertragen (nicht via Socket.IO) — kein Größenlimit.\n"
+        ),
+        "local_file": (
+            "Das [LOCAL_FILE]-Muster erlaubt Custom Tools, Dateien zu erzeugen ohne sie\n"
+            "als Base64 ans LLM zu schicken (würde Token-Limit sprengen).\n\n"
+            "ABLAUF:\n"
+            "1. Tool erzeugt Datei und speichert sie lokal (z.B. /app/data/uploads/)\n"
+            "2. Tool gibt dem LLM eine Instruktion zurück mit dem Marker:\n"
+            "   [LOCAL_FILE](/pfad/zur/datei.wav)\n"
+            "3. LLM schreibt kurze Antwort und kopiert den Marker wörtlich\n"
+            "4. Guenthers Backend findet den Marker, liest Datei vom Server\n"
+            "5. Datei wird im Chat-Ordner gespeichert → Download-Button erscheint\n\n"
+            "BEISPIEL (handler-Rückgabe):\n"
+            '   return {\n'
+            '     "result": (\n'
+            '       "Konvertierung abgeschlossen.\\n\\n"\n'
+            '       "Füge diesen Marker exakt in deine Antwort ein:\\n"\n'
+            '       "[LOCAL_FILE](" + output_path + ")"\n'
+            '     )\n'
+            '   }\n\n'
+            "WICHTIG: Die Instruktion ans LLM muss es auffordern, den Marker EXAKT und UNVERÄNDERT\n"
+            "in die Antwort zu übernehmen. Nur dann erkennt das Backend ihn und erzeugt den Download-Button.\n"
+        ),
         "voice": (
             "Guenther unterstuetzt Spracheingabe (STT) fuer Telegram-Sprachnachrichten.\n\n"
             "STT-OPTIONEN:\n"
@@ -323,7 +356,7 @@ HELP_DEFINITION = {
         "properties": {
             "topic": {
                 "type": "string",
-                "description": "Hilfe-Thema: 'general', 'tools', 'settings', 'mcp', 'telegram', 'autoprompts', 'voice', 'wikipedia', 'code', 'agents' oder 'custom_tools'",
+                "description": "Hilfe-Thema: 'general', 'tools', 'settings', 'mcp', 'telegram', 'autoprompts', 'voice', 'wikipedia', 'code', 'agents', 'custom_tools', 'file_upload' oder 'local_file'",
                 "default": "general"
             }
         },
