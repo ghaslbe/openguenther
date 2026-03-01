@@ -41,20 +41,44 @@ def list_chat_files(chat_id):
 
 def extract_and_store(response: str, chat_id: int) -> str:
     """
-    Finds [PPTX_DOWNLOAD](filename::base64) markers in response,
-    saves the file to disk, and replaces the marker with [STORED_FILE](filename).
+    Processes special file markers in the LLM response and stores files on disk.
+
+    Supported markers:
+      [PPTX_DOWNLOAD](filename::base64)  — base64-encoded file (legacy)
+      [LOCAL_FILE](/abs/path/to/file)    — file already on disk (e.g. from a tool)
+    Both are replaced with [STORED_FILE](filename) for the frontend.
     """
-    def replace(m):
+    # ── [PPTX_DOWNLOAD](filename::base64) ──────────────────────────────────────
+    def replace_pptx(m):
         filename = m.group(1)
         b64 = m.group(2)
         try:
             save_file(chat_id, filename, base64.b64decode(b64))
             return f'[STORED_FILE]({filename})'
         except Exception:
-            return m.group(0)  # fallback: keep original
+            return m.group(0)
 
-    return re.sub(
+    response = re.sub(
         r'\[PPTX_DOWNLOAD\]\(([^:)]+)::([A-Za-z0-9+/=\n]+)\)',
-        replace,
+        replace_pptx,
         response
     )
+
+    # ── [LOCAL_FILE](/abs/path) ─────────────────────────────────────────────────
+    def replace_local(m):
+        src_path = m.group(1)
+        filename = os.path.basename(src_path)
+        try:
+            with open(src_path, 'rb') as f:
+                save_file(chat_id, filename, f.read())
+            return f'[STORED_FILE]({filename})'
+        except Exception:
+            return m.group(0)
+
+    response = re.sub(
+        r'\[LOCAL_FILE\]\(([^)]+)\)',
+        replace_local,
+        response
+    )
+
+    return response
