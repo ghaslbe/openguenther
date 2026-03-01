@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.27] — 2026-03-01
+
+### `build_mcp_tool` — Intelligenter Tool-Builder mit LLM + venv + Selbstkorrektur
+
+`create_mcp_tool` und `edit_mcp_tool` wurden durch ein einzelnes, deutlich mächtigeres Tool ersetzt:
+
+- **Natürlichsprachliche Beschreibung** → vollständiger `tool.py`-Code per LLM
+- **Venv-Test-Loop**: Code wird in einer isolierten venv getestet — openguenther-interne Imports werden gemockt
+- **Selbstkorrektur**: bei pip-Fehlern, Import-Fehlern oder Strukturproblemen wird der Code + Fehlermeldung ans LLM zurückgegeben → Korrektur → erneut testen (max. 15 Iterationen)
+- **Auto-pip-Install**: benötigte Pakete werden nach erfolgreichem Test automatisch ins System-Python installiert
+- **Edit-Modus**: wenn `tool_name` eines bestehenden Custom Tools angegeben wird, wird der bestehende Code als Kontext mitgeschickt
+- **`create_mcp_tool` + `edit_mcp_tool` entfernt** (ersetzt durch `build_mcp_tool`)
+
+---
+
 ## [1.4.26] — 2026-03-01
 
 ### Custom Tools: ZIP Download & Upload

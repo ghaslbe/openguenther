@@ -85,7 +85,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **`send_telegram`-Tool**: Guenther kann aktiv Telegram-Nachrichten senden — per `@username` oder numerischer Chat-ID (ideal für Autoprompts)
 
 **Erweiterbarkeit**
-- **Custom Tools per Chat**: eigene MCP-Tools direkt im Chat erstellen, bearbeiten und löschen (`create_mcp_tool`, `edit_mcp_tool`, `delete_mcp_tool`) — kein Neustart nötig
+- **Custom Tools per Chat**: eigene MCP-Tools direkt im Chat erstellen und bearbeiten (`build_mcp_tool`) oder löschen (`delete_mcp_tool`) — LLM generiert den Code, testet ihn in einer venv, installiert Pakete automatisch und korrigiert sich selbst (bis 15 Iterationen)
 - **Custom Tools manuell**: Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen (siehe `CUSTOM_TOOL_GUIDE.md`)
 - **Custom Tools ZIP Download/Upload**: installierte Custom Tools als ZIP herunterladen (Backup/Teilen) oder neue Tools als ZIP hochladen — mit Sicherheits-Warndialog und Path-Traversal-Schutz
 - **Externe MCP-Server**: beliebige stdio-basierte MCP-Server (JSON-RPC 2.0) anbindbar — inkl. `npx`-basierter Pakete (Node.js im Image enthalten), Umgebungsvariablen pro Server konfigurierbar, Inline-Bearbeitung, Reload-Button
@@ -297,8 +297,7 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 | `calculate` | Mathematische Ausdrücke sicher auswerten (AST-basiert, kein eval) |
 | `roll_dice` | Würfeln (n Würfel mit m Seiten) |
 | `get_current_time` | Aktuelle Uhrzeit mit Zeitzone |
-| `create_mcp_tool` | Neues Custom Tool direkt im Chat anlegen und sofort registrieren |
-| `edit_mcp_tool` | Bestehendes Custom Tool bearbeiten und neu laden |
+| `build_mcp_tool` | Custom Tool per Beschreibung erstellen oder bearbeiten — LLM generiert Code, venv-Test, Auto-pip, Selbstkorrektur (max. 15 Loops) |
 | `delete_mcp_tool` | Custom Tool dauerhaft löschen und aus Registry entfernen |
 | `list_available_tools` | Alle aktuell registrierten Tools auflisten |
 | `pinecone` | Pinecone Vector-DB verwalten: Indexes anlegen/löschen, Vektoren upserten (mit Auto-Embedding), abfragen und löschen (API-Key erforderlich) |
@@ -378,7 +377,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **`send_telegram` tool**: Guenther can actively send Telegram messages — via `@username` or numeric chat ID (ideal for autoprompts)
 
 **Extensibility**
-- **Custom tools via chat**: create, edit and delete MCP tools directly from chat (`create_mcp_tool`, `edit_mcp_tool`, `delete_mcp_tool`) — no restart needed
+- **Custom tools via chat**: create and edit MCP tools directly from chat (`build_mcp_tool`) or delete them (`delete_mcp_tool`) — LLM generates the code, tests it in a venv, auto-installs packages and self-corrects (up to 15 iterations)
 - **Custom tools manually**: drop Python files into `/app/data/custom_tools/` — loaded automatically (see `CUSTOM_TOOL_GUIDE.md`)
 - **Custom tools ZIP download/upload**: download installed custom tools as ZIP (backup/sharing) or install new tools via ZIP upload — with security warning dialog and path traversal protection
 - **External MCP servers**: connect any stdio-based MCP server (JSON-RPC 2.0) — including `npx`-based packages (Node.js included in image), per-server environment variables, inline editing, reload button
@@ -590,8 +589,7 @@ Data is stored persistently in a Docker volume (`/app/data`).
 | `calculate` | Evaluate mathematical expressions safely (AST-based, no eval) |
 | `roll_dice` | Roll dice (n dice with m sides) |
 | `get_current_time` | Get current time with timezone |
-| `create_mcp_tool` | Create a new custom tool directly in chat and register it immediately |
-| `edit_mcp_tool` | Edit an existing custom tool and reload it |
+| `build_mcp_tool` | Create or edit a custom tool from a description — LLM generates code, venv test, auto-pip, self-correction (up to 15 loops) |
 | `delete_mcp_tool` | Permanently delete a custom tool and remove it from the registry |
 | `list_available_tools` | List all currently registered tools |
 | `pinecone` | Manage Pinecone Vector DB: create/delete indexes, upsert vectors (with auto-embedding), query and delete vectors (API key required) |
