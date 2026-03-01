@@ -28,6 +28,13 @@ SETTINGS_SCHEMA = [
         "type": "text",
         "placeholder": "leer = Hauptmodell verwenden",
         "description": "Optionales Modell für die Tool-Code-Generierung"
+    },
+    {
+        "key": "max_loops",
+        "label": "Max. Korrektur-Loops",
+        "type": "text",
+        "placeholder": "leer = 15",
+        "description": "Maximale Anzahl Selbstkorrektur-Iterationen (Standard: 15)"
     }
 ]
 
@@ -75,6 +82,10 @@ def handler(description: str, tool_name: str = "") -> dict:
     api_key = provider_cfg.get('api_key', '') or settings.get('openrouter_api_key', '')
     base_url = provider_cfg.get('base_url', 'https://openrouter.ai/api/v1')
     model = (tool_cfg.get('model') or '').strip() or settings.get('model', 'openai/gpt-4o-mini')
+    try:
+        max_loops = int((tool_cfg.get('max_loops') or '').strip())
+    except (ValueError, AttributeError):
+        max_loops = MAX_LOOPS
 
     def log(msg: str):
         if emit_log:
@@ -106,7 +117,7 @@ def handler(description: str, tool_name: str = "") -> dict:
         header("BUILD MCP TOOL: STARTE")
 
     log(f"Aufgabe: {description}")
-    log(f"Modell: {model}")
+    log(f"Modell: {model} | Max. Loops: {max_loops}")
 
     # ── Phase 0: Plan ─────────────────────────────────────────────────────────
     header("BUILD MCP TOOL: PLAN ERSTELLEN")
@@ -170,8 +181,8 @@ def handler(description: str, tool_name: str = "") -> dict:
         venv_python = os.path.join(venv_dir, "bin", "python")
         venv_pip = os.path.join(venv_dir, "bin", "pip")
 
-        for loop in range(1, MAX_LOOPS + 1):
-            header(f"BUILD MCP TOOL: VERSUCH {loop}/{MAX_LOOPS}")
+        for loop in range(1, max_loops + 1):
+            header(f"BUILD MCP TOOL: VERSUCH {loop}/{max_loops}")
 
             # Write tool.py
             with open(os.path.join(tmpdir, "tool.py"), 'w', encoding='utf-8') as f:
@@ -216,10 +227,10 @@ def handler(description: str, tool_name: str = "") -> dict:
                 err = (result.stderr + result.stdout).strip()[:600]
                 log(f"Test-Fehler: {err}")
 
-                if loop >= MAX_LOOPS:
+                if loop >= max_loops:
                     return {
                         "success": False,
-                        "error": f"Test fehlgeschlagen nach {MAX_LOOPS} Versuchen.\nLetzter Fehler:\n{err}"
+                        "error": f"Test fehlgeschlagen nach {max_loops} Versuchen.\nLetzter Fehler:\n{err}"
                     }
 
                 fix = _ask_fix(llm, description, code, requirements, err, log)
