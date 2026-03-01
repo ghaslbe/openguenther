@@ -252,7 +252,7 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, onCance
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isLoading]);
 
   useEffect(() => {
     inputRef.current?.focus();
