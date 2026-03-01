@@ -359,10 +359,10 @@ SETTINGS_SCHEMA = [
 
 # USAGE — shown to the AI model as part of the tool description
 # Explain how to call the tool: accepted parameter formats, example calls, typical use cases
-USAGE = """
+USAGE = '''
 Rufe dieses Tool mit <param>=<wert> auf.
 Beispiel: {{"param": "beispiel_wert"}}
-"""
+'''
 
 TOOL_DEFINITION = {{
     "name": "tool_name",       # snake_case, descriptive, unique
@@ -602,7 +602,7 @@ import importlib.util
 
 
 class _FlexMod(types.ModuleType):
-    """Module mock that allows any attribute access without AttributeError."""
+    # Module mock that allows any attribute access without AttributeError.
     def __getattr__(self, name):
         child = _FlexMod(f"{self.__name__}.{name}")
         setattr(self, name, child)
