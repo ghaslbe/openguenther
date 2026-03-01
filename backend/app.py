@@ -80,6 +80,7 @@ def list_mcp_tools():
             "description": t.description,
             "server_id": t.server_id,
             "builtin": t.server_id is None,
+            "custom": t.custom,
             "has_settings": bool(t.settings_schema),
             "settings_schema": t.settings_schema or [],
             "settings_info": t.settings_info or "",

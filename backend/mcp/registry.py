@@ -1,5 +1,5 @@
 class MCPTool:
-    def __init__(self, name, description, input_schema, handler=None, server_id=None, settings_schema=None, agent_overridable=True, settings_info=None):
+    def __init__(self, name, description, input_schema, handler=None, server_id=None, settings_schema=None, agent_overridable=True, settings_info=None, custom=False):
         self.name = name
         self.description = description
         self.input_schema = input_schema
@@ -8,6 +8,7 @@ class MCPTool:
         self.settings_schema = settings_schema  # List of field defs for tool-specific settings
         self.agent_overridable = agent_overridable  # False for tools that make their own API calls (e.g. generate_image)
         self.settings_info = settings_info  # Optional markdown info text shown in settings UI
+        self.custom = custom  # True for tools loaded from /app/data/custom_tools/
 
     def to_openai_format(self):
         return {

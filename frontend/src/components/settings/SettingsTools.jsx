@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
-import { fetchMcpTools, fetchToolSettings, updateToolSettings, reloadMcpTools, fetchCustomTools, uploadCustomTool } from '../../services/api';
+import { fetchMcpTools, fetchToolSettings, updateToolSettings, reloadMcpTools, uploadCustomTool } from '../../services/api';
 
 export default function SettingsTools({ providers }) {
   const { t } = useTranslation();
@@ -12,20 +12,13 @@ export default function SettingsTools({ providers }) {
   const [message, setMessage] = useState('');
   const [reloading, setReloading] = useState(false);
   const [showPasswords, setShowPasswords] = useState({});
-  const [customTools, setCustomTools] = useState([]);
   const [uploadWarning, setUploadWarning] = useState(false);
   const [pendingFile, setPendingFile] = useState(null);
   const uploadRef = useRef(null);
 
   useEffect(() => {
     loadTools();
-    loadCustomTools();
   }, []);
-
-  async function loadCustomTools() {
-    const data = await fetchCustomTools();
-    setCustomTools(data);
-  }
 
   async function loadTools() {
     const data = await fetchMcpTools();
@@ -110,7 +103,7 @@ export default function SettingsTools({ providers }) {
     setPendingFile(null);
     if (result.success) {
       setMessage(t('settings.tools.customUploaded', { name: result.tool_name }));
-      await loadCustomTools();
+      await loadTools();
     } else {
       setMessage(t('settings.tools.customUploadError') + (result.error ? `: ${result.error}` : ''));
     }
@@ -124,7 +117,8 @@ export default function SettingsTools({ providers }) {
 
   const activeProviders = Object.entries(providers || {}).filter(([, p]) => p.enabled);
   const sortByName = (a, b) => a.name.localeCompare(b.name);
-  const builtinTools = tools.filter(t => t.builtin).sort(sortByName);
+  const builtinTools = tools.filter(t => t.builtin && !t.custom).sort(sortByName);
+  const customMcpTools = tools.filter(t => t.custom).sort(sortByName);
   const externalTools = tools.filter(t => !t.builtin).sort(sortByName);
 
   function renderTool(tool) {
@@ -137,6 +131,11 @@ export default function SettingsTools({ providers }) {
       <div key={tool.name} className="tool-accordion-item">
         <div className="tool-accordion-header" onClick={() => toggleExpand(tool)}>
           <span className="tool-accordion-name">{tool.name}</span>
+          {tool.custom && (
+            <span className="tool-accordion-badge" style={{ background: 'var(--accent)', color: '#fff', opacity: 0.85 }}>
+              Custom
+            </span>
+          )}
           {hasOverride && (
             <span className="tool-accordion-badge override" title={`${tool.current_provider || 'std'} / ${tool.current_model || 'std'}`}>
               {t('settings.tools.override')}
@@ -238,9 +237,22 @@ export default function SettingsTools({ providers }) {
               </div>
             )}
 
-            <button className="btn-tool-save" onClick={() => handleSave(tool)} disabled={saving[tool.name]}>
-              {saving[tool.name] ? t('settings.tools.saving') : t('settings.tools.save')}
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button className="btn-tool-save" onClick={() => handleSave(tool)} disabled={saving[tool.name]}>
+                {saving[tool.name] ? t('settings.tools.saving') : t('settings.tools.save')}
+              </button>
+              {tool.custom && (
+                <a
+                  href={`/api/custom-tools/${tool.name}/download`}
+                  download={`${tool.name}.zip`}
+                  className="btn-tool-save"
+                  style={{ textDecoration: 'none' }}
+                  onClick={e => e.stopPropagation()}
+                >
+                  {t('settings.tools.customDownload')}
+                </a>
+              )}
+            </div>
           </div>
         )}
 
@@ -264,34 +276,10 @@ export default function SettingsTools({ providers }) {
       </div>
 
       <div className="settings-section">
-        <h3>{t('settings.tools.externalSection')}</h3>
-        {externalTools.length === 0
-          ? <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t('settings.tools.noExternal')}</p>
-          : externalTools.map(renderTool)
-        }
-      </div>
-
-      <button className="btn-reload-mcp" onClick={handleReload} disabled={reloading}>
-        {reloading ? t('settings.tools.reloading') : t('settings.tools.reload')}
-      </button>
-
-      <div className="settings-section" style={{ marginTop: '24px' }}>
         <h3>{t('settings.tools.customSection')}</h3>
-        {customTools.length === 0
+        {customMcpTools.length === 0
           ? <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t('settings.tools.customEmpty')}</p>
-          : customTools.map(name => (
-            <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ fontSize: '13px', fontFamily: 'monospace' }}>{name}</span>
-              <a
-                href={`/api/custom-tools/${name}/download`}
-                download={`${name}.zip`}
-                className="btn-tool-save"
-                style={{ textDecoration: 'none', padding: '4px 10px', fontSize: '12px' }}
-              >
-                {t('settings.tools.customDownload')}
-              </a>
-            </div>
-          ))
+          : customMcpTools.map(renderTool)
         }
         <div style={{ marginTop: '12px' }}>
           <input
@@ -306,6 +294,18 @@ export default function SettingsTools({ providers }) {
           </button>
         </div>
       </div>
+
+      <div className="settings-section">
+        <h3>{t('settings.tools.externalSection')}</h3>
+        {externalTools.length === 0
+          ? <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t('settings.tools.noExternal')}</p>
+          : externalTools.map(renderTool)
+        }
+      </div>
+
+      <button className="btn-reload-mcp" onClick={handleReload} disabled={reloading}>
+        {reloading ? t('settings.tools.reloading') : t('settings.tools.reload')}
+      </button>
 
       {uploadWarning && (
         <div style={{

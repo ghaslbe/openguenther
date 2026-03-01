@@ -37,7 +37,7 @@ def _load_module(tool_py_path, module_name):
     return mod
 
 
-def _register_module(mod, source_label=''):
+def _register_module(mod, source_label='', custom=False):
     """
     Extract tool definitions and handlers from a module and register them.
     Supports single (TOOL_DEFINITION) and multi-tool (TOOL_DEFINITIONS) conventions.
@@ -64,6 +64,7 @@ def _register_module(mod, source_label=''):
                 handler=h,
                 settings_schema=schema,
                 settings_info=info,
+                custom=custom,
             ))
             logger.info(f"[loader] Registered '{name}' from {source_label}")
             count += 1
@@ -91,6 +92,7 @@ def _register_module(mod, source_label=''):
         handler=h,
         settings_schema=schema,
         settings_info=info,
+        custom=custom,
     ))
     logger.info(f"[loader] Registered '{name}' from {source_label}")
     return 1
@@ -124,7 +126,7 @@ def load_custom_tools():
             continue
         try:
             mod = _load_module(tool_py, f'custom_tools.{entry}')
-            total += _register_module(mod, f'custom/{entry}')
+            total += _register_module(mod, f'custom/{entry}', custom=True)
         except Exception as e:
             logger.error(f"[loader] Failed to load custom tool '{entry}': {e}", exc_info=True)
     if total:
