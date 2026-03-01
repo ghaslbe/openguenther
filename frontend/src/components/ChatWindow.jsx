@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -192,7 +193,7 @@ function MessageContent({ content, chatId }) {
           return <StoredFileButton key={i} chatId={chatId} filename={part.filename} />;
         }
         return (
-          <ReactMarkdown key={i} components={{
+          <ReactMarkdown key={i} remarkPlugins={[remarkGfm]} components={{
             img: ({ node, ...props }) => (
               <img {...props} style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '8px' }} />
             )

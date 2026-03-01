@@ -317,6 +317,37 @@ html, body, #root {
   font-size: 13px;
 }
 
+.message-content table {
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 13px;
+  width: auto;
+}
+
+.message-content th,
+.message-content td {
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  text-align: left;
+}
+
+.message-content th {
+  background: rgba(255,255,255,0.07);
+  font-weight: 600;
+}
+
+.message-content tr:nth-child(even) td {
+  background: rgba(255,255,255,0.03);
+}
+
+[data-theme="light"] .message-content th {
+  background: rgba(0,0,0,0.05);
+}
+
+[data-theme="light"] .message-content tr:nth-child(even) td {
+  background: rgba(0,0,0,0.02);
+}
+
 .message-content img {
   max-width: 100%;
   border-radius: 8px;

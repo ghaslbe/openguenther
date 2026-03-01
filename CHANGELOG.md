@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.31] — 2026-03-01
+
+### Markdown-Tabellen im Chat
+
+- `remark-gfm` Plugin für ReactMarkdown installiert → GFM-Tabellen, Strikethrough, etc. werden korrekt gerendert
+- CSS für `.message-content table/th/td`: Rahmen, Padding, alternierende Zeilenfarben (dark + light Theme)
+
+---
+
 ## [1.4.30] — 2026-03-01
 
 ### Stop-Button für laufende Generierung
