@@ -69,7 +69,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 **KI-Features**
 - **Agenten-System**: eigene KI-Agenten mit individuellem System-Prompt anlegen — per Dropdown im Chat wählen, Name erscheint statt „Guenther"; optionaler Provider- und Modell-Override pro Agent
 - **Code-Interpreter** (`run_code`): Python-Code per LLM generieren und ausführen, mit Selbstkorrektur-Loop
-- **Datei-Upload** (📎): Textdateien (CSV, JSON, XML, TXT etc.) hochladen — Inhalt wird als Kontext ans LLM übergeben
+- **Datei-Upload** (📎): Textdateien (CSV, JSON, XML, TXT etc.) hochladen — Inhalt wird als Kontext ans LLM übergeben; Binärdateien (Audio: MP3/WAV/OGG/FLAC/M4A; Office: XLS/XLSX/DOC/DOCX) werden serverseitig gespeichert, LLM erhält nur den Dateipfad
 - **Bildgenerierung**: via OpenRouter (Flux, Gemini Image, etc.)
 - **Bildbearbeitung**: via process_image (blur, grayscale, rotate, …)
 - **Präsentations-Generator**: PowerPoint-Dateien (.pptx) direkt aus dem Chat erstellen — Guenther strukturiert das Thema, speichert die Datei persistent und liefert einen Download-Button
@@ -83,11 +83,12 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **Telegram-Gateway**: Chatten via Telegram, inkl. Foto- und Sprachnachrichten; `/new` startet neue Chat-Session
 - **Spracherkennung** (STT): OpenAI Whisper oder OpenRouter-kompatible Modelle für Telegram-Sprachnachrichten
 - **Sprachausgabe** (TTS): via ElevenLabs, Ergebnisse auch als Telegram-Audio sendbar
-- **`send_telegram`-Tool**: Guenther kann aktiv Telegram-Nachrichten senden — per `@username` oder numerischer Chat-ID (ideal für Autoprompts)
+- **`send_telegram`-Tool**: Guenther kann aktiv Telegram-Nachrichten und **Audiodateien** (MP3, WAV, OGG …) senden — per `@username` oder numerischer Chat-ID (ideal für Autoprompts)
 
 **Erweiterbarkeit**
 - **Custom Tools per Chat**: eigene MCP-Tools direkt im Chat erstellen und bearbeiten (`build_mcp_tool`) oder löschen (`delete_mcp_tool`) — LLM generiert den Code, testet ihn in einer venv, installiert Pakete automatisch und korrigiert sich selbst (konfigurierbare Anzahl Iterationen, Standard: 15)
-- **Custom Tools manuell**: Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen (siehe `CUSTOM_TOOL_GUIDE.md`)
+- **Custom Tools manuell**: Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen (siehe `CUSTOM_TOOL_GUIDE.md`); Ladefehler (z.B. fehlende Libraries) erscheinen direkt im Guenther-Terminal
+- **`[LOCAL_FILE]`-Muster**: Custom Tools die Dateien erzeugen geben `[LOCAL_FILE](/pfad)` zurück — das Backend speichert die Datei im Chat-Ordner und zeigt einen Download-Button; der Dateiinhalt gelangt nie ans LLM
 - **Custom Tools ZIP Download/Upload**: installierte Custom Tools als ZIP herunterladen (Backup/Teilen) oder neue Tools als ZIP hochladen — mit Sicherheits-Warndialog und Path-Traversal-Schutz
 - **Externe MCP-Server**: beliebige stdio-basierte MCP-Server (JSON-RPC 2.0) anbindbar — inkl. `npx`-basierter Pakete (Node.js im Image enthalten), Umgebungsvariablen pro Server konfigurierbar, Inline-Bearbeitung, Reload-Button
 - **Webhook-System**: externe Systeme (Home Automation, Skripte, etc.) können Guenther per `POST /webhook/<id>` triggern — Bearer-Token-Auth, optionale feste Chat-ID, optionaler Agent, synchrone Antwort
@@ -292,7 +293,7 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 | `analyze_seo` | SEO-Analyse einer URL oder eines HTML-Codes — Score, Title, Meta, Headings, OG-Tags, JSON-LD u.v.m. als visueller HTML-Report |
 | `generate_presentation` | PowerPoint-Präsentation (.pptx) aus Thema oder Quelltext — 8 Layouts, 2 Themes, Download-Button im Chat |
 | `send_email` | E-Mail via SMTP senden |
-| `send_telegram` | Telegram-Nachricht senden — per `@username` oder numerischer Chat-ID |
+| `send_telegram` | Telegram-Nachricht oder Audiodatei senden — per `@username` oder numerischer Chat-ID |
 | `text_to_speech` | Text vorlesen via ElevenLabs (API Key in Tool-Einstellungen) |
 | `generate_password` | Sichere Passwörter generieren |
 | `calculate` | Mathematische Ausdrücke sicher auswerten (AST-basiert, kein eval) |
@@ -362,7 +363,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 **AI Features**
 - **Agent system**: create custom AI agents with individual system prompts — select via dropdown in chat, name replaces "Guenther"; optional per-agent provider and model override
 - **Code interpreter** (`run_code`): generate and execute Python code via LLM, with self-correction loop
-- **File upload** (📎): upload text files (CSV, JSON, XML, TXT etc.) — content is passed as context to the LLM
+- **File upload** (📎): upload text files (CSV, JSON, XML, TXT etc.) — content is passed as context to the LLM; binary files (audio: MP3/WAV/OGG/FLAC/M4A; office: XLS/XLSX/DOC/DOCX) are stored server-side, LLM receives only the file path
 - **Image generation**: via OpenRouter (Flux, Gemini Image, etc.)
 - **Image editing**: via process_image (blur, grayscale, rotate, …)
 - **Presentation generator**: create PowerPoint files (.pptx) directly from chat — Guenther structures the topic, stores the file persistently and delivers a download button
@@ -376,11 +377,12 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **Telegram Gateway**: chat via Telegram, including photos and voice messages; `/new` starts a new chat session
 - **Speech recognition** (STT): OpenAI Whisper or OpenRouter-compatible models for Telegram voice messages
 - **Text-to-speech** (TTS): via ElevenLabs, results can also be sent as Telegram audio
-- **`send_telegram` tool**: Guenther can actively send Telegram messages — via `@username` or numeric chat ID (ideal for autoprompts)
+- **`send_telegram` tool**: Guenther can actively send Telegram messages and **audio files** (MP3, WAV, OGG …) — via `@username` or numeric chat ID (ideal for autoprompts)
 
 **Extensibility**
 - **Custom tools via chat**: create and edit MCP tools directly from chat (`build_mcp_tool`) or delete them (`delete_mcp_tool`) — LLM generates the code, tests it in a venv, auto-installs packages and self-corrects (configurable iterations, default: 15)
-- **Custom tools manually**: drop Python files into `/app/data/custom_tools/` — loaded automatically (see `CUSTOM_TOOL_GUIDE.md`)
+- **Custom tools manually**: drop Python files into `/app/data/custom_tools/` — loaded automatically (see `CUSTOM_TOOL_GUIDE.md`); load errors (e.g. missing libraries) appear directly in the Guenther terminal
+- **`[LOCAL_FILE]` pattern**: custom tools that produce files return `[LOCAL_FILE](/path)` — the backend stores the file in the chat folder and shows a download button; file content never reaches the LLM
 - **Custom tools ZIP download/upload**: download installed custom tools as ZIP (backup/sharing) or install new tools via ZIP upload — with security warning dialog and path traversal protection
 - **External MCP servers**: connect any stdio-based MCP server (JSON-RPC 2.0) — including `npx`-based packages (Node.js included in image), per-server environment variables, inline editing, reload button
 - **Webhook system**: external systems (home automation, scripts, etc.) can trigger Guenther via `POST /webhook/<id>` — Bearer token auth, optional fixed chat ID, optional agent, synchronous response
@@ -585,7 +587,7 @@ Data is stored persistently in a Docker volume (`/app/data`).
 | `analyze_seo` | SEO analysis of a URL or HTML code — score, title, meta, headings, OG tags, JSON-LD and more as a visual HTML report |
 | `generate_presentation` | PowerPoint presentation (.pptx) from a topic or source text — 8 layouts, 2 themes, download button in chat |
 | `send_email` | Send email via SMTP |
-| `send_telegram` | Send a Telegram message — via `@username` or numeric chat ID |
+| `send_telegram` | Send a Telegram message or audio file — via `@username` or numeric chat ID |
 | `text_to_speech` | Text-to-speech via ElevenLabs (API key in tool settings) |
 | `generate_password` | Generate secure passwords |
 | `calculate` | Evaluate mathematical expressions safely (AST-based, no eval) |

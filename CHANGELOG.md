@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.4.36] — 2026-03-01
+
+### Audio-Workflow + Tool-Fehler sichtbar + Hilfe überarbeitet
+
+**Audio-Konvertierung & Versand**
+- **`send_telegram`**: neuer optionaler Parameter `file_path` — sendet Audiodateien (MP3, WAV, OGG, FLAC, M4A, AAC, Opus) direkt per Telegram mit korrektem MIME-Type und Dateinamen
+- **`[LOCAL_FILE]`-Marker**: Custom Tools können Dateien lokal speichern und `[LOCAL_FILE](/pfad)` zurückgeben — Backend liest die Datei, legt sie im Chat-Ordner ab und zeigt einen Download-Button; Dateiinhalt gelangt nie ans LLM
+- **`ffmpeg` + `pydub`** im Docker-Image: Voraussetzung für Audio-Konvertierungstools
+- **Binär-Upload via REST**: Binärdateien (Audio, Office) werden per `POST /api/upload` hochgeladen statt als Base64 via Socket.IO — kein stilles Verwerfen mehr bei Dateien >1 MB
+
+**Tool-Ladefehler sichtbar**
+- Schlägt ein Custom Tool beim Import fehl (z.B. fehlende Python-Library), erscheint `⚠ Tool-Ladefehler (custom/name): ...` direkt im Guenther-Terminal beim Browser-Connect
+- Nach einem Reload (`/api/mcp/reload`) werden veraltete Fehlermeldungen bereinigt — behobene Tools zeigen keine alten Warnungen mehr
+
+**Hilfe überarbeitet (Einstellungen → Hilfe)**
+- Alle Sektionen jetzt **aufklappbar** (Accordion), nach Themen-Gruppen sortiert: *Provider & Modelle / Tools & Erweiterungen / Automatisierung & Integrationen*
+- Neue Sektion: **Custom Tools — Dateien ausgeben** mit vollständiger Erklärung des `[LOCAL_FILE]`-Musters und einer **Prompt-Vorlage** zum direkten Einfügen in den Chat
+- Neue Sektion: **Datei-Upload im Chat** (Text vs. Binär, unterstützte Formate, Serverpfad)
+- `get_help` Tool: neue Topics `file_upload` und `local_file`
+
+---
+
 ## [1.4.35] — 2026-03-01
 
 ### Datei-Upload: Binärdateien + Office-Formate
