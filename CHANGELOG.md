@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.25] — 2026-03-01
+
+### Tool-Einstellungen: Beschreibungen + Export-Sicherheit
+
+**MCP-Tool-Beschreibungen immer sichtbar**
+- Beim Aufklappen eines Tools wird jetzt immer eine Beschreibung angezeigt — entweder die detaillierte `SETTINGS_INFO` (für konfigurierbare Tools wie Pinecone, TTS, E-Mail, etc.) oder als Fallback der kurze Tool-Beschreibungstext
+- Beschreibungen werden als **Markdown** gerendert (fett, Links, Listen)
+- Kurztext verschwindet beim Aufklappen nicht mehr
+
+**MCP-Server-Export: keine API-Keys**
+- Beim JSON-Export von MCP-Servern werden Env-Variablen-Werte geleert (API-Keys bleiben nicht im Export)
+- Variablen-Namen bleiben erhalten als Hinweis, welche Env-Vars beim Import gesetzt werden müssen
+
+---
+
 ## [1.4.24] — 2026-03-01
 
 ### Tool-Beschreibungen in Einstellungen + JSON Export/Import

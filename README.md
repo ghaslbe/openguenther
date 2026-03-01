@@ -89,7 +89,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **Custom Tools manuell**: Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen (siehe `CUSTOM_TOOL_GUIDE.md`)
 - **Externe MCP-Server**: beliebige stdio-basierte MCP-Server (JSON-RPC 2.0) anbindbar — inkl. `npx`-basierter Pakete (Node.js im Image enthalten), Umgebungsvariablen pro Server konfigurierbar, Inline-Bearbeitung, Reload-Button
 - **Webhook-System**: externe Systeme (Home Automation, Skripte, etc.) können Guenther per `POST /webhook/<id>` triggern — Bearer-Token-Auth, optionale feste Chat-ID, optionaler Agent, synchrone Antwort
-- **JSON Export/Import**: Agenten, Autoprompts und MCP-Server können als JSON exportiert und importiert werden — inklusive Versionsnummer für Kompatibilitätsprüfung
+- **JSON Export/Import**: Agenten, Autoprompts und MCP-Server können als JSON exportiert und importiert werden — inklusive Versionsnummer für Kompatibilitätsprüfung; MCP-Export enthält keine API-Keys (Env-Werte werden geleert)
 - **SSH-Tunnel-Guide**: Anleitung in Provider-Einstellungen für Ollama/LM Studio (Reverse-Tunnel vom Heimrechner zum Server)
 
 ---
@@ -381,7 +381,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **Custom tools manually**: drop Python files into `/app/data/custom_tools/` — loaded automatically (see `CUSTOM_TOOL_GUIDE.md`)
 - **External MCP servers**: connect any stdio-based MCP server (JSON-RPC 2.0) — including `npx`-based packages (Node.js included in image), per-server environment variables, inline editing, reload button
 - **Webhook system**: external systems (home automation, scripts, etc.) can trigger Guenther via `POST /webhook/<id>` — Bearer token auth, optional fixed chat ID, optional agent, synchronous response
-- **JSON Export/Import**: agents, autoprompts and MCP servers can be exported and imported as JSON — with version number for compatibility checking
+- **JSON Export/Import**: agents, autoprompts and MCP servers can be exported and imported as JSON — with version number for compatibility checking; MCP export strips env values (no API keys leaked)
 - **SSH tunnel guide**: instructions in provider settings for Ollama/LM Studio (reverse tunnel from home machine to server)
 
 ---
