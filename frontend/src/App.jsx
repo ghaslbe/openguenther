@@ -342,6 +342,10 @@ export default function App() {
     }
   }
 
+  function cancelGeneration() {
+    socket.emit('cancel_generation');
+  }
+
   function handleSendMessage(content, file = null) {
     const displayContent = file
       ? `📎 ${file.name}${content ? `\n${content}` : ''}`
@@ -387,6 +391,7 @@ export default function App() {
         messages={messages}
         onSendMessage={handleSendMessage}
         onNewChat={handleNewChat}
+        onCancel={cancelGeneration}
         isLoading={isLoading}
         currentTool={currentTool}
         currentToolLog={currentToolLog}

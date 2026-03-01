@@ -132,7 +132,7 @@ def _pick_provider_and_model_for_tools(selected_tools, settings):
     return override_provider_cfg or default_provider_cfg, override_model
 
 
-def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provider_id=None, agent_model=None, chat_id=None):
+def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provider_id=None, agent_model=None, chat_id=None, stop_event=None):
     """
     Run the agent loop: send messages to LLM, handle tool calls, iterate.
     Logs ALL communication to Guenther terminal.
@@ -233,6 +233,9 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
 
     while iteration < max_iterations:
         iteration += 1
+        if stop_event and stop_event.is_set():
+            emit_log({"type": "text", "message": f"[{_ts()}] Abgebrochen nach Iteration {iteration - 1}."})
+            break
         emit_log({"type": "header", "message": f"ITERATION {iteration}"})
         provider_display = provider_cfg.get('name') or provider_id
         emit_log({"type": "text", "message": f"[{_ts()}] Sende Anfrage an {provider_display}..."})
@@ -373,6 +376,9 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
                         ensure_ascii=False
                     )
                     emit_log({"type": "text", "message": f"[{_ts()}] Tool nicht gefunden: {tool_name}"})
+
+                if stop_event and stop_event.is_set():
+                    break  # aus dem for-loop über tool_calls
 
                 # ── Log: Message sent back to LLM ──
                 tool_msg = {

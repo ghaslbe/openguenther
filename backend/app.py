@@ -1,5 +1,6 @@
 import os
 import json
+import threading
 from flask import Flask, send_from_directory
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
@@ -34,6 +35,8 @@ app.register_blueprint(autoprompts_bp)
 app.register_blueprint(usage_bp)
 app.register_blueprint(webhooks_bp)
 app.register_blueprint(custom_tools_bp)
+
+_cancel_flags = {}  # sid → threading.Event
 
 # Initialize database
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -187,6 +190,10 @@ def handle_message(data):
 
     emit('agent_start', {'chat_id': chat_id})
 
+    sid = flask_request.sid
+    stop_event = threading.Event()
+    _cancel_flags[sid] = stop_event
+
     # Resolve optional agent system_prompt + provider/model overrides
     agent_system_prompt = None
     agent_provider_id = None
@@ -200,7 +207,12 @@ def handle_message(data):
 
     try:
         response = run_agent(messages, settings, emit_log, system_prompt=agent_system_prompt,
-                             agent_provider_id=agent_provider_id, agent_model=agent_model, chat_id=chat_id)
+                             agent_provider_id=agent_provider_id, agent_model=agent_model, chat_id=chat_id,
+                             stop_event=stop_event)
+        if stop_event.is_set():
+            emit_log({"type": "text", "message": "⏹ Generierung abgebrochen."})
+            emit('agent_end', {'chat_id': chat_id, 'cancelled': True})
+            return
         response = file_store.extract_and_store(response, chat_id)
         add_message(chat_id, 'assistant', response)
         emit('agent_response', {
@@ -215,13 +227,23 @@ def handle_message(data):
             'chat_id': chat_id,
             'content': error_msg
         })
+    finally:
+        _cancel_flags.pop(sid, None)
 
     emit('agent_end', {'chat_id': chat_id})
 
 
+@socketio.on('cancel_generation')
+def handle_cancel():
+    flag = _cancel_flags.get(flask_request.sid)
+    if flag:
+        flag.set()
+        socketio.emit('guenther_log', {"type": "text", "message": "⏹ Abbruch angefordert..."})
+
+
 @socketio.on('disconnect')
 def handle_disconnect():
-    pass
+    _cancel_flags.pop(flask_request.sid, None)
 
 
 # Auto-start Telegram gateway if token is configured

@@ -239,7 +239,7 @@ function CopyButton({ text, align }) {
   );
 }
 
-export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoading, currentTool, currentToolLog, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
+export default function ChatWindow({ messages, onSendMessage, onNewChat, onCancel, isLoading, currentTool, currentToolLog, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -435,9 +435,15 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, isLoadi
             )}
           </button>
         )}
-        <button type="submit" className="btn-send" disabled={isLoading || (!input.trim() && !attachedFile)}>
-          {t('chat.send')}
-        </button>
+        {isLoading ? (
+          <button type="button" className="btn-stop" onClick={onCancel} title={t('chat.stop')}>
+            ■
+          </button>
+        ) : (
+          <button type="submit" className="btn-send" disabled={!input.trim() && !attachedFile}>
+            {t('chat.send')}
+          </button>
+        )}
       </form>
     </div>
   );

@@ -476,6 +476,31 @@ html, body, #root {
   cursor: not-allowed;
 }
 
+.btn-stop {
+  padding: 12px 20px;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn-stop:hover {
+  background: #a93226;
+}
+
+[data-theme="light"] .btn-stop {
+  background: #e74c3c;
+}
+
+[data-theme="light"] .btn-stop:hover {
+  background: #c0392b;
+}
+
 .btn-mic {
   width: 44px;
   height: 44px;

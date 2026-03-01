@@ -1,6 +1,19 @@
 # Changelog
 
-## [1.4.28] — 2026-03-01
+## [1.4.30] — 2026-03-01
+
+### Stop-Button für laufende Generierung
+
+- **Stop-Button** erscheint im Chat während `isLoading=true` — ersetzt den Senden-Button
+- Klick sendet `cancel_generation` via WebSocket ans Backend
+- Backend: `threading.Event` pro SID in `_cancel_flags` — wird in `run_agent()` zwischen Iterationen und nach Tool-Calls geprüft
+- Bei Abbruch: kein `assistant`-Eintrag gespeichert, `agent_end` mit `cancelled: True` emittiert
+- Styling: `.btn-stop` in App.css (rot, analog zu `.btn-send`)
+- i18n: `chat.stop` in DE (`Stopp`) + EN (`Stop`)
+
+---
+
+## [1.4.29] — 2026-03-01
 
 ### `build_mcp_tool` — Plan-Phase + Verifikation
 
