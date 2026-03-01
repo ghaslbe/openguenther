@@ -76,7 +76,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 **Automatisierung**
 - **Autoprompts**: Prompts mit Zeitplan hinterlegen (Intervall / täglich / wöchentlich, Zeiten in UTC) — per Default still ausgeführt (kein Chat-Eintrag), optional in dedizierten Chat speichern; ▶ Button zum sofortigen manuellen Ausführen mit Log-Anzeige
 - **Tool-Router**: automatische Vorauswahl relevanter Tools pro Anfrage (spart Tokens)
-- **Nutzungsstatistik** (📊): gesendete/empfangene Bytes und Tokens pro Provider und Modell — Popup in der Topbar + Tabelle in Einstellungen → LLM Provider mit Period-Filter (Heute/Woche/Monat/Gesamt) und Reset
+- **Chat-Info & Nutzungsstatistik** (📊): Popup in der Topbar zeigt Chat-ID, Titel, Datum, Nachrichten, Agent, Dateien — plus gesendete/empfangene Bytes und Tokens pro Provider und Modell (mit Period-Filter und Reset)
 
 **Telegram**
 - **Telegram-Gateway**: Chatten via Telegram, inkl. Foto- und Sprachnachrichten; `/new` startet neue Chat-Session
@@ -299,6 +299,7 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 | `edit_mcp_tool` | Bestehendes Custom Tool bearbeiten und neu laden |
 | `delete_mcp_tool` | Custom Tool dauerhaft löschen und aus Registry entfernen |
 | `list_available_tools` | Alle aktuell registrierten Tools auflisten |
+| `pinecone` | Pinecone Vector-DB verwalten: Indexes anlegen/löschen, Vektoren upserten (mit Auto-Embedding), abfragen und löschen (API-Key erforderlich) |
 | `get_help` | Hilfe und Erklärungen zu Guenther und seinen Funktionen |
 
 ---
@@ -366,7 +367,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 **Automation**
 - **Autoprompts**: schedule prompts to run automatically (interval / daily / weekly, times in UTC) — runs silently by default (no chat entry), optionally save results to a dedicated chat; ▶ button to run immediately with log display
 - **Tool router**: automatic pre-selection of relevant tools per request (saves tokens)
-- **Usage statistics** (📊): bytes sent/received and tokens per provider and model — popup in the topbar + table in Settings → LLM Providers with period filter (Today/Week/Month/Total) and reset
+- **Chat Info & Usage statistics** (📊): topbar popup shows chat ID, title, date, messages, agent, files — plus bytes sent/received and tokens per provider and model (with period filter and reset)
 
 **Telegram**
 - **Telegram Gateway**: chat via Telegram, including photos and voice messages; `/new` starts a new chat session
@@ -589,6 +590,7 @@ Data is stored persistently in a Docker volume (`/app/data`).
 | `edit_mcp_tool` | Edit an existing custom tool and reload it |
 | `delete_mcp_tool` | Permanently delete a custom tool and remove it from the registry |
 | `list_available_tools` | List all currently registered tools |
+| `pinecone` | Manage Pinecone Vector DB: create/delete indexes, upsert vectors (with auto-embedding), query and delete vectors (API key required) |
 | `get_help` | Get help and explanations about Guenther and its capabilities |
 
 ---

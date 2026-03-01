@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.4.22] — 2026-03-01
+
+### Chat-Info-Popup, Pinecone-Tool, CSS-Fixes, MCP-Tool-Sektionen
+
+**Chat-Info-Popup**
+- Das 📊-Popup in der Topbar zeigt jetzt Chat-Informationen statt nur Nutzungsstatistiken
+- Angezeigt: Chat-ID (mit Kopier-Button), Titel, Erstellungs- und Änderungsdatum, Nachrichten-Anzahl (User/Assistent), aktiver Agent, vorhandene Dateien (mit Download-Link)
+- LLM-Nutzungsstatistik bleibt erhalten und wird darunter angezeigt
+- Wenn kein Chat geöffnet ist: entsprechender Hinweis
+
+**Pinecone Vector-DB MCP-Tool**
+- Neues eingebautes MCP-Tool zur Verwaltung einer Pinecone Vector-Datenbank
+- Aktionen: `list_indexes`, `create_index`, `describe_index`, `delete_index`, `upsert`, `query`, `delete_vectors`
+- Upsert und Query unterstützen automatisches Text-Embedding über den konfigurierten Provider
+- Konfigurierbar: Pinecone API-Key, Embedding-Modell; Provider- und Modell-Override per Agent
+
+**MCP-Tools: Getrennte Bereiche Built-in / Extern**
+- MCP-Tools-Einstellungen zeigen Built-in- und externe Tools jetzt in zwei separaten Sektionen
+- Jede Sektion ist alphabetisch sortiert
+- Typ-Badge (Built-in/Extern) entfernt, da durch Sektionsüberschrift ersetzt
+- Hinweis in MCP-Server-Einstellungen: externe Tools erscheinen nach dem Laden unter „MCP Tools"
+
+**CSS-Fixes Settings**
+- Alle `<select>`-Elemente in `.settings-section` werden jetzt automatisch einheitlich gestylt (betrifft Autoprompts, Agenten, Telegram, MCP)
+- Alle `<textarea>`-Elemente in `.settings-section` erhalten einheitliches Styling — Inline-Styles in SettingsTelegram entfernt
+- `input[type="time"]` (Autoprompts Zeitplanung) und `input[type="number"]`/`[type="password"]` in `.tool-field-row` (MCP-Tool-Einstellungen) korrekt gestylt
+
+---
+
 ## [1.4.21] — 2026-03-01
 
 ### Webhook-System
