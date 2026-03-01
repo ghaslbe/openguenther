@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.4.34] — 2026-03-01
+
+### Deployment-Fix: rsync --delete
+
+- rsync-Befehl im Deploy-Workflow um `--delete` ergänzt — entfernt veraltete Dateien/Verzeichnisse auf dem Server, die lokal nicht mehr existieren
+- Ohne `--delete` blieben alte Tool-Verzeichnisse (`create_tool/`, `edit_tool/`, diverse `*_tool.py`) dauerhaft auf dem Server und wurden ins Docker-Image gebacken
+
+---
+
+## [1.4.33] — 2026-03-01
+
+### `build_mcp_tool` — SyntaxError behoben
+
+- **Root cause**: `USAGE = """..."""` im gen-Prompt und `"""Docstring"""` in `_FlexMod` (test_runner) beendeten den äußeren `f"""..."""`-String vorzeitig → SyntaxError beim Import
+- Tool war seit v1.4.29 (Einführung der USAGE-Konstante) **nie ladbar** — durch noch vorhandene alte `create_tool/`-Verzeichnisse auf dem Server bisher unbemerkt
+- Fix: `"""` → `'''` im Prompt-Beispiel, Docstring → `# Kommentar` im test_runner
+
+---
+
+## [1.4.32] — 2026-03-01
+
+### `build_mcp_tool` — Max. Korrektur-Loops konfigurierbar
+
+- Neues Einstellungsfeld **„Max. Korrektur-Loops"** in Einstellungen → MCP Tools → `build_mcp_tool`
+- Leer lassen = 15 (Standard); z.B. `5` für einfache Tools, `25` für komplexe
+- Wert wird beim Start im Guenther-Terminal geloggt: `Modell: … | Max. Loops: …`
+
+---
+
 ## [1.4.31] — 2026-03-01
 
 ### Markdown-Tabellen im Chat
