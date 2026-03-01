@@ -203,6 +203,31 @@ export default function SettingsHilfe() {
         <Hint>💡 Dateien werden immer serverseitig gehalten — nichts geht durchs LLM. Empfohlener Speicherort für Zwischendateien: <Code>/app/data/uploads/</Code></Hint>
         <P><strong style={{ color: 'var(--text-primary)' }}>Beispiel: mp3towav Tool</strong></P>
         <Block>{'from pydub import AudioSegment\nimport os\n\ndef handler(file_path):\n    audio = AudioSegment.from_mp3(file_path)\n    wav = os.path.splitext(file_path)[0] + ".wav"\n    audio.export(wav, format="wav")\n    return {\n        "result": (\n            "Konvertierung abgeschlossen.\\n\\n"\n            "Füge diesen Marker exakt in deine Antwort ein:\\n"\n            "[LOCAL_FILE](" + wav + ")"\n        )\n    }'}</Block>
+        <P><strong style={{ color: 'var(--text-primary)' }}>Prompt-Vorlage: Tool mit LOCAL_FILE erstellen lassen</strong></P>
+        <P>Diesen Prompt direkt in den Chat eingeben — Guenther baut das Tool dann korrekt:</P>
+        <Block>{`Erstelle ein neues MCP Tool namens [TOOLNAME].
+
+Es nimmt folgende Parameter entgegen:
+- file_path (string): absoluter Serverpfad zur Eingabedatei (kommt aus dem Datei-Upload)
+
+Es soll folgendes tun:
+[BESCHREIBUNG DER VERARBEITUNG]
+Das Ergebnis wird als Datei unter /app/data/uploads/ gespeichert.
+
+WICHTIG — Das Tool darf die Ausgabedatei NIEMALS als Base64 oder Dateiinhalt zurückgeben.
+Stattdessen gibt der handler() am Ende folgendes zurück:
+
+return {
+    "result": (
+        "Verarbeitung abgeschlossen.\\n\\n"
+        "Antworte dem Nutzer kurz auf Deutsch und füge diesen Marker "
+        "EXAKT und UNVERÄNDERT in deine Antwort ein — "
+        "er erzeugt automatisch einen Download-Button, "
+        "die Datei verlässt dabei nie den Server:\\n\\n"
+        "[LOCAL_FILE](" + output_path + ")"
+    )
+}`}</Block>
+        <Hint>Den Platzhalter <Code>[TOOLNAME]</Code> und <Code>[BESCHREIBUNG]</Code> anpassen — der Rest des Prompts bleibt exakt so, damit Guenther das Muster korrekt umsetzt.</Hint>
       </Section>
 
       <Section title="Datei-Upload im Chat">
