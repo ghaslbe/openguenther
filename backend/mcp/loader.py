@@ -136,6 +136,8 @@ def load_custom_tools(emit_log=None):
     """Scan /app/data/custom_tools/<name>/tool.py and register custom tools."""
     custom_dir = os.path.join(DATA_DIR, 'custom_tools')
     os.makedirs(custom_dir, exist_ok=True)
+    # Clear stale custom-tool errors so fixed tools don't keep showing old messages
+    _startup_errors[:] = [e for e in _startup_errors if not e.startswith("⚠ Tool-Ladefehler (custom/")]
     total = 0
     for entry in sorted(os.listdir(custom_dir)):
         tool_py = os.path.join(custom_dir, entry, 'tool.py')
