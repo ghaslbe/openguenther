@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.23] — 2026-03-01
+
+### Per-Chat LLM-Nutzungsstatistik
+
+- Das Chat-Info-Popup (📊) zeigt jetzt die Nutzungsstatistik **nur des aktuell geöffneten Chats** — statt globaler Daten
+- `usage_log`-Tabelle bekommt eine `chat_id`-Spalte (Migration, ältere Einträge haben `NULL`)
+- Alle LLM-Aufrufe (Chat, Telegram, Webhooks, Autoprompts) schreiben die `chat_id` mit — via Thread-lokalem Kontext, ohne tiefe Parameteränderungen
+- Neuer Endpoint `GET /api/chats/<id>/usage` für Chat-spezifische Statistiken
+- Globale Nutzungsstatistik weiterhin verfügbar unter Einstellungen → LLM Provider
+
+---
+
 ## [1.4.22] — 2026-03-01
 
 ### Chat-Info-Popup, Pinecone-Tool, CSS-Fixes, MCP-Tool-Sektionen

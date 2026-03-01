@@ -76,7 +76,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 **Automatisierung**
 - **Autoprompts**: Prompts mit Zeitplan hinterlegen (Intervall / täglich / wöchentlich, Zeiten in UTC) — per Default still ausgeführt (kein Chat-Eintrag), optional in dedizierten Chat speichern; ▶ Button zum sofortigen manuellen Ausführen mit Log-Anzeige
 - **Tool-Router**: automatische Vorauswahl relevanter Tools pro Anfrage (spart Tokens)
-- **Chat-Info & Nutzungsstatistik** (📊): Popup in der Topbar zeigt Chat-ID, Titel, Datum, Nachrichten, Agent, Dateien — plus gesendete/empfangene Bytes und Tokens pro Provider und Modell (mit Period-Filter und Reset)
+- **Chat-Info & Nutzungsstatistik** (📊): Popup in der Topbar zeigt Chat-ID, Titel, Datum, Nachrichten, Agent, Dateien — plus Bytes und Tokens **dieses Chats** (pro Provider/Modell); globale Statistik weiterhin in Einstellungen → LLM Provider
 
 **Telegram**
 - **Telegram-Gateway**: Chatten via Telegram, inkl. Foto- und Sprachnachrichten; `/new` startet neue Chat-Session
@@ -367,7 +367,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 **Automation**
 - **Autoprompts**: schedule prompts to run automatically (interval / daily / weekly, times in UTC) — runs silently by default (no chat entry), optionally save results to a dedicated chat; ▶ button to run immediately with log display
 - **Tool router**: automatic pre-selection of relevant tools per request (saves tokens)
-- **Chat Info & Usage statistics** (📊): topbar popup shows chat ID, title, date, messages, agent, files — plus bytes sent/received and tokens per provider and model (with period filter and reset)
+- **Chat Info & Usage statistics** (📊): topbar popup shows chat ID, title, date, messages, agent, files — plus bytes and tokens **for this chat** (per provider/model); global statistics still available in Settings → LLM Providers
 
 **Telegram**
 - **Telegram Gateway**: chat via Telegram, including photos and voice messages; `/new` starts a new chat session
