@@ -122,6 +122,10 @@ export default function SettingsGeneral({ providers }) {
           )}
           <small>{t('settings.general.modelHelp')}</small>
         </label>
+        <div className="info-box" style={{ marginBottom: '12px' }}>
+          <strong>{t('settings.general.modelTipTitle')}</strong>
+          <p style={{ margin: '4px 0 0' }}>{t('settings.general.modelTipText')}</p>
+        </div>
         <label>
           {t('settings.general.temperature')}
           <select

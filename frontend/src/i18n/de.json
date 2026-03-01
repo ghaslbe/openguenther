@@ -80,6 +80,8 @@
       "loadError": "Fehler beim Laden",
       "selectModel": "— Modell aus Liste wählen —",
       "modelHelp": "z.B. openai/gpt-4o, anthropic/claude-3.5-sonnet, llama3.2 — je nach Provider",
+      "modelTipTitle": "Die Modellwahl ist entscheidend",
+      "modelTipText": "Das gewählte Modell bestimmt maßgeblich, wie zuverlässig Tools ausgeführt, Aufgaben verstanden und Ergebnisse strukturiert werden. Als Einstieg empfiehlt sich openai/gpt-4.1-mini via OpenRouter — leistungsstark, schnell und kosteneffizient. Von dort aus lässt sich gezielt experimentieren.",
       "temperature": "Kreativität (Temperatur)",
       "tempExact": "Genau (0.1) — präzise, deterministisch",
       "tempMid": "Mittel (0.5) — ausgewogen",
