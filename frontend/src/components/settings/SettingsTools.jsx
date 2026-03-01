@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
 import { fetchMcpTools, fetchToolSettings, updateToolSettings, reloadMcpTools } from '../../services/api';
 
 export default function SettingsTools({ providers }) {
@@ -104,7 +105,7 @@ export default function SettingsTools({ providers }) {
 
         {isOpen && (
           <div className="tool-accordion-body">
-            {tool.settings_info && (
+            {(tool.settings_info || tool.description) && (
               <div style={{
                 marginBottom: '12px',
                 padding: '10px 12px',
@@ -114,9 +115,8 @@ export default function SettingsTools({ providers }) {
                 fontSize: '12px',
                 color: 'var(--text-secondary)',
                 lineHeight: '1.6',
-                whiteSpace: 'pre-wrap',
               }}>
-                {tool.settings_info}
+                <ReactMarkdown>{tool.settings_info || tool.description}</ReactMarkdown>
               </div>
             )}
             {tool.agent_overridable !== false && (
