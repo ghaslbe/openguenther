@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.4.26] — 2026-03-01
+
+### Custom Tools: ZIP Download & Upload
+
+**ZIP-Download einzelner Custom Tools**
+- Jedes installierte Custom Tool kann als ZIP-Datei heruntergeladen werden (Backup / Teilen)
+- Neuer Abschnitt „Custom Tools" ganz unten in Einstellungen → MCP Tools
+- Download-Button pro Tool → ZIP mit `<name>/tool.py` und allen Dateien im Tool-Ordner
+
+**ZIP-Upload / Installation von Custom Tools**
+- „ZIP Upload"-Button öffnet Dateiauswahl (`.zip`)
+- Vor dem Upload erscheint ein obligatorischer Sicherheits-Warndialog — Upload nur nach Bestätigung
+- Sicherheits-Prüfung: alle ZIP-Member werden auf Path-Traversal (`../`) und Absolut-Pfade geprüft
+- `tool.py` muss im ZIP vorhanden sein, sonst Fehler
+- Tool wird nach `/app/data/custom_tools/<name>/` installiert (bestehende Version wird überschrieben)
+
+**Neue Endpoints**
+- `GET /api/custom-tools` — Liste aller installierten Custom Tools
+- `GET /api/custom-tools/<name>/download` — ZIP-Download eines Tools
+- `POST /api/custom-tools/upload` — ZIP-Upload + Installation
+
+---
+
 ## [1.4.25] — 2026-03-01
 
 ### Tool-Einstellungen: Beschreibungen + Export-Sicherheit

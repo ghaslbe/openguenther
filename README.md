@@ -87,6 +87,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 **Erweiterbarkeit**
 - **Custom Tools per Chat**: eigene MCP-Tools direkt im Chat erstellen, bearbeiten und löschen (`create_mcp_tool`, `edit_mcp_tool`, `delete_mcp_tool`) — kein Neustart nötig
 - **Custom Tools manuell**: Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen (siehe `CUSTOM_TOOL_GUIDE.md`)
+- **Custom Tools ZIP Download/Upload**: installierte Custom Tools als ZIP herunterladen (Backup/Teilen) oder neue Tools als ZIP hochladen — mit Sicherheits-Warndialog und Path-Traversal-Schutz
 - **Externe MCP-Server**: beliebige stdio-basierte MCP-Server (JSON-RPC 2.0) anbindbar — inkl. `npx`-basierter Pakete (Node.js im Image enthalten), Umgebungsvariablen pro Server konfigurierbar, Inline-Bearbeitung, Reload-Button
 - **Webhook-System**: externe Systeme (Home Automation, Skripte, etc.) können Guenther per `POST /webhook/<id>` triggern — Bearer-Token-Auth, optionale feste Chat-ID, optionaler Agent, synchrone Antwort
 - **JSON Export/Import**: Agenten, Autoprompts und MCP-Server können als JSON exportiert und importiert werden — inklusive Versionsnummer für Kompatibilitätsprüfung; MCP-Export enthält keine API-Keys (Env-Werte werden geleert)
@@ -379,6 +380,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 **Extensibility**
 - **Custom tools via chat**: create, edit and delete MCP tools directly from chat (`create_mcp_tool`, `edit_mcp_tool`, `delete_mcp_tool`) — no restart needed
 - **Custom tools manually**: drop Python files into `/app/data/custom_tools/` — loaded automatically (see `CUSTOM_TOOL_GUIDE.md`)
+- **Custom tools ZIP download/upload**: download installed custom tools as ZIP (backup/sharing) or install new tools via ZIP upload — with security warning dialog and path traversal protection
 - **External MCP servers**: connect any stdio-based MCP server (JSON-RPC 2.0) — including `npx`-based packages (Node.js included in image), per-server environment variables, inline editing, reload button
 - **Webhook system**: external systems (home automation, scripts, etc.) can trigger Guenther via `POST /webhook/<id>` — Bearer token auth, optional fixed chat ID, optional agent, synchronous response
 - **JSON Export/Import**: agents, autoprompts and MCP servers can be exported and imported as JSON — with version number for compatibility checking; MCP export strips env values (no API keys leaked)

@@ -13,6 +13,7 @@ from routes.agents import agents_bp
 from routes.autoprompts import autoprompts_bp, set_service as set_autoprompt_service
 from routes.usage import usage_bp
 from routes.webhooks import webhooks_bp
+from routes.custom_tools import custom_tools_bp
 from mcp.registry import registry, MCPTool
 from mcp.loader import load_builtin_tools, load_custom_tools
 from mcp.manager import load_external_tools
@@ -32,6 +33,7 @@ app.register_blueprint(agents_bp)
 app.register_blueprint(autoprompts_bp)
 app.register_blueprint(usage_bp)
 app.register_blueprint(webhooks_bp)
+app.register_blueprint(custom_tools_bp)
 
 # Initialize database
 os.makedirs(DATA_DIR, exist_ok=True)

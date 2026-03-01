@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
-import { fetchMcpTools, fetchToolSettings, updateToolSettings, reloadMcpTools } from '../../services/api';
+import { fetchMcpTools, fetchToolSettings, updateToolSettings, reloadMcpTools, fetchCustomTools, uploadCustomTool } from '../../services/api';
 
 export default function SettingsTools({ providers }) {
   const { t } = useTranslation();
@@ -12,10 +12,20 @@ export default function SettingsTools({ providers }) {
   const [message, setMessage] = useState('');
   const [reloading, setReloading] = useState(false);
   const [showPasswords, setShowPasswords] = useState({});
+  const [customTools, setCustomTools] = useState([]);
+  const [uploadWarning, setUploadWarning] = useState(false);
+  const [pendingFile, setPendingFile] = useState(null);
+  const uploadRef = useRef(null);
 
   useEffect(() => {
     loadTools();
+    loadCustomTools();
   }, []);
+
+  async function loadCustomTools() {
+    const data = await fetchCustomTools();
+    setCustomTools(data);
+  }
 
   async function loadTools() {
     const data = await fetchMcpTools();
@@ -78,6 +88,38 @@ export default function SettingsTools({ providers }) {
     setMessage(t('settings.tools.reloaded'));
     setReloading(false);
     setTimeout(() => setMessage(''), 3000);
+  }
+
+  function handleUploadClick() {
+    if (uploadRef.current) {
+      uploadRef.current.value = '';
+      uploadRef.current.click();
+    }
+  }
+
+  function handleFileChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPendingFile(file);
+    setUploadWarning(true);
+  }
+
+  async function confirmUpload() {
+    setUploadWarning(false);
+    const result = await uploadCustomTool(pendingFile);
+    setPendingFile(null);
+    if (result.success) {
+      setMessage(t('settings.tools.customUploaded', { name: result.tool_name }));
+      await loadCustomTools();
+    } else {
+      setMessage(t('settings.tools.customUploadError') + (result.error ? `: ${result.error}` : ''));
+    }
+    setTimeout(() => setMessage(''), 4000);
+  }
+
+  function cancelUpload() {
+    setUploadWarning(false);
+    setPendingFile(null);
   }
 
   const activeProviders = Object.entries(providers || {}).filter(([, p]) => p.enabled);
@@ -232,6 +274,63 @@ export default function SettingsTools({ providers }) {
       <button className="btn-reload-mcp" onClick={handleReload} disabled={reloading}>
         {reloading ? t('settings.tools.reloading') : t('settings.tools.reload')}
       </button>
+
+      <div className="settings-section" style={{ marginTop: '24px' }}>
+        <h3>{t('settings.tools.customSection')}</h3>
+        {customTools.length === 0
+          ? <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t('settings.tools.customEmpty')}</p>
+          : customTools.map(name => (
+            <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '13px', fontFamily: 'monospace' }}>{name}</span>
+              <a
+                href={`/api/custom-tools/${name}/download`}
+                download={`${name}.zip`}
+                className="btn-tool-save"
+                style={{ textDecoration: 'none', padding: '4px 10px', fontSize: '12px' }}
+              >
+                {t('settings.tools.customDownload')}
+              </a>
+            </div>
+          ))
+        }
+        <div style={{ marginTop: '12px' }}>
+          <input
+            type="file"
+            accept=".zip"
+            ref={uploadRef}
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+          <button className="btn-reload-mcp" onClick={handleUploadClick}>
+            {t('settings.tools.customUpload')}
+          </button>
+        </div>
+      </div>
+
+      {uploadWarning && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <div style={{
+            background: 'var(--bg-card)', border: '1px solid var(--border)',
+            borderRadius: '10px', padding: '28px 32px', maxWidth: '440px', width: '90%'
+          }}>
+            <h3 style={{ marginTop: 0, marginBottom: '12px' }}>{t('settings.tools.warnTitle')}</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6', whiteSpace: 'pre-line', marginBottom: '20px' }}>
+              {t('settings.tools.warnText')}
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn-tool-save" style={{ background: 'var(--bg-dark)', color: 'var(--text-secondary)' }} onClick={cancelUpload}>
+                {t('settings.tools.warnCancel')}
+              </button>
+              <button className="btn-tool-save" onClick={confirmUpload}>
+                {t('settings.tools.warnConfirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

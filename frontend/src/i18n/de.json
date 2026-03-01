@@ -253,7 +253,17 @@
       "reloading": "Lade...",
       "reload": "MCP Tools neu laden",
       "show": "Anzeigen",
-      "hide": "Verbergen"
+      "hide": "Verbergen",
+      "customSection": "Custom Tools",
+      "customEmpty": "Keine Custom Tools installiert",
+      "customDownload": "ZIP Download",
+      "customUpload": "ZIP Upload",
+      "customUploaded": "Tool '{{name}}' installiert!",
+      "customUploadError": "Fehler beim Upload",
+      "warnTitle": "⚠️ Sicherheitswarnung",
+      "warnText": "Custom Tools sind Python-Code, der direkt auf dem Server ausgeführt wird. Lade nur Tools hoch, deren Code du kennst und vertraust.\n\nEin bösartiges Tool kann vollen Zugriff auf den Server erlangen — inklusive Daten, Netzwerk und Dateisystem.",
+      "warnConfirm": "Ich verstehe — Hochladen",
+      "warnCancel": "Abbrechen"
     },
     "mcp": {
       "description": "Externe MCP Server werden über stdio (JSON-RPC 2.0) angebunden. Nach dem Hinzufügen \"MCP Tools neu laden\" unter Tools klicken.",

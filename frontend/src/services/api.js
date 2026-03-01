@@ -281,3 +281,15 @@ export async function updateWebhook(id, data) {
 export async function deleteWebhook(id) {
   await fetch(`${BASE}/api/webhooks/${id}`, { method: 'DELETE' });
 }
+
+export async function fetchCustomTools() {
+  const res = await fetch(`${BASE}/api/custom-tools`);
+  return res.json();
+}
+
+export async function uploadCustomTool(file) {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${BASE}/api/custom-tools/upload`, { method: 'POST', body: form });
+  return res.json();
+}
