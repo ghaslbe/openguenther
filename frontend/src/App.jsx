@@ -5,16 +5,28 @@ import ChatWindow from './components/ChatWindow';
 import GuentherBox from './components/GuentherBox';
 import Settings from './components/Settings';
 import FirstRunOverlay from './components/FirstRunOverlay';
-import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders, fetchChatInfo } from './services/api';
+import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders, fetchChatInfo, fetchUsageStats } from './services/api';
 import { getSocket } from './services/socket';
+
+function formatBytes(n) {
+  if (!n) return '0 B';
+  if (n >= 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + ' MB';
+  if (n >= 1024) return (n / 1024).toFixed(1) + ' KB';
+  return n + ' B';
+}
 
 function ChatInfoPopup({ onClose, activeChatId, agents }) {
   const [info, setInfo] = useState(null);
   const [copiedId, setCopiedId] = useState(false);
+  const [todayStats, setTodayStats] = useState([]);
+  const [allStats, setAllStats] = useState([]);
 
   useEffect(() => {
-    if (!activeChatId) return;
-    fetchChatInfo(activeChatId).then(setInfo).catch(() => {});
+    if (activeChatId) {
+      fetchChatInfo(activeChatId).then(setInfo).catch(() => {});
+    }
+    fetchUsageStats('today').then(d => setTodayStats(Array.isArray(d) ? d : [])).catch(() => {});
+    fetchUsageStats('all').then(d => setAllStats(Array.isArray(d) ? d : [])).catch(() => {});
   }, [activeChatId]);
 
   function fmt(iso) {
@@ -101,7 +113,7 @@ function ChatInfoPopup({ onClose, activeChatId, agents }) {
               </div>
             )}
             {info.files && info.files.length > 0 && (
-              <div style={{ ...rowStyle, flexDirection: 'column', gap: '4px', alignItems: 'flex-start', borderBottom: 'none' }}>
+              <div style={{ ...rowStyle, flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
                 <span style={labelStyle}>Dateien ({info.files.length})</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%' }}>
                   {info.files.map(f => (
@@ -119,6 +131,38 @@ function ChatInfoPopup({ onClose, activeChatId, agents }) {
             )}
           </div>
         )}
+
+        {/* Usage stats — always shown */}
+        <div style={{ marginTop: activeChatId && info ? '14px' : '0', paddingTop: activeChatId && info ? '12px' : '0', borderTop: activeChatId && info ? '1px solid var(--border)' : 'none' }}>
+          <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', margin: '0 0 5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            📊 Nutzung heute
+          </p>
+          {todayStats.length === 0
+            ? <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0' }}>—</p>
+            : todayStats.map((r, i) => (
+              <div key={i} style={{ fontSize: '12px', color: 'var(--text-primary)', marginBottom: '2px' }}>
+                <span style={{ fontWeight: 600 }}>{r.provider_id}</span>
+                {': '}
+                {r.requests} Anf. · {formatBytes(r.bytes_sent)} ↑ · {formatBytes(r.bytes_received)} ↓
+                {r.prompt_tokens ? ` · ${(r.prompt_tokens + (r.completion_tokens || 0)).toLocaleString()} Tok` : ''}
+              </div>
+            ))
+          }
+          <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', margin: '8px 0 5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Gesamt
+          </p>
+          {allStats.length === 0
+            ? <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0' }}>—</p>
+            : allStats.map((r, i) => (
+              <div key={i} style={{ fontSize: '12px', color: 'var(--text-primary)', marginBottom: '2px' }}>
+                <span style={{ fontWeight: 600 }}>{r.provider_id}</span>
+                {': '}
+                {r.requests} Anf. · {formatBytes(r.bytes_sent)} ↑ · {formatBytes(r.bytes_received)} ↓
+                {r.prompt_tokens ? ` · ${(r.prompt_tokens + (r.completion_tokens || 0)).toLocaleString()} Tok` : ''}
+              </div>
+            ))
+          }
+        </div>
       </div>
     </div>
   );
