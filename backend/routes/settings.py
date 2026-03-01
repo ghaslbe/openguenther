@@ -239,13 +239,21 @@ MCP_EXPORT_VERSION = 1
 
 @settings_bp.route('/api/mcp-servers/export', methods=['GET'])
 def export_mcp_servers():
+    import copy
     settings = get_settings()
     servers = settings.get('mcp_servers', [])
+    # Strip env values (may contain API keys) — keep keys as documentation
+    clean = []
+    for s in servers:
+        s2 = copy.deepcopy(s)
+        if s2.get('env'):
+            s2['env'] = {k: '' for k in s2['env']}
+        clean.append(s2)
     payload = {
         'type': 'openguenther_mcp_servers',
         'version': MCP_EXPORT_VERSION,
         'exported_at': datetime.now(timezone.utc).isoformat(),
-        'data': servers,
+        'data': clean,
     }
     return Response(
         json.dumps(payload, ensure_ascii=False, indent=2),
