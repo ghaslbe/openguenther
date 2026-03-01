@@ -347,8 +347,9 @@ export default function App() {
   }
 
   function handleSendMessage(content, file = null) {
+    const icon = file?.icon || (file?.isBinary ? '📄' : '📎');
     const displayContent = file
-      ? `📎 ${file.name}${content ? `\n${content}` : ''}`
+      ? `${icon} ${file.name}${content ? `\n${content}` : ''}`
       : content;
     setMessages(prev => [...prev, { role: 'user', content: displayContent }]);
     socket.emit('send_message', {
@@ -356,7 +357,8 @@ export default function App() {
       content,
       agent_id: activeChatId ? '' : selectedAgentId,
       file_name: file ? file.name : '',
-      file_content: file ? file.content : ''
+      file_content: file ? file.content : '',
+      file_is_binary: file ? !!file.isBinary : false
     });
   }
 

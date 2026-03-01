@@ -166,9 +166,10 @@ function MessageContent({ content, chatId }) {
           );
         }
         if (part.type === 'audio') {
+          const mimeType = part.src.startsWith('data:') ? part.src.split(';')[0].slice(5) : 'audio/mpeg';
           return (
             <audio key={i} controls autoPlay style={{ maxWidth: '100%', marginTop: '8px', display: 'block' }}>
-              <source src={part.src} type="audio/mpeg" />
+              <source src={part.src} type={mimeType} />
             </audio>
           );
         }
@@ -284,10 +285,21 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, onCance
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
-      setAttachedFile({ name: file.name, content: ev.target.result });
-    };
-    reader.readAsText(file, 'utf-8');
+    const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|ogg|flac|m4a|aac|opus)$/i.test(file.name);
+    const isOffice = /\.(xls|xlsx|doc|docx)$/i.test(file.name);
+    const isBinary = isAudio || isOffice;
+    const icon = isAudio ? '🎵' : (isOffice ? '📄' : '📎');
+    if (isBinary) {
+      reader.onload = (ev) => {
+        setAttachedFile({ name: file.name, content: ev.target.result, isBinary: true, icon });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      reader.onload = (ev) => {
+        setAttachedFile({ name: file.name, content: ev.target.result, icon });
+      };
+      reader.readAsText(file, 'utf-8');
+    }
   };
 
   const toggleRecording = useCallback(() => {
@@ -383,7 +395,7 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, onCance
       )}
       {attachedFile && (
         <div className="file-attachment-bar">
-          <span className="file-attachment-name">📎 {attachedFile.name}</span>
+          <span className="file-attachment-name">{attachedFile.icon || '📎'} {attachedFile.name}</span>
           <button
             type="button"
             className="file-attachment-remove"
@@ -397,7 +409,7 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, onCance
           type="file"
           style={{ display: 'none' }}
           onChange={handleFileChange}
-          accept=".csv,.json,.xml,.txt,.tsv,.yaml,.yml,.log"
+          accept=".csv,.json,.xml,.txt,.tsv,.yaml,.yml,.log,.mp3,.wav,.ogg,.flac,.m4a,.aac,.opus,.xls,.xlsx,.doc,.docx"
         />
         <button
           type="button"

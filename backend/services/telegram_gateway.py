@@ -87,10 +87,10 @@ class TelegramGateway:
             text = text[:4090] + "\n[...]"
         self._api_post(token, "sendMessage", chat_id=chat_id, text=text)
 
-    def _send_audio(self, token, chat_id, audio_bytes, caption=None):
+    def _send_audio(self, token, chat_id, audio_bytes, mime_type="audio/mpeg", filename="audio.mp3", caption=None):
         url = TELEGRAM_API.format(token=token, method="sendAudio")
         try:
-            files = {"audio": ("voice.mp3", io.BytesIO(audio_bytes), "audio/mpeg")}
+            files = {"audio": (filename, io.BytesIO(audio_bytes), mime_type)}
             data = {"chat_id": chat_id}
             if caption:
                 data["caption"] = caption[:1024]
@@ -474,8 +474,8 @@ class TelegramGateway:
                 self._send_message(token, telegram_chat_id, clean)
             for img_bytes in images:
                 self._send_photo(token, telegram_chat_id, img_bytes)
-            for audio_bytes in audio_clips:
-                self._send_audio(token, telegram_chat_id, audio_bytes)
+            for audio_bytes, mime_type, filename in audio_clips:
+                self._send_audio(token, telegram_chat_id, audio_bytes, mime_type=mime_type, filename=filename)
             for pdf_bytes in pdf_docs:
                 self._send_document(token, telegram_chat_id, pdf_bytes, 'seo-report.pdf')
             for filename, pptx_bytes in pptx_files:
@@ -513,14 +513,23 @@ class TelegramGateway:
         return clean, images
 
     def _extract_audio(self, text):
-        """Extract base64 audio embeds from markdown, return (clean_text, [audio_bytes])."""
+        """Extract base64 audio embeds from markdown, return (clean_text, [(bytes, mime_type, filename)])."""
+        _ext_map = {
+            'audio/mpeg': 'mp3', 'audio/mp3': 'mp3',
+            'audio/wav': 'wav', 'audio/x-wav': 'wav',
+            'audio/ogg': 'ogg', 'audio/flac': 'flac',
+            'audio/aac': 'aac', 'audio/mp4': 'm4a',
+            'audio/opus': 'opus',
+        }
         clips = []
 
         def replace_audio(m):
             data_uri = m.group(1)
             try:
+                mime_type = data_uri.split(';')[0].split(':', 1)[1]
                 b64_part = data_uri.split(",", 1)[1]
-                clips.append(base64.b64decode(b64_part))
+                ext = _ext_map.get(mime_type, 'mp3')
+                clips.append((base64.b64decode(b64_part), mime_type, f"audio.{ext}"))
             except Exception as e:
                 logger.warning(f"Could not decode base64 audio: {e}")
             return ""

@@ -1,6 +1,8 @@
 import os
 import json
+import base64
 import threading
+import uuid
 from flask import Flask, send_from_directory
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
@@ -140,13 +142,33 @@ def handle_message(data):
     agent_id = data.get('agent_id') or None
     file_name = data.get('file_name', '')
     file_content = data.get('file_content', '')
+    file_is_binary = data.get('file_is_binary', False)
 
     if not content and not file_content:
         return
 
     # Prepend file content to message so the LLM can work with it
     if file_name and file_content:
-        content = f"[Datei: {file_name}]\n```\n{file_content}\n```\n\n{content}" if content else f"[Datei: {file_name}]\n```\n{file_content}\n```"
+        if file_is_binary:
+            # Decode data URL and save to disk; give LLM the file path
+            uploads_dir = os.path.join(DATA_DIR, 'uploads')
+            os.makedirs(uploads_dir, exist_ok=True)
+            try:
+                if ',' in file_content:
+                    b64_data = file_content.split(',', 1)[1]
+                else:
+                    b64_data = file_content
+                file_bytes = base64.b64decode(b64_data)
+                safe_name = f"{uuid.uuid4().hex}_{file_name}"
+                file_path = os.path.join(uploads_dir, safe_name)
+                with open(file_path, 'wb') as fh:
+                    fh.write(file_bytes)
+                file_hint = f"[Hochgeladene Datei: {file_name}]\nLokal gespeichert unter: {file_path}"
+            except Exception as e:
+                file_hint = f"[Hochgeladene Datei: {file_name}]\n(Fehler beim Speichern: {e})"
+            content = f"{file_hint}\n\n{content}" if content else file_hint
+        else:
+            content = f"[Datei: {file_name}]\n```\n{file_content}\n```\n\n{content}" if content else f"[Datei: {file_name}]\n```\n{file_content}\n```"
 
     # Create new chat if needed
     if not chat_id:

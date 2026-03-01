@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.35] — 2026-03-01
+
+### Datei-Upload: Binärdateien + Office-Formate
+
+- **Audio-Upload**: MP3, WAV, OGG, FLAC, M4A, AAC, OPus werden als Binärdatei erkannt, als Data-URL gelesen und serverseitig in `/app/data/uploads/` gespeichert — LLM erhält den lokalen Dateipfad
+- **Office-Upload**: XLS, XLSX, DOC, DOCX ebenfalls als Binär-Upload (gleiches Handling) — MCP-Tools können auf den Pfad zugreifen
+- **Telegram Audio**: `_extract_audio` gibt nun `(bytes, mime_type, filename)` zurück; `_send_audio` verwendet korrekte MIME-Type + Dateinamen statt hartcodiertem `voice.mp3 / audio/mpeg`
+- **Icons**: Audio = 🎵, Office-Dokumente = 📄, Text = 📎 (im Anhang-Badge + Chat-Nachricht)
+
+---
+
 ## [1.4.34] — 2026-03-01
 
 ### Deployment-Fix: rsync --delete
