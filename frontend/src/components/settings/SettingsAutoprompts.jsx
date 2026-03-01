@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   fetchAutoprompts, createAutoprompt, updateAutoprompt,
-  deleteAutoprompt, runAutopromptNow, fetchAgents, fetchServerTime
+  deleteAutoprompt, runAutopromptNow, fetchAgents, fetchServerTime, importAutoprompts
 } from '../../services/api';
 
 const EMPTY_FORM = {
@@ -27,6 +27,7 @@ export default function SettingsAutoprompts() {
   const [errorPopup, setErrorPopup] = useState(null);
   const [logPopup, setLogPopup] = useState(null);
   const [serverTime, setServerTime] = useState('');
+  const importRef = useRef(null);
 
   useEffect(() => {
     load();
@@ -109,6 +110,29 @@ export default function SettingsAutoprompts() {
     setTimeout(load, 2000);
   }
 
+  function handleExport() {
+    window.open('/api/autoprompts/export');
+  }
+
+  async function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const result = await importAutoprompts(data);
+      if (result.error) {
+        showMessage(t('settings.autoprompts.importError') + ': ' + result.error);
+      } else {
+        showMessage(t('settings.autoprompts.imported', { n: result.added }));
+        await load();
+      }
+    } catch {
+      showMessage(t('settings.autoprompts.importError'));
+    }
+    e.target.value = '';
+  }
+
   const weekdays = t('settings.autoprompts.weekdays', { returnObjects: true });
 
   return (
@@ -119,7 +143,14 @@ export default function SettingsAutoprompts() {
       </p>
 
       <div className="settings-section">
-        <h3>{t('settings.autoprompts.configured')}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <h3 style={{ margin: 0 }}>{t('settings.autoprompts.configured')}</h3>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button className="btn-test-provider" onClick={handleExport}>{t('settings.autoprompts.export')}</button>
+            <button className="btn-test-provider" onClick={() => importRef.current.click()}>{t('settings.autoprompts.import')}</button>
+            <input ref={importRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
+          </div>
+        </div>
         <div className="agents-list">
           {autoprompts.map(ap => (
             <div key={ap.id} className="agent-item" style={{ flexWrap: 'wrap', gap: '8px' }}>

@@ -6,6 +6,14 @@ import base64
 from config import get_settings, get_tool_settings
 from services.tool_context import get_emit_log
 
+SETTINGS_INFO = """**PowerPoint-Präsentationen generieren**
+
+Erstellt vollständige .pptx-Dateien aus einem Thema oder Text. Kein eigener API-Key nötig — läuft über den konfigurierten LLM-Provider.
+
+**Modell:** Für beste Ergebnisse ein leistungsfähiges Modell mit großem Kontextfenster wählen, z.B. `google/gemini-flash-1.5` oder `openai/gpt-4o`. Mit einem schwächeren Modell können Struktur und Inhalte schlechter ausfallen.
+
+**Themes:** `dark` (dunkel mit orangefarbenen Akzenten) oder `purple` (dunkel mit lila Akzenten). 8 verschiedene Folienlayouts werden automatisch gemischt."""
+
 SETTINGS_SCHEMA = [
     {
         "key": "model",

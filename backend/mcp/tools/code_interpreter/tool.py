@@ -8,6 +8,12 @@ from config import get_settings, get_tool_settings
 from services.openrouter import call_openrouter
 from services.tool_context import get_emit_log
 
+SETTINGS_INFO = """**Python Code-Interpreter**
+
+Guenther generiert Python-Code und führt ihn direkt aus — ideal für Datenverarbeitung, Konvertierungen (CSV, JSON, Excel…), Web-Scraping, Berechnungen und Analysen. Benötigte Pakete werden automatisch per `pip` in einer isolierten venv installiert. Kein API-Key nötig.
+
+Ein separates Modell für die Code-Generierung ist optional — leer lassen um das globale Standardmodell zu verwenden. Ein Code-spezialisiertes Modell (z.B. `openai/gpt-4o` oder `anthropic/claude-3.5-sonnet`) kann die Qualität des generierten Codes verbessern."""
+
 SETTINGS_SCHEMA = [
     {
         "key": "model",

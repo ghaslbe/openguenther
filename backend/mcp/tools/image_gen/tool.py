@@ -4,6 +4,17 @@ from config import get_settings, get_tool_settings
 from services.openrouter import generate_image as _generate_image
 from services.tool_context import get_emit_log
 
+SETTINGS_INFO = """**KI-Bildgenerierung via OpenRouter**
+
+Erstellt Bilder aus Textbeschreibungen. Kein eigener API-Key nötig — läuft über den konfigurierten OpenRouter-Account.
+
+**Empfohlene Modelle:**
+- `black-forest-labs/flux-1.1-pro` — hochwertig, schnell
+- `google/gemini-2.5-flash-image-preview` — gut für realistische Bilder
+- `stabilityai/stable-diffusion-3.5-large` — gute Balance aus Qualität und Preis
+
+Die verfügbaren Modelle und ihre Preise findest du auf [openrouter.ai/models](https://openrouter.ai/models) (nach "image" filtern)."""
+
 SETTINGS_SCHEMA = [
     {
         "key": "image_model",

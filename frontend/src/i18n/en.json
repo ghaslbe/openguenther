@@ -130,7 +130,12 @@
       "providerSelectFirst": "Select a provider first",
       "save": "Save",
       "create": "Create",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "export": "JSON Export",
+      "import": "JSON Import",
+      "exported": "Agents exported!",
+      "imported": "{{n}} agent(s) imported!",
+      "importError": "Import failed"
     },
     "autoprompts": {
       "description": "Autoprompts run automatically at scheduled times. The result is saved in a dedicated chat in the history.",
@@ -180,7 +185,12 @@
       "scheduleEveryMin": "Every {{n}} min",
       "scheduleWeeklyAt": "{{day}} {{time}} UTC",
       "scheduleDailyAt": "Daily {{time}} UTC",
-      "promptPlaceholder": "e.g. Give me a summary of today's news and send it via Telegram to @mama75.\n\n(Note: The recipient must have messaged the bot at least once before, otherwise Telegram won't allow it.)"
+      "promptPlaceholder": "e.g. Give me a summary of today's news and send it via Telegram to @mama75.\n\n(Note: The recipient must have messaged the bot at least once before, otherwise Telegram won't allow it.)",
+      "export": "JSON Export",
+      "import": "JSON Import",
+      "exported": "Autoprompts exported!",
+      "imported": "{{n}} autoprompt(s) imported!",
+      "importError": "Import failed"
     },
     "providers": {
       "description": "All providers are OpenAI API-compatible. No API key needed for Ollama and LM Studio.",
@@ -263,7 +273,12 @@
       "envPlaceholder": "Environment variables (optional, one per line):\nFIRECRAWL_API_KEY=fc-xxx\nOTHER_VAR=value",
       "marketplaceHint": "Find MCP servers on various marketplaces, e.g.",
       "marketplaceHintSuffix": " — one of many.",
-      "toolsHint": "The tools from configured servers appear under \"MCP Tools\" after reloading."
+      "toolsHint": "The tools from configured servers appear under \"MCP Tools\" after reloading.",
+      "export": "JSON Export",
+      "import": "JSON Import",
+      "exported": "MCP servers exported!",
+      "imported": "{{n}} server(s) imported!",
+      "importError": "Import failed"
     },
     "usage": {
       "title": "Usage statistics",

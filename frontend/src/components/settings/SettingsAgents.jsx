@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchAgents, createAgent, updateAgent, deleteAgent, fetchProviders, fetchProviderModels } from '../../services/api';
+import { fetchAgents, createAgent, updateAgent, deleteAgent, fetchProviders, fetchProviderModels, importAgents } from '../../services/api';
 
 const EMPTY_FORM = { name: '', description: '', system_prompt: '', provider_id: '', model: '' };
 
@@ -14,6 +14,7 @@ export default function SettingsAgents({ onAgentsChange }) {
   const [availableModels, setAvailableModels] = useState([]);
   const [loadingModels, setLoadingModels] = useState(false);
   const [modelsError, setModelsError] = useState('');
+  const importRef = useRef(null);
 
   useEffect(() => {
     loadAgents();
@@ -87,6 +88,30 @@ export default function SettingsAgents({ onAgentsChange }) {
     if (onAgentsChange) onAgentsChange();
   }
 
+  function handleExport() {
+    window.open('/api/agents/export');
+  }
+
+  async function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const result = await importAgents(data);
+      if (result.error) {
+        showMessage(t('settings.agents.importError') + ': ' + result.error);
+      } else {
+        showMessage(t('settings.agents.imported', { n: result.added }));
+        await loadAgents();
+        if (onAgentsChange) onAgentsChange();
+      }
+    } catch {
+      showMessage(t('settings.agents.importError'));
+    }
+    e.target.value = '';
+  }
+
   return (
     <div>
       {message && <div className="settings-message">{message}</div>}
@@ -95,7 +120,14 @@ export default function SettingsAgents({ onAgentsChange }) {
       </p>
 
       <div className="settings-section">
-        <h3>{t('settings.agents.configured')}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <h3 style={{ margin: 0 }}>{t('settings.agents.configured')}</h3>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button className="btn-test-provider" onClick={handleExport}>{t('settings.agents.export')}</button>
+            <button className="btn-test-provider" onClick={() => importRef.current.click()}>{t('settings.agents.import')}</button>
+            <input ref={importRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
+          </div>
+        </div>
         <div className="agents-list">
           {agents.map(a => (
             <div key={a.id} className="agent-item">

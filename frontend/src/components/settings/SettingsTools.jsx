@@ -104,6 +104,21 @@ export default function SettingsTools({ providers }) {
 
         {isOpen && (
           <div className="tool-accordion-body">
+            {tool.settings_info && (
+              <div style={{
+                marginBottom: '12px',
+                padding: '10px 12px',
+                background: 'var(--bg-dark)',
+                border: '1px solid var(--border)',
+                borderRadius: '6px',
+                fontSize: '12px',
+                color: 'var(--text-secondary)',
+                lineHeight: '1.6',
+                whiteSpace: 'pre-wrap',
+              }}>
+                {tool.settings_info}
+              </div>
+            )}
             {tool.agent_overridable !== false && (
               <>
                 <div className="tool-field-row">

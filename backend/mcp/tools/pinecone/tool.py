@@ -20,6 +20,17 @@ PINECONE_API_VERSION = "2024-10"
 
 AGENT_OVERRIDABLE = True
 
+SETTINGS_INFO = """**Pinecone Vector-Datenbank**
+
+Ermöglicht die Verwaltung einer Pinecone Vector-DB: Indizes anlegen/löschen, Texte oder Vektoren einfügen (Upsert), semantisch suchen und Einträge löschen.
+
+**API Key:** Kostenloser Account auf [app.pinecone.io](https://app.pinecone.io) → API Keys. Der Starter-Plan reicht für die meisten Anwendungsfälle.
+
+**Embedding-Modell:** Wird verwendet um Texte automatisch in Vektoren umzuwandeln (via OpenRouter). Die Dimension muss zum Index passen:
+- `openai/text-embedding-3-small` → 1536 Dimensionen
+- `openai/text-embedding-3-large` → 3072 Dimensionen
+- `openai/text-embedding-ada-002` → 1536 Dimensionen"""
+
 SETTINGS_SCHEMA = [
     {
         "key": "api_key",

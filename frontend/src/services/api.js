@@ -144,6 +144,15 @@ export async function deleteAgent(id) {
   await fetch(`${BASE}/api/agents/${id}`, { method: 'DELETE' });
 }
 
+export async function importAgents(data) {
+  const res = await fetch(`${BASE}/api/agents/import`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
 export async function fetchServerTime() {
   const res = await fetch(`/api/server-time`);
   return res.json();
@@ -174,6 +183,24 @@ export async function updateAutoprompt(id, data) {
 
 export async function deleteAutoprompt(id) {
   await fetch(`${BASE}/api/autoprompts/${id}`, { method: 'DELETE' });
+}
+
+export async function importAutoprompts(data) {
+  const res = await fetch(`${BASE}/api/autoprompts/import`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+export async function importMcpServers(data) {
+  const res = await fetch(`${BASE}/api/mcp-servers/import`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
 }
 
 export async function runAutopromptNow(id) {

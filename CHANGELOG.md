@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.4.24] — 2026-03-01
+
+### Tool-Beschreibungen in Einstellungen + JSON Export/Import
+
+**Tool-Beschreibungen (SETTINGS_INFO)**
+- Jedes konfigurierbare MCP-Tool kann jetzt eine Beschreibung in den Einstellungen anzeigen — erscheint als Info-Box wenn das Tool aufgeklappt wird
+- `SETTINGS_INFO`-Konstante in `tool.py` — vom Loader automatisch erkannt, via API übertragen, im Frontend angezeigt
+- Hinweise mit API-Key-Links und Modell-Empfehlungen für: Pinecone, TTS (ElevenLabs), E-Mail, Präsentationen, Bildgenerierung, Code-Interpreter
+
+**JSON Export/Import für Agenten, Autoprompts und MCP-Server**
+- Agenten, Autoprompts und externe MCP-Server können jetzt als JSON exportiert und importiert werden
+- Export-Button im jeweiligen Einstellungs-Bereich → lädt Datei mit Zeitstempel herunter
+- Import-Button öffnet Dateiauswahl → importiert alle gültigen Einträge (neue UUIDs, Namens-Deduplication mit „(importiert)")
+- Envelope-Format: `{"type": "openguenther_*", "version": 1, "exported_at": "...", "data": [...]}`
+- Versionsnummer wird beim Import geprüft — neuere Versionen werden abgelehnt (Vorwärts-Kompatibilitätsschutz)
+- Neue Endpoints: `GET/POST /api/agents/export|import`, `GET/POST /api/autoprompts/export|import`, `GET/POST /api/mcp-servers/export|import`
+
+---
+
 ## [1.4.23] — 2026-03-01
 
 ### Per-Chat LLM-Nutzungsstatistik

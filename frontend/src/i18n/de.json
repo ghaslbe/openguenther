@@ -130,7 +130,12 @@
       "providerSelectFirst": "Zuerst einen Provider auswählen",
       "save": "Speichern",
       "create": "Erstellen",
-      "cancel": "Abbrechen"
+      "cancel": "Abbrechen",
+      "export": "JSON Export",
+      "import": "JSON Import",
+      "exported": "Agenten exportiert!",
+      "imported": "{{n}} Agent(en) importiert!",
+      "importError": "Fehler beim Importieren"
     },
     "autoprompts": {
       "description": "Autoprompts werden automatisch zu festgelegten Zeiten ausgeführt. Das Ergebnis landet in einem dedizierten Chat im Verlauf.",
@@ -180,7 +185,12 @@
       "scheduleEveryMin": "Alle {{n}} min",
       "scheduleWeeklyAt": "{{day}} {{time}} UTC",
       "scheduleDailyAt": "Täglich {{time}} UTC",
-      "promptPlaceholder": "z.B. Gib mir eine Zusammenfassung der heutigen Nachrichten und sende sie mit Telegram an @mama75.\n\n(Hinweis: Der Empfänger muss dem Bot vorher mindestens einmal geschrieben haben, damit Telegram das erlaubt.)"
+      "promptPlaceholder": "z.B. Gib mir eine Zusammenfassung der heutigen Nachrichten und sende sie mit Telegram an @mama75.\n\n(Hinweis: Der Empfänger muss dem Bot vorher mindestens einmal geschrieben haben, damit Telegram das erlaubt.)",
+      "export": "JSON Export",
+      "import": "JSON Import",
+      "exported": "Autoprompts exportiert!",
+      "imported": "{{n}} Autoprompt(s) importiert!",
+      "importError": "Fehler beim Importieren"
     },
     "providers": {
       "description": "Alle Provider sind OpenAI-API-kompatibel. Für Ollama und LM Studio ist kein API Key nötig.",
@@ -263,7 +273,12 @@
       "envPlaceholder": "Umgebungsvariablen (optional, eine pro Zeile):\nFIRECRAWL_API_KEY=fc-xxx\nANDERE_VAR=wert",
       "marketplaceHint": "MCP Server findest du auf verschiedenen Marktplätzen, z.B.",
       "marketplaceHintSuffix": " — einer von vielen.",
-      "toolsHint": "Die Tools der konfigurierten Server werden nach dem Laden unter \"MCP Tools\" aufgeführt."
+      "toolsHint": "Die Tools der konfigurierten Server werden nach dem Laden unter \"MCP Tools\" aufgeführt.",
+      "export": "JSON Export",
+      "import": "JSON Import",
+      "exported": "MCP Server exportiert!",
+      "imported": "{{n}} Server importiert!",
+      "importError": "Fehler beim Importieren"
     },
     "usage": {
       "title": "Nutzungsstatistik",

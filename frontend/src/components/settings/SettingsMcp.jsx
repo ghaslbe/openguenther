@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchMcpServers, addMcpServer, updateMcpServer, deleteMcpServer, reloadMcpTools } from '../../services/api';
+import { fetchMcpServers, addMcpServer, updateMcpServer, deleteMcpServer, reloadMcpTools, importMcpServers } from '../../services/api';
 
 function envToText(env) {
   if (!env) return '';
@@ -27,6 +27,7 @@ export default function SettingsMcp() {
   const [editState, setEditState] = useState({});
   const [message, setMessage] = useState('');
   const [reloading, setReloading] = useState(false);
+  const importRef = useRef(null);
 
   useEffect(() => {
     loadMcpServers();
@@ -89,6 +90,30 @@ export default function SettingsMcp() {
     setTimeout(() => setMessage(''), 3000);
   }
 
+  function handleExport() {
+    window.open('/api/mcp-servers/export');
+  }
+
+  async function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const result = await importMcpServers(data);
+      if (result.error) {
+        setMessage(t('settings.mcp.importError') + ': ' + result.error);
+      } else {
+        setMessage(t('settings.mcp.imported', { n: result.added }));
+        await loadMcpServers();
+      }
+    } catch {
+      setMessage(t('settings.mcp.importError'));
+    }
+    setTimeout(() => setMessage(''), 4000);
+    e.target.value = '';
+  }
+
   return (
     <div>
       {message && <div className="settings-message">{message}</div>}
@@ -99,9 +124,14 @@ export default function SettingsMcp() {
       <div className="settings-section">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
           <h3 style={{ margin: 0 }}>{t('settings.mcp.configured')}</h3>
-          <button className="btn-test-provider" onClick={handleReload} disabled={reloading}>
-            {reloading ? t('settings.mcp.reloading') : t('settings.mcp.reload')}
-          </button>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button className="btn-test-provider" onClick={handleExport}>{t('settings.mcp.export')}</button>
+            <button className="btn-test-provider" onClick={() => importRef.current.click()}>{t('settings.mcp.import')}</button>
+            <input ref={importRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
+            <button className="btn-test-provider" onClick={handleReload} disabled={reloading}>
+              {reloading ? t('settings.mcp.reloading') : t('settings.mcp.reload')}
+            </button>
+          </div>
         </div>
         <div className="mcp-servers-list">
           {mcpServers.map(s => (

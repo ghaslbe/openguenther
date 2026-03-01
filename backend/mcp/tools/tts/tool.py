@@ -5,6 +5,14 @@ import json
 from config import get_tool_settings
 from services.tool_context import get_emit_log
 
+SETTINGS_INFO = """**Text-to-Speech via ElevenLabs**
+
+Wandelt Text in natürlich klingende Sprache um und spielt das Audio direkt im Chat ab. Über Telegram wird die Audiodatei versendet.
+
+**API Key:** Kostenlosen Account auf [elevenlabs.io](https://elevenlabs.io) anlegen → Profile → API Key. Das kostenlose Kontingent reicht für Tests.
+
+**Voice ID:** Jede Stimme hat eine eindeutige ID. Eigene Stimmen und alle öffentlichen Stimmen findest du in der [ElevenLabs Voice Library](https://elevenlabs.io/app/voice-library). Die Standard-Stimme "Rachel" (ID: `21m00Tcm4TlvDq8ikWAM`) ist eine gute Ausgangsbasis."""
+
 SETTINGS_SCHEMA = [
     {"key": "api_key", "label": "ElevenLabs API Key", "type": "password",
      "placeholder": "sk_...", "description": "API Key von elevenlabs.io"},

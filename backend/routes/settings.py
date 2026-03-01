@@ -1,6 +1,8 @@
-from flask import Blueprint, request, jsonify
-from config import get_settings, save_settings
+import json
 import uuid
+from datetime import datetime, timezone
+from flask import Blueprint, request, jsonify, Response
+from config import get_settings, save_settings
 
 settings_bp = Blueprint('settings', __name__)
 
@@ -231,6 +233,59 @@ def remove_mcp_server(server_id):
     ]
     save_settings(settings)
     return jsonify({'success': True})
+
+
+MCP_EXPORT_VERSION = 1
+
+@settings_bp.route('/api/mcp-servers/export', methods=['GET'])
+def export_mcp_servers():
+    settings = get_settings()
+    servers = settings.get('mcp_servers', [])
+    payload = {
+        'type': 'openguenther_mcp_servers',
+        'version': MCP_EXPORT_VERSION,
+        'exported_at': datetime.now(timezone.utc).isoformat(),
+        'data': servers,
+    }
+    return Response(
+        json.dumps(payload, ensure_ascii=False, indent=2),
+        mimetype='application/json',
+        headers={'Content-Disposition': 'attachment; filename="mcp_servers.json"'}
+    )
+
+
+@settings_bp.route('/api/mcp-servers/import', methods=['POST'])
+def import_mcp_servers():
+    payload = request.get_json()
+    if not payload or payload.get('type') != 'openguenther_mcp_servers':
+        return jsonify({'error': 'Ungültiges Format'}), 400
+    if payload.get('version', 1) > MCP_EXPORT_VERSION:
+        return jsonify({'error': f'Version {payload["version"]} wird nicht unterstützt (max: {MCP_EXPORT_VERSION})'}), 400
+    settings = get_settings()
+    if 'mcp_servers' not in settings:
+        settings['mcp_servers'] = []
+    existing_names = {s['name'] for s in settings['mcp_servers']}
+    added = 0
+    for s in payload.get('data', []):
+        if not s.get('command') and not s.get('url'):
+            continue
+        name = s.get('name', 'Importiert')
+        if name in existing_names:
+            name += ' (importiert)'
+        settings['mcp_servers'].append({
+            'id': str(uuid.uuid4()),
+            'name': name,
+            'transport': s.get('transport', 'stdio'),
+            'command': s.get('command', ''),
+            'args': s.get('args', []),
+            'env': s.get('env', {}),
+            'url': s.get('url', ''),
+            'enabled': True,
+        })
+        existing_names.add(name)
+        added += 1
+    save_settings(settings)
+    return jsonify({'success': True, 'added': added})
 
 
 @settings_bp.route('/api/mcp-servers/<server_id>/toggle', methods=['POST'])

@@ -56,12 +56,14 @@ def _register_module(mod, source_label=''):
                 logger.warning(f"[loader] {source_label}: no handler for '{name}', skipping")
                 continue
             schema = getattr(mod, 'SETTINGS_SCHEMA', None)
+            info = getattr(mod, 'SETTINGS_INFO', None)
             registry.register(MCPTool(
                 name=name,
                 description=td['description'],
                 input_schema=td['input_schema'],
                 handler=h,
                 settings_schema=schema,
+                settings_info=info,
             ))
             logger.info(f"[loader] Registered '{name}' from {source_label}")
             count += 1
@@ -81,12 +83,14 @@ def _register_module(mod, source_label=''):
         return 0
 
     schema = getattr(mod, 'SETTINGS_SCHEMA', None)
+    info = getattr(mod, 'SETTINGS_INFO', None)
     registry.register(MCPTool(
         name=name,
         description=td['description'],
         input_schema=td['input_schema'],
         handler=h,
         settings_schema=schema,
+        settings_info=info,
     ))
     logger.info(f"[loader] Registered '{name}' from {source_label}")
     return 1

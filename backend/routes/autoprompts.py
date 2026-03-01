@@ -1,6 +1,7 @@
 import uuid
+import json
 from datetime import datetime, timezone
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response
 from services.autoprompt import (
     get_autoprompts, get_autoprompt, save_autoprompt, delete_autoprompt
 )
@@ -80,6 +81,47 @@ def remove_autoprompt(ap_id):
     if _service:
         _service.remove(ap_id)
     return jsonify({'success': True})
+
+
+EXPORT_VERSION = 1
+
+EXPORT_FIELDS = ['name', 'prompt', 'enabled', 'schedule_type', 'interval_minutes',
+                 'daily_time', 'weekly_day', 'agent_id', 'save_to_chat']
+
+@autoprompts_bp.route('/api/autoprompts/export', methods=['GET'])
+def export_autoprompts():
+    data = [{k: ap.get(k) for k in EXPORT_FIELDS} for ap in get_autoprompts()]
+    payload = {
+        'type': 'openguenther_autoprompts',
+        'version': EXPORT_VERSION,
+        'exported_at': datetime.now(timezone.utc).isoformat(),
+        'data': data,
+    }
+    return Response(
+        json.dumps(payload, ensure_ascii=False, indent=2),
+        mimetype='application/json',
+        headers={'Content-Disposition': 'attachment; filename="autoprompts.json"'}
+    )
+
+
+@autoprompts_bp.route('/api/autoprompts/import', methods=['POST'])
+def import_autoprompts():
+    payload = request.get_json()
+    if not payload or payload.get('type') != 'openguenther_autoprompts':
+        return jsonify({'error': 'Ungültiges Format'}), 400
+    if payload.get('version', 1) > EXPORT_VERSION:
+        return jsonify({'error': f'Version {payload["version"]} wird nicht unterstützt (max: {EXPORT_VERSION})'}), 400
+    added = 0
+    for ap in payload.get('data', []):
+        if not ap.get('name') or not ap.get('prompt'):
+            continue
+        new = {k: ap.get(k) for k in EXPORT_FIELDS}
+        new.update({'id': str(uuid.uuid4()), 'chat_id': None, 'last_run': None, 'last_error': None})
+        save_autoprompt(new)
+        if _service:
+            _service.reload(new['id'])
+        added += 1
+    return jsonify({'success': True, 'added': added})
 
 
 @autoprompts_bp.route('/api/autoprompts/<ap_id>/run', methods=['POST'])

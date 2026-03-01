@@ -94,6 +94,12 @@ TOOL_DEFINITION = {
     }
 }
 
+SETTINGS_INFO = """**Text als PNG rendern**
+
+Rendert beliebigen Text als Bild — nützlich für Zitate, Beschriftungen, Platzhalter oder überall wo Text als Bild benötigt wird. Kein API-Key nötig, alles läuft lokal mit Pillow.
+
+Die hier konfigurierten Werte sind die Standardeinstellungen. Im Chat können Schriftgröße, Farben und Breite pro Anfrage überschrieben werden."""
+
 SETTINGS_SCHEMA = [
     {"key": "default_font_size", "label": "Standard-Schriftgroesse", "type": "text", "placeholder": "32", "default": "32"},
     {"key": "default_bg_color", "label": "Standard-Hintergrundfarbe", "type": "text", "placeholder": "white", "default": "white"},

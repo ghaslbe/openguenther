@@ -80,6 +80,7 @@ def list_mcp_tools():
             "builtin": t.server_id is None,
             "has_settings": bool(t.settings_schema),
             "settings_schema": t.settings_schema or [],
+            "settings_info": t.settings_info or "",
             "agent_overridable": t.agent_overridable,
             "current_provider": ts.get("provider", ""),
             "current_model": ts.get("model", ""),
