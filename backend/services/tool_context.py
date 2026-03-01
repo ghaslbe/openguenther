@@ -10,3 +10,11 @@ def set_emit_log(fn):
 
 def get_emit_log():
     return getattr(_ctx, 'fn', None)
+
+
+def set_current_chat_id(chat_id):
+    _ctx.chat_id = chat_id
+
+
+def get_current_chat_id():
+    return getattr(_ctx, 'chat_id', None)

@@ -5,7 +5,7 @@ import ChatWindow from './components/ChatWindow';
 import GuentherBox from './components/GuentherBox';
 import Settings from './components/Settings';
 import FirstRunOverlay from './components/FirstRunOverlay';
-import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders, fetchChatInfo, fetchUsageStats } from './services/api';
+import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders, fetchChatInfo, fetchChatUsage } from './services/api';
 import { getSocket } from './services/socket';
 
 function formatBytes(n) {
@@ -18,15 +18,13 @@ function formatBytes(n) {
 function ChatInfoPopup({ onClose, activeChatId, agents }) {
   const [info, setInfo] = useState(null);
   const [copiedId, setCopiedId] = useState(false);
-  const [todayStats, setTodayStats] = useState([]);
-  const [allStats, setAllStats] = useState([]);
+  const [chatUsage, setChatUsage] = useState([]);
 
   useEffect(() => {
     if (activeChatId) {
       fetchChatInfo(activeChatId).then(setInfo).catch(() => {});
+      fetchChatUsage(activeChatId).then(d => setChatUsage(Array.isArray(d) ? d : [])).catch(() => {});
     }
-    fetchUsageStats('today').then(d => setTodayStats(Array.isArray(d) ? d : [])).catch(() => {});
-    fetchUsageStats('all').then(d => setAllStats(Array.isArray(d) ? d : [])).catch(() => {});
   }, [activeChatId]);
 
   function fmt(iso) {
@@ -132,37 +130,25 @@ function ChatInfoPopup({ onClose, activeChatId, agents }) {
           </div>
         )}
 
-        {/* Usage stats — always shown */}
-        <div style={{ marginTop: activeChatId && info ? '14px' : '0', paddingTop: activeChatId && info ? '12px' : '0', borderTop: activeChatId && info ? '1px solid var(--border)' : 'none' }}>
-          <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', margin: '0 0 5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            📊 Nutzung heute
-          </p>
-          {todayStats.length === 0
-            ? <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0' }}>—</p>
-            : todayStats.map((r, i) => (
-              <div key={i} style={{ fontSize: '12px', color: 'var(--text-primary)', marginBottom: '2px' }}>
-                <span style={{ fontWeight: 600 }}>{r.provider_id}</span>
-                {': '}
-                {r.requests} Anf. · {formatBytes(r.bytes_sent)} ↑ · {formatBytes(r.bytes_received)} ↓
-                {r.prompt_tokens ? ` · ${(r.prompt_tokens + (r.completion_tokens || 0)).toLocaleString()} Tok` : ''}
-              </div>
-            ))
-          }
-          <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', margin: '8px 0 5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Gesamt
-          </p>
-          {allStats.length === 0
-            ? <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0' }}>—</p>
-            : allStats.map((r, i) => (
-              <div key={i} style={{ fontSize: '12px', color: 'var(--text-primary)', marginBottom: '2px' }}>
-                <span style={{ fontWeight: 600 }}>{r.provider_id}</span>
-                {': '}
-                {r.requests} Anf. · {formatBytes(r.bytes_sent)} ↑ · {formatBytes(r.bytes_received)} ↓
-                {r.prompt_tokens ? ` · ${(r.prompt_tokens + (r.completion_tokens || 0)).toLocaleString()} Tok` : ''}
-              </div>
-            ))
-          }
-        </div>
+        {/* Per-chat usage stats */}
+        {activeChatId && (
+          <div style={{ marginTop: info ? '14px' : '0', paddingTop: info ? '12px' : '0', borderTop: info ? '1px solid var(--border)' : 'none' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', margin: '0 0 5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              📊 Nutzung dieses Chats
+            </p>
+            {chatUsage.length === 0
+              ? <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0' }}>—</p>
+              : chatUsage.map((r, i) => (
+                <div key={i} style={{ fontSize: '12px', color: 'var(--text-primary)', marginBottom: '2px' }}>
+                  <span style={{ fontWeight: 600 }}>{r.provider_id}</span>
+                  {': '}
+                  {r.requests} Anf. · {formatBytes(r.bytes_sent)} ↑ · {formatBytes(r.bytes_received)} ↓
+                  {r.prompt_tokens ? ` · ${(r.prompt_tokens + (r.completion_tokens || 0)).toLocaleString()} Tok` : ''}
+                </div>
+              ))
+            }
+          </div>
+        )}
       </div>
     </div>
   );

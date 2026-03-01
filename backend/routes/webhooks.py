@@ -129,6 +129,7 @@ def trigger_webhook(wh_id):
             system_prompt=agent_system_prompt,
             agent_provider_id=agent_provider_id,
             agent_model=agent_model,
+            chat_id=chat_id,
         )
         response = file_store.extract_and_store(response, chat_id)
         add_message(chat_id, 'assistant', response)

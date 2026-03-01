@@ -196,7 +196,7 @@ def handle_message(data):
 
     try:
         response = run_agent(messages, settings, emit_log, system_prompt=agent_system_prompt,
-                             agent_provider_id=agent_provider_id, agent_model=agent_model)
+                             agent_provider_id=agent_provider_id, agent_model=agent_model, chat_id=chat_id)
         response = file_store.extract_and_store(response, chat_id)
         add_message(chat_id, 'assistant', response)
         emit('agent_response', {

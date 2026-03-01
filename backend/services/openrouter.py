@@ -79,6 +79,7 @@ def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'
     usage = data.get('usage', {})
     try:
         from models import log_usage
+        from services.tool_context import get_current_chat_id
         log_usage(
             provider_id=provider_id or 'unknown',
             model=model,
@@ -86,6 +87,7 @@ def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'
             bytes_received=bytes_received,
             prompt_tokens=usage.get('prompt_tokens'),
             completion_tokens=usage.get('completion_tokens'),
+            chat_id=get_current_chat_id(),
         )
     except Exception:
         pass  # logging never breaks the LLM call

@@ -459,7 +459,7 @@ class TelegramGateway:
                     self.socketio.emit("guenther_log", {"type": "text", "message": str(entry)})
 
             self.socketio.emit("agent_start", {"chat_id": chat_id})
-            response = run_agent(messages, settings, emit_log)
+            response = run_agent(messages, settings, emit_log, chat_id=chat_id)
             response = file_store.extract_and_store(response, chat_id)
             add_message(chat_id, "assistant", response)
             self.socketio.emit("agent_response", {"chat_id": chat_id, "content": response})

@@ -151,7 +151,7 @@ class AutopromptService:
                 run_log_lines.append(str(entry))
 
         try:
-            response = run_agent(messages, settings, emit_log=collect_log, system_prompt=agent_system_prompt)
+            response = run_agent(messages, settings, emit_log=collect_log, system_prompt=agent_system_prompt, chat_id=chat_id)
             if save_to_chat and chat_id:
                 add_message(chat_id, 'user', ap['prompt'])
                 add_message(chat_id, 'assistant', response)

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, Response
-from models import create_chat, get_chats, get_chat, delete_chat, add_message, update_chat_title
+from models import create_chat, get_chats, get_chat, delete_chat, add_message, update_chat_title, get_chat_usage_stats
 from services import file_store
 
 chat_bp = Blueprint('chat', __name__)
@@ -66,6 +66,11 @@ def get_chat_info(chat_id):
         'assistant_messages': len(asst_msgs),
         'files': files,
     })
+
+
+@chat_bp.route('/api/chats/<int:chat_id>/usage', methods=['GET'])
+def get_chat_usage(chat_id):
+    return jsonify(get_chat_usage_stats(chat_id))
 
 
 @chat_bp.route('/api/chats/<int:chat_id>/title', methods=['PUT'])

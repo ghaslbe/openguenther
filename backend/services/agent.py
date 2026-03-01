@@ -3,7 +3,7 @@ import re
 import base64
 from datetime import datetime
 from services.openrouter import call_openrouter, SYSTEM_PROMPT
-from services.tool_context import set_emit_log
+from services.tool_context import set_emit_log, set_current_chat_id
 from mcp.registry import registry
 from config import get_tool_settings
 
@@ -132,12 +132,13 @@ def _pick_provider_and_model_for_tools(selected_tools, settings):
     return override_provider_cfg or default_provider_cfg, override_model
 
 
-def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provider_id=None, agent_model=None):
+def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provider_id=None, agent_model=None, chat_id=None):
     """
     Run the agent loop: send messages to LLM, handle tool calls, iterate.
     Logs ALL communication to Guenther terminal.
     Returns the final assistant response.
     """
+    set_current_chat_id(chat_id)
     # Resolve provider
     provider_id = settings.get('default_provider', 'openrouter')
     providers = settings.get('providers', {})

@@ -223,6 +223,11 @@ export async function fetchChatInfo(chatId) {
   return res.json();
 }
 
+export async function fetchChatUsage(chatId) {
+  const res = await fetch(`${BASE}/api/chats/${chatId}/usage`);
+  return res.json();
+}
+
 export async function fetchWebhooks() {
   const res = await fetch(`${BASE}/api/webhooks`);
   return res.json();

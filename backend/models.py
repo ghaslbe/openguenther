@@ -50,9 +50,16 @@ def init_db():
             bytes_sent INTEGER DEFAULT 0,
             bytes_received INTEGER DEFAULT 0,
             prompt_tokens INTEGER,
-            completion_tokens INTEGER
+            completion_tokens INTEGER,
+            chat_id INTEGER
         )
     ''')
+    # Migration: add chat_id column to existing usage_log tables
+    try:
+        conn.execute("ALTER TABLE usage_log ADD COLUMN chat_id INTEGER")
+        conn.commit()
+    except Exception:
+        pass  # column already exists
     conn.commit()
     conn.close()
 
@@ -120,12 +127,12 @@ def update_chat_title(chat_id, title):
     conn.close()
 
 
-def log_usage(provider_id, model, bytes_sent, bytes_received, prompt_tokens=None, completion_tokens=None):
+def log_usage(provider_id, model, bytes_sent, bytes_received, prompt_tokens=None, completion_tokens=None, chat_id=None):
     conn = get_db()
     now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
     conn.execute(
-        'INSERT INTO usage_log (timestamp, provider_id, model, bytes_sent, bytes_received, prompt_tokens, completion_tokens) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        (now, provider_id, model, bytes_sent, bytes_received, prompt_tokens, completion_tokens)
+        'INSERT INTO usage_log (timestamp, provider_id, model, bytes_sent, bytes_received, prompt_tokens, completion_tokens, chat_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        (now, provider_id, model, bytes_sent, bytes_received, prompt_tokens, completion_tokens, chat_id)
     )
     conn.commit()
     conn.close()
@@ -153,6 +160,24 @@ def get_usage_stats(period='today'):
         GROUP BY provider_id, model
         ORDER BY bytes_sent DESC
     ''').fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_chat_usage_stats(chat_id):
+    conn = get_db()
+    rows = conn.execute('''
+        SELECT provider_id, model,
+               COUNT(*) as requests,
+               SUM(bytes_sent) as bytes_sent,
+               SUM(bytes_received) as bytes_received,
+               SUM(prompt_tokens) as prompt_tokens,
+               SUM(completion_tokens) as completion_tokens
+        FROM usage_log
+        WHERE chat_id = ?
+        GROUP BY provider_id, model
+        ORDER BY bytes_sent DESC
+    ''', (chat_id,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
