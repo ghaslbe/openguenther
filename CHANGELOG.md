@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.28] — 2026-03-01
+
+### `build_mcp_tool` — Plan-Phase + Verifikation
+
+- **Phase 0 — Plan**: vor der Code-Generierung erstellt das LLM einen strukturierten Plan (Tool-Name, Parameter, Libraries, Handler-Signatur, Vorgehensweise) und gibt ihn in der Guenther-Console aus
+- **Plan als Leitfaden**: der generierte Plan wird als Kontext an die Code-Generierung übergeben — konsistentere Ergebnisse, weniger Fehlläufe
+- **Phase 5 — Plan-Verifikation**: nach dem Deploy wird geprüft ob Tool-Name, Handler-Signatur und Libraries dem Plan entsprechen (✓/⚠/~ pro Punkt in der Console)
+- Bessere Sichtbarkeit in der Console: jede Phase klar beschriftet, Plan-Output mit allen Details vor der Code-Generierung
+
+---
+
 ## [1.4.27] — 2026-03-01
 
 ### `build_mcp_tool` — Intelligenter Tool-Builder mit LLM + venv + Selbstkorrektur

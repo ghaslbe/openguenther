@@ -108,9 +108,27 @@ def handler(description: str, tool_name: str = "") -> dict:
     log(f"Aufgabe: {description}")
     log(f"Modell: {model}")
 
+    # ── Phase 0: Plan ─────────────────────────────────────────────────────────
+    header("BUILD MCP TOOL: PLAN ERSTELLEN")
+    plan = None
+    try:
+        plan_resp = llm([{"role": "user", "content": _build_plan_prompt(description, safe_name, existing_code)}])
+        plan_raw = plan_resp.get("choices", [{}])[0].get("message", {}).get("content", "")
+        _log_tokens(plan_resp, log)
+        plan = _parse_json(plan_raw)
+    except Exception as e:
+        log(f"Plan-LLM-Fehler (wird übersprungen): {e}")
+
+    if plan:
+        if not safe_name:
+            safe_name = re.sub(r'[^a-z0-9_]', '_', plan.get("tool_name", "custom_tool").lower()) or "custom_tool"
+        _log_plan(plan, emit_log)
+    else:
+        log("Kein Plan generiert — fahre direkt mit Code-Generierung fort.")
+
     # ── Phase 1: Generate initial code ────────────────────────────────────────
     header("BUILD MCP TOOL: CODE-GENERIERUNG")
-    gen_prompt = _build_gen_prompt(description, safe_name, existing_code)
+    gen_prompt = _build_gen_prompt(description, safe_name, existing_code, plan)
     try:
         resp = llm([{"role": "user", "content": gen_prompt}])
     except Exception as e:
@@ -261,6 +279,11 @@ def handler(description: str, tool_name: str = "") -> dict:
             return {"success": False, "error": "Tool geladen, aber nicht registriert — TOOL_DEFINITION prüfen"}
 
         log(f"'{safe_name}' registriert ({count} Tool(s))")
+
+        # ── Phase 5: Plan-Verifikation ────────────────────────────────────────
+        if plan:
+            _verify_plan(plan, safe_name, mod, requirements, emit_log)
+
         header("BUILD MCP TOOL: FERTIG")
 
         # Build return info
@@ -288,15 +311,25 @@ def handler(description: str, tool_name: str = "") -> dict:
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _build_gen_prompt(description: str, tool_name: str, existing_code: str) -> str:
+def _build_gen_prompt(description: str, tool_name: str, existing_code: str, plan: dict | None = None) -> str:
     name_hint = f'\nUse this exact tool_name in your response: "{tool_name}"' if tool_name else ""
     edit_section = ""
     if existing_code:
         edit_section = f"\n\nEXISTING CODE (modify as needed based on the description):\n```python\n{existing_code}\n```"
+    plan_section = ""
+    if plan:
+        plan_section = (
+            f"\n\nIMPLEMENTATION PLAN — follow this exactly:\n"
+            f"- tool_name: {plan.get('tool_name', '')}\n"
+            f"- handler_signature: {plan.get('handler_signature', '')}\n"
+            f"- libraries: {', '.join(plan.get('libraries', [])) or 'none'}\n"
+            f"- approach: {plan.get('approach', '')}\n"
+            f"- parameters: {json.dumps(plan.get('parameters', []))}"
+        )
 
     return f"""You are an expert Python developer creating MCP tools for OpenGuenther, a self-hosted AI agent.
 
-TASK: {description}{name_hint}{edit_section}
+TASK: {description}{name_hint}{edit_section}{plan_section}
 
 Generate a complete, working tool.py following this format:
 
@@ -424,6 +457,101 @@ def _parse_json(text: str) -> dict | None:
             except Exception:
                 pass
         return None
+
+
+def _build_plan_prompt(description: str, tool_name: str, existing_code: str) -> str:
+    name_hint = f'\nTool name to use: "{tool_name}"' if tool_name else ""
+    edit_section = ""
+    if existing_code:
+        edit_section = f"\n\nEXISTING CODE:\n```python\n{existing_code}\n```"
+    return f"""You are planning the implementation of an MCP tool for OpenGuenther.
+
+TASK: {description}{name_hint}{edit_section}
+
+Create a concise implementation plan. Respond ONLY with JSON:
+{{
+  "tool_name": "snake_case_name",
+  "summary": "One sentence: what this tool does",
+  "parameters": [
+    {{"name": "param_name", "type": "string|integer|number|boolean", "required": true, "description": "..."}}
+  ],
+  "libraries": ["package1", "package2"],
+  "has_settings": false,
+  "handler_signature": "def handler(param1, param2='default'):",
+  "approach": "Brief step-by-step: how the handler will work"
+}}
+
+CRITICAL for handler_signature:
+- Use the exact parameter names from the schema, as keyword arguments
+- NEVER write def handler(params) or def handler(data)
+- Example for a URL tool: "def handler(url):"
+- Example with optional: "def handler(query, max_results=10):"
+"""
+
+
+def _log_plan(plan: dict, emit_log) -> None:
+    """Output the plan to the Guenther terminal in a readable format."""
+    if not emit_log:
+        return
+    emit_log({"type": "header", "message": "BUILD MCP TOOL: PLAN"})
+    emit_log({"type": "text", "message": f"Tool-Name : {plan.get('tool_name', '?')}"})
+    emit_log({"type": "text", "message": f"Aufgabe   : {plan.get('summary', '?')}"})
+
+    params = plan.get("parameters", [])
+    if params:
+        param_lines = ", ".join(
+            f"{p['name']} ({p['type']}{'*' if p.get('required') else ''})"
+            for p in params
+        )
+        emit_log({"type": "text", "message": f"Parameter : {param_lines}  (* = required)"})
+
+    libs = plan.get("libraries", [])
+    emit_log({"type": "text", "message": f"Libraries : {', '.join(libs) if libs else 'keine (nur stdlib)'}"})
+    emit_log({"type": "text", "message": f"Signatur  : {plan.get('handler_signature', '?')}"})
+    emit_log({"type": "text", "message": f"Vorgehen  : {plan.get('approach', '?')}"})
+    emit_log({"type": "text", "message": f"Settings  : {'ja' if plan.get('has_settings') else 'nein'}"})
+
+
+def _verify_plan(plan: dict, actual_name: str, mod, requirements: str, emit_log) -> None:
+    """Check built tool against plan and log results."""
+    if not emit_log:
+        return
+    emit_log({"type": "header", "message": "BUILD MCP TOOL: PLAN-VERIFIKATION"})
+    ok = True
+
+    # Tool name
+    planned_name = re.sub(r'[^a-z0-9_]', '_', plan.get("tool_name", "").lower())
+    if planned_name and planned_name != actual_name:
+        emit_log({"type": "text", "message": f"⚠ Tool-Name: geplant='{planned_name}' gebaut='{actual_name}'"})
+        ok = False
+    else:
+        emit_log({"type": "text", "message": f"✓ Tool-Name: {actual_name}"})
+
+    # Handler signature
+    planned_sig = plan.get("handler_signature", "")
+    if planned_sig:
+        import inspect
+        td = getattr(mod, 'TOOL_DEFINITION', None)
+        h = getattr(mod, 'handler', None) or (getattr(mod, td['name'], None) if td else None)
+        if h and callable(h):
+            actual_sig = f"def handler{inspect.signature(h)}:"
+            if planned_sig.replace(" ", "") == actual_sig.replace(" ", ""):
+                emit_log({"type": "text", "message": f"✓ Signatur: {actual_sig}"})
+            else:
+                emit_log({"type": "text", "message": f"~ Signatur: geplant='{planned_sig}' gebaut='{actual_sig}'"})
+
+    # Libraries
+    planned_libs = [l.lower().strip() for l in plan.get("libraries", [])]
+    installed_libs = [l.lower().strip() for l in requirements.splitlines() if l.strip()]
+    for lib in planned_libs:
+        lib_base = re.split(r'[>=<!]', lib)[0].strip()
+        found = any(lib_base in inst for inst in installed_libs)
+        if found:
+            emit_log({"type": "text", "message": f"✓ Library : {lib}"})
+        else:
+            emit_log({"type": "text", "message": f"~ Library : {lib} (nicht in requirements — ggf. schon vorinstalliert)"})
+
+    emit_log({"type": "text", "message": "Verifikation abgeschlossen." + (" Alles planmäßig." if ok else " Abweichungen siehe oben.")})
 
 
 def _log_tokens(response: dict, log):
