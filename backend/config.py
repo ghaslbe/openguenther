@@ -86,6 +86,26 @@ def get_agent(agent_id):
     return next((a for a in get_agents() if a['id'] == agent_id), None)
 
 
+WEBHOOKS_FILE = os.path.join(DATA_DIR, 'webhooks.json')
+
+
+def get_webhooks():
+    if not os.path.exists(WEBHOOKS_FILE):
+        return []
+    with open(WEBHOOKS_FILE) as f:
+        return json.load(f)
+
+
+def save_webhooks(wh):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(WEBHOOKS_FILE, 'w') as f:
+        json.dump(wh, f, ensure_ascii=False, indent=2)
+
+
+def get_webhook(wh_id):
+    return next((w for w in get_webhooks() if w['id'] == wh_id), None)
+
+
 def get_tool_settings(tool_name):
     settings = get_settings()
     return settings.get('tool_settings', {}).get(tool_name, {})

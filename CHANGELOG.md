@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.4.21] — 2026-03-01
+
+### Webhook-System
+
+- Externe Systeme können OpenGuenther jetzt per HTTP-Aufruf triggern (Home Automation, Skripte, andere Apps)
+- Jeder Webhook hat einen eigenen Bearer-Token (`wh_` + 32 Hex-Zeichen, automatisch generiert)
+- Optional: feste Chat-ID (Kontext bleibt erhalten) oder `null` (neuer Chat pro Aufruf)
+- Optional: Agent-Zuweisung pro Webhook
+- Antwort kommt synchron zurück: `{"chat_id": X, "response": "..."}`
+- CRUD-API: `GET/POST /api/webhooks`, `PUT/DELETE /api/webhooks/<id>`
+- Öffentlicher Trigger-Endpunkt: `POST /webhook/<id>` (kein `/api/`-Prefix)
+- Fehlerbehandlung: 401 bei falschem Token, 400 bei fehlender Message, 404 bei unbekannter ID
+- Einstellungen → Webhooks: Liste, Inline-Bearbeitung, cURL-Beispiel mit Kopier-Button
+
+---
+
 ## [1.4.20] — 2026-02-28
 
 ### Eigener LLM-Provider + Modell pro Agent

@@ -9,6 +9,7 @@ import SettingsTelegram from './settings/SettingsTelegram';
 import SettingsHilfe from './settings/SettingsHilfe';
 import SettingsAgents from './settings/SettingsAgents';
 import SettingsAutoprompts from './settings/SettingsAutoprompts';
+import SettingsWebhooks from './settings/SettingsWebhooks';
 
 export default function Settings({ onClose, onAgentsChange }) {
   const { t } = useTranslation();
@@ -31,6 +32,7 @@ export default function Settings({ onClose, onAgentsChange }) {
     { id: 'providers',    label: t('settings.nav.providers') },
     { id: 'tools',        label: t('settings.nav.tools') },
     { id: 'mcp',          label: t('settings.nav.mcp') },
+    { id: 'webhooks',     label: t('settings.nav.webhooks') },
     { id: 'telegram',     label: t('settings.nav.telegram') },
     { id: 'hilfe',        label: t('settings.nav.hilfe') },
     { id: 'info',         label: t('settings.nav.info') },
@@ -50,6 +52,8 @@ export default function Settings({ onClose, onAgentsChange }) {
         return <SettingsTools providers={providers} />;
       case 'mcp':
         return <SettingsMcp />;
+      case 'webhooks':
+        return <SettingsWebhooks />;
       case 'telegram':
         return <SettingsTelegram />;
       case 'hilfe':

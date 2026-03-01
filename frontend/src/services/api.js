@@ -217,3 +217,30 @@ export async function fetchUsageStats(period = 'today') {
 export async function resetUsageStats() {
   await fetch(`${BASE}/api/usage/stats`, { method: 'DELETE' });
 }
+
+export async function fetchWebhooks() {
+  const res = await fetch(`${BASE}/api/webhooks`);
+  return res.json();
+}
+
+export async function createWebhook(data) {
+  const res = await fetch(`${BASE}/api/webhooks`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+export async function updateWebhook(id, data) {
+  const res = await fetch(`${BASE}/api/webhooks/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+export async function deleteWebhook(id) {
+  await fetch(`${BASE}/api/webhooks/${id}`, { method: 'DELETE' });
+}
