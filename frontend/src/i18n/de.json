@@ -226,6 +226,9 @@
       "description": "Pro Tool kannst du Provider und Modell überschreiben. Wenn alle ausgewählten Tools auf denselben Provider/Modell zeigen, wird dieser Override aktiviert.",
       "builtin": "Built-in",
       "external": "Extern",
+      "builtinSection": "Built-in Tools",
+      "externalSection": "Externe Tools",
+      "noExternal": "Keine externen MCP Tools geladen",
       "override": "Override",
       "providerOverride": "Provider Override",
       "modelOverride": "Modell Override",
@@ -259,7 +262,8 @@
       "cancel": "Abbrechen",
       "envPlaceholder": "Umgebungsvariablen (optional, eine pro Zeile):\nFIRECRAWL_API_KEY=fc-xxx\nANDERE_VAR=wert",
       "marketplaceHint": "MCP Server findest du auf verschiedenen Marktplätzen, z.B.",
-      "marketplaceHintSuffix": " — einer von vielen."
+      "marketplaceHintSuffix": " — einer von vielen.",
+      "toolsHint": "Die Tools der konfigurierten Server werden nach dem Laden unter \"MCP Tools\" aufgeführt."
     },
     "usage": {
       "title": "Nutzungsstatistik",

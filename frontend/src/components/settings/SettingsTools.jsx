@@ -80,6 +80,119 @@ export default function SettingsTools({ providers }) {
   }
 
   const activeProviders = Object.entries(providers || {}).filter(([, p]) => p.enabled);
+  const sortByName = (a, b) => a.name.localeCompare(b.name);
+  const builtinTools = tools.filter(t => t.builtin).sort(sortByName);
+  const externalTools = tools.filter(t => !t.builtin).sort(sortByName);
+
+  function renderTool(tool) {
+    const edit = toolEdits[tool.name] || {};
+    const isOpen = expanded[tool.name];
+    const hasOverride = tool.current_provider || tool.current_model;
+    const schema = tool.settings_schema || [];
+
+    return (
+      <div key={tool.name} className="tool-accordion-item">
+        <div className="tool-accordion-header" onClick={() => toggleExpand(tool)}>
+          <span className="tool-accordion-name">{tool.name}</span>
+          {hasOverride && (
+            <span className="tool-accordion-badge override" title={`${tool.current_provider || 'std'} / ${tool.current_model || 'std'}`}>
+              {t('settings.tools.override')}
+            </span>
+          )}
+          <span className={`tool-accordion-chevron ${isOpen ? 'open' : ''}`}>▼</span>
+        </div>
+
+        {isOpen && (
+          <div className="tool-accordion-body">
+            {tool.agent_overridable !== false && (
+              <>
+                <div className="tool-field-row">
+                  <label>{t('settings.tools.providerOverride')}</label>
+                  <select
+                    value={edit.provider || ''}
+                    onChange={(e) => setField(tool.name, 'provider', e.target.value)}
+                  >
+                    <option value="">{t('settings.tools.useDefault')}</option>
+                    {activeProviders.map(([pid, p]) => (
+                      <option key={pid} value={pid}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="tool-field-row">
+                  <label>{t('settings.tools.modelOverride')}</label>
+                  <input
+                    type="text"
+                    value={edit.model || ''}
+                    onChange={(e) => setField(tool.name, 'model', e.target.value)}
+                    placeholder={t('settings.tools.modelPlaceholder')}
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="tool-field-row">
+              <label>{t('settings.tools.timeoutLabel')}</label>
+              <input
+                type="number"
+                value={edit.timeout || ''}
+                onChange={(e) => setField(tool.name, 'timeout', e.target.value)}
+                placeholder={t('settings.tools.timeoutPlaceholder')}
+                min="1"
+                max="600"
+              />
+            </div>
+
+            {schema.length > 0 && (
+              <div style={tool.agent_overridable !== false ? { borderTop: '1px solid var(--border)', paddingTop: '10px', marginTop: '2px' } : {}}>
+                {schema.map((field) => (
+                  <div key={field.key} className="tool-field-row" style={{ marginBottom: '8px' }}>
+                    <label>{field.label}</label>
+                    {field.type === 'password' ? (
+                      <div className="input-group" style={{ marginTop: 0 }}>
+                        <input
+                          type={showPasswords[`${tool.name}.${field.key}`] ? 'text' : 'password'}
+                          value={edit[field.key] || ''}
+                          onChange={(e) => setField(tool.name, field.key, e.target.value)}
+                          placeholder={field.placeholder || ''}
+                        />
+                        <button
+                          type="button"
+                          className="btn-toggle-key"
+                          onClick={() => setShowPasswords(prev => ({
+                            ...prev, [`${tool.name}.${field.key}`]: !prev[`${tool.name}.${field.key}`]
+                          }))}
+                        >
+                          {showPasswords[`${tool.name}.${field.key}`] ? t('settings.tools.hide') : t('settings.tools.show')}
+                        </button>
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value={edit[field.key] || ''}
+                        onChange={(e) => setField(tool.name, field.key, e.target.value)}
+                        placeholder={field.placeholder || ''}
+                      />
+                    )}
+                    {field.description && (
+                      <small style={{ fontSize: '11px', color: 'var(--text-secondary)', opacity: 0.7 }}>{field.description}</small>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button className="btn-tool-save" onClick={() => handleSave(tool)} disabled={saving[tool.name]}>
+              {saving[tool.name] ? t('settings.tools.saving') : t('settings.tools.save')}
+            </button>
+          </div>
+        )}
+
+        {!isOpen && (
+          <div className="tool-accordion-desc">{tool.description}</div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -88,118 +201,18 @@ export default function SettingsTools({ providers }) {
         {t('settings.tools.description')}
       </p>
 
-      {tools.map((tool) => {
-        const edit = toolEdits[tool.name] || {};
-        const isOpen = expanded[tool.name];
-        const hasOverride = tool.current_provider || tool.current_model;
-        const schema = tool.settings_schema || [];
+      <div className="settings-section">
+        <h3>{t('settings.tools.builtinSection')}</h3>
+        {builtinTools.map(renderTool)}
+      </div>
 
-        return (
-          <div key={tool.name} className="tool-accordion-item">
-            <div className="tool-accordion-header" onClick={() => toggleExpand(tool)}>
-              <span className="tool-accordion-name">{tool.name}</span>
-              <span className={`tool-accordion-badge ${hasOverride ? 'override' : ''}`}>
-                {tool.builtin ? t('settings.tools.builtin') : t('settings.tools.external')}
-              </span>
-              {hasOverride && (
-                <span className="tool-accordion-badge override" title={`${tool.current_provider || 'std'} / ${tool.current_model || 'std'}`}>
-                  {t('settings.tools.override')}
-                </span>
-              )}
-              <span className={`tool-accordion-chevron ${isOpen ? 'open' : ''}`}>▼</span>
-            </div>
-
-            {isOpen && (
-              <div className="tool-accordion-body">
-                {tool.agent_overridable !== false && (
-                  <>
-                    <div className="tool-field-row">
-                      <label>{t('settings.tools.providerOverride')}</label>
-                      <select
-                        value={edit.provider || ''}
-                        onChange={(e) => setField(tool.name, 'provider', e.target.value)}
-                      >
-                        <option value="">{t('settings.tools.useDefault')}</option>
-                        {activeProviders.map(([pid, p]) => (
-                          <option key={pid} value={pid}>{p.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="tool-field-row">
-                      <label>{t('settings.tools.modelOverride')}</label>
-                      <input
-                        type="text"
-                        value={edit.model || ''}
-                        onChange={(e) => setField(tool.name, 'model', e.target.value)}
-                        placeholder={t('settings.tools.modelPlaceholder')}
-                      />
-                    </div>
-                  </>
-                )}
-
-                <div className="tool-field-row">
-                  <label>{t('settings.tools.timeoutLabel')}</label>
-                  <input
-                    type="number"
-                    value={edit.timeout || ''}
-                    onChange={(e) => setField(tool.name, 'timeout', e.target.value)}
-                    placeholder={t('settings.tools.timeoutPlaceholder')}
-                    min="1"
-                    max="600"
-                  />
-                </div>
-
-                {schema.length > 0 && (
-                  <div style={tool.agent_overridable !== false ? { borderTop: '1px solid var(--border)', paddingTop: '10px', marginTop: '2px' } : {}}>
-                    {schema.map((field) => (
-                      <div key={field.key} className="tool-field-row" style={{ marginBottom: '8px' }}>
-                        <label>{field.label}</label>
-                        {field.type === 'password' ? (
-                          <div className="input-group" style={{ marginTop: 0 }}>
-                            <input
-                              type={showPasswords[`${tool.name}.${field.key}`] ? 'text' : 'password'}
-                              value={edit[field.key] || ''}
-                              onChange={(e) => setField(tool.name, field.key, e.target.value)}
-                              placeholder={field.placeholder || ''}
-                            />
-                            <button
-                              type="button"
-                              className="btn-toggle-key"
-                              onClick={() => setShowPasswords(prev => ({
-                                ...prev, [`${tool.name}.${field.key}`]: !prev[`${tool.name}.${field.key}`]
-                              }))}
-                            >
-                              {showPasswords[`${tool.name}.${field.key}`] ? t('settings.tools.hide') : t('settings.tools.show')}
-                            </button>
-                          </div>
-                        ) : (
-                          <input
-                            type="text"
-                            value={edit[field.key] || ''}
-                            onChange={(e) => setField(tool.name, field.key, e.target.value)}
-                            placeholder={field.placeholder || ''}
-                          />
-                        )}
-                        {field.description && (
-                          <small style={{ fontSize: '11px', color: 'var(--text-secondary)', opacity: 0.7 }}>{field.description}</small>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <button className="btn-tool-save" onClick={() => handleSave(tool)} disabled={saving[tool.name]}>
-                  {saving[tool.name] ? t('settings.tools.saving') : t('settings.tools.save')}
-                </button>
-              </div>
-            )}
-
-            {!isOpen && (
-              <div className="tool-accordion-desc">{tool.description}</div>
-            )}
-          </div>
-        );
-      })}
+      <div className="settings-section">
+        <h3>{t('settings.tools.externalSection')}</h3>
+        {externalTools.length === 0
+          ? <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t('settings.tools.noExternal')}</p>
+          : externalTools.map(renderTool)
+        }
+      </div>
 
       <button className="btn-reload-mcp" onClick={handleReload} disabled={reloading}>
         {reloading ? t('settings.tools.reloading') : t('settings.tools.reload')}

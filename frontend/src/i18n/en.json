@@ -226,6 +226,9 @@
       "description": "Per tool you can override the provider and model. If the override is set, it will be used for that tool.",
       "builtin": "Built-in",
       "external": "External",
+      "builtinSection": "Built-in Tools",
+      "externalSection": "External Tools",
+      "noExternal": "No external MCP tools loaded",
       "override": "Override",
       "providerOverride": "Provider override",
       "modelOverride": "Model override",
@@ -259,7 +262,8 @@
       "cancel": "Cancel",
       "envPlaceholder": "Environment variables (optional, one per line):\nFIRECRAWL_API_KEY=fc-xxx\nOTHER_VAR=value",
       "marketplaceHint": "Find MCP servers on various marketplaces, e.g.",
-      "marketplaceHintSuffix": " — one of many."
+      "marketplaceHintSuffix": " — one of many.",
+      "toolsHint": "The tools from configured servers appear under \"MCP Tools\" after reloading."
     },
     "usage": {
       "title": "Usage statistics",

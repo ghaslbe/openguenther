@@ -219,6 +219,10 @@ export default function SettingsMcp() {
         </a>
         {t('settings.mcp.marketplaceHintSuffix')}
       </div>
+
+      <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.7 }}>
+        ℹ️ {t('settings.mcp.toolsHint')}
+      </p>
     </div>
   );
 }
