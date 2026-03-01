@@ -336,6 +336,16 @@ def handler(param, optional_param=10):
         return {{"error": str(e)}}
 ```
 
+CRITICAL RULE — HANDLER SIGNATURE:
+The handler function MUST accept the input_schema properties as individual keyword arguments.
+NEVER use def handler(params) or def handler(data) or def handler(**kwargs) alone.
+
+CORRECT:   def handler(url):                   # if input_schema has property "url"
+CORRECT:   def handler(query, max_results=10): # if schema has "query" (required) and "max_results" (optional)
+WRONG:     def handler(params):                # ← THIS BREAKS THE TOOL, never do this
+WRONG:     def handler(data):                  # ← same problem
+WRONG:     def handler(**kwargs):              # ← only acceptable if combined with explicit params
+
 RULES:
 - Use SETTINGS_SCHEMA for API keys/tokens — never hardcode credentials in code
 - For HTTP requests: always set a realistic browser User-Agent header
@@ -372,6 +382,10 @@ Common fixes:
 - AttributeError on mock: the code uses an internal module incorrectly — simplify imports
 - AssertionError "Missing TOOL_DEFINITION": make sure TOOL_DEFINITION is at module level, not inside a function
 - AssertionError "No callable handler": define a `handler` function or a function named after the tool
+- AssertionError "wrong signature" / "missing parameter": handler must accept keyword arguments
+  matching input_schema properties. NEVER use def handler(params) or def handler(data).
+  CORRECT: def handler(url) for schema property "url"
+  CORRECT: def handler(query, limit=10) for properties "query" and "limit"
 - pip install failed: use a different package name or version, or find an alternative library
 
 Respond ONLY with valid JSON:
@@ -486,6 +500,33 @@ if td is not None:
     h = getattr(mod, 'handler', None) or getattr(mod, td['name'], None)
     assert h is not None, f"No handler function found (define 'handler' or '{td['name']}')"
     assert callable(h), "handler is not callable"
+
+    # Validate handler signature against input_schema
+    import inspect
+    props = list(td['input_schema'].get('properties', {}).keys())
+    required_params = td['input_schema'].get('required', [])
+    sig = inspect.signature(h)
+    sig_params = sig.parameters
+    has_var_kw = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig_params.values())
+    positional = [n for n, p in sig_params.items()
+                  if p.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                                inspect.Parameter.POSITIONAL_ONLY,
+                                inspect.Parameter.KEYWORD_ONLY)]
+    # Catch def handler(params) / def handler(data) anti-pattern:
+    # single arg whose name doesn't match any schema property
+    if len(positional) == 1 and props and positional[0] not in props and not has_var_kw:
+        assert False, (
+            f"Wrong handler signature: def handler({positional[0]}) — "
+            f"handler must accept keyword arguments matching input_schema properties {props}. "
+            f"Fix: def handler({', '.join(props)})"
+        )
+    # Ensure all required schema params are present (unless **kwargs used)
+    if not has_var_kw:
+        for req in required_params:
+            assert req in sig_params, (
+                f"handler missing required parameter '{req}' from input_schema. "
+                f"Fix: def handler({', '.join(props)})"
+            )
     print(f"OK|{td['name']}|{td['description'][:70]}")
 else:
     assert isinstance(tds, list) and len(tds) > 0, \
