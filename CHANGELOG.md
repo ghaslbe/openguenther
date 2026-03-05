@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.40] — 2026-03-05
+
+### YouTube Transcript Tool
+
+- **`get_youtube_transcript`**: Neues Built-in MCP Tool zum Abrufen von YouTube-Transkripten
+- Kein API Key erforderlich — nutzt `youtube-transcript-api` direkt
+- Akzeptiert vollständige YouTube-URLs (youtube.com/watch, youtu.be, embed) oder reine Video-IDs
+- Bevorzugte Sprachen konfigurierbar in Tool-Einstellungen (Standard: `de,en`), automatischer Fallback auf jede verfügbare Sprache
+- Gibt Transkripttext, Segment-Anzahl, Wortanzahl und erkannte Sprache zurück
+
+---
+
 ## [1.4.39] — 2026-03-05
 
 ### Mastodon Built-in Tool
