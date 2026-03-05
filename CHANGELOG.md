@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.37] — 2026-03-05
+
+### Twitter/X Built-in Tool
+
+- **`post_tweet`**: Neues Built-in MCP Tool zum Posten von Tweets via Twitter/X API v2
+- OAuth 1.0a Signatur vollständig in Python ohne externe Libraries implementiert
+- **4 konfigurierbare API-Schlüssel** (`api_key`, `api_secret`, `access_token`, `access_token_secret`) erscheinen automatisch als Passwortfelder in den Tool-Einstellungen via `SETTINGS_SCHEMA`
+- Hilfetexte und Links zum Twitter Developer Portal direkt in `SETTINGS_INFO`
+- Tweet wird auf 280 Zeichen gekürzt falls nötig; gibt Tweet-ID und URL zurück
+
+---
+
 ## [1.4.36] — 2026-03-01
 
 ### Audio-Workflow + Tool-Fehler sichtbar + Hilfe überarbeitet
