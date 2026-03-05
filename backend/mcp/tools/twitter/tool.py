@@ -194,9 +194,19 @@ def handler(text: str) -> dict:
         error_body = e.read().decode("utf-8", errors="replace")
         log(f"[Twitter] HTTP {e.code} {e.reason}")
         log(f"[Twitter] Response: {error_body}")
+        hint = ""
+        if e.code == 503:
+            hint = (
+                " | Hinweis: 503 bedeutet oft fehlendes 'Read and Write'-Recht in der Twitter-App "
+                "oder Free-Tier ohne POST-Zugriff. Access Token nach Berechtigungsänderung neu generieren!"
+            )
+        elif e.code == 401:
+            hint = " | Hinweis: 401 = Keys ungültig oder Access Token abgelaufen."
+        elif e.code == 403:
+            hint = " | Hinweis: 403 = App hat keine Schreibrechte oder duplizierter Tweet."
         return {
             "success": False,
-            "error": f"Twitter API Fehler {e.code} ({e.reason}): {error_body}"
+            "error": f"Twitter API Fehler {e.code} ({e.reason}): {error_body}{hint}"
         }
     except urllib.error.URLError as e:
         log(f"[Twitter] Verbindungsfehler: {e.reason}")
