@@ -25,7 +25,11 @@ Postet einen Tweet über die Twitter/X API mit OAuth 1.0a Authentifizierung.
    - **Access Token**
    - **Access Token Secret**
 
-Alle vier Werte sind erforderlich. Der Account muss über den Access Token verifiziert sein."""
+Alle vier Werte sind erforderlich. Der Account muss über den Access Token verifiziert sein.
+
+**Proxy (optional):** Twitter blockiert API-Calls von Datacenter-IPs (Hetzner, AWS etc.).
+Falls der Server eine solche IP hat, trage hier einen HTTP/HTTPS-Proxy mit Residential-IP ein.
+Format: `http://user:pass@host:port` oder `http://host:port`"""
 
 SETTINGS_SCHEMA = [
     {
@@ -55,6 +59,13 @@ SETTINGS_SCHEMA = [
         "type": "password",
         "placeholder": "o3u4zgv...",
         "description": "Access Token Secret"
+    },
+    {
+        "key": "proxy",
+        "label": "Proxy URL (optional)",
+        "type": "text",
+        "placeholder": "http://user:pass@host:port",
+        "description": "HTTP/HTTPS-Proxy für Requests — nötig wenn der Server eine Datacenter-IP hat"
     },
 ]
 
@@ -95,10 +106,11 @@ def handler(text: str) -> dict:
 
     cfg = get_tool_settings("post_tweet")
 
-    api_key            = cfg.get("api_key", "").strip()
-    api_secret         = cfg.get("api_secret", "").strip()
-    access_token       = cfg.get("access_token", "").strip()
+    api_key             = cfg.get("api_key", "").strip()
+    api_secret          = cfg.get("api_secret", "").strip()
+    access_token        = cfg.get("access_token", "").strip()
     access_token_secret = cfg.get("access_token_secret", "").strip()
+    proxy_url           = cfg.get("proxy", "").strip()
 
     missing = [label for label, val in [
         ("API Key",             api_key),
@@ -125,64 +137,69 @@ def handler(text: str) -> dict:
     oauth_nonce = _generate_nonce()
 
     params = {
-        "oauth_consumer_key":     api_key,
-        "oauth_nonce":            oauth_nonce,
-        "oauth_signature_method": "HMAC-SHA1",
-        "oauth_timestamp":        oauth_timestamp,
-        "oauth_token":            access_token,
-        "oauth_version":          "1.0",
+        'oauth_consumer_key':     api_key,
+        'oauth_nonce':            oauth_nonce,
+        'oauth_signature_method': 'HMAC-SHA1',
+        'oauth_timestamp':        oauth_timestamp,
+        'oauth_token':            access_token,
+        'oauth_version':          '1.0',
     }
 
-    # Signatur-Basis: Keys NICHT extra encodieren (identisch zum Original)
-    param_string = "&".join(
-        f"{k}={urllib.parse.quote(str(v), safe='')}"
-        for k, v in sorted(params.items())
-    )
-    base_string = "&".join([
-        "POST",
-        urllib.parse.quote(url, safe=""),
-        urllib.parse.quote(param_string, safe=""),
+    base_string = '&'.join([
+        'POST',
+        urllib.parse.quote(url, safe=''),
+        urllib.parse.quote('&'.join([
+            f"{k}={urllib.parse.quote(str(v), safe='')}"
+            for k, v in sorted(params.items())
+        ]), safe='')
     ])
 
-    signing_key = "&".join([
-        urllib.parse.quote(api_secret, safe=""),
-        urllib.parse.quote(access_token_secret, safe=""),
+    signing_key = '&'.join([
+        urllib.parse.quote(api_secret, safe=''),
+        urllib.parse.quote(access_token_secret, safe='')
     ])
 
     signature = base64.b64encode(
         hmac.new(
-            signing_key.encode("utf-8"),
-            base_string.encode("utf-8"),
-            hashlib.sha1,
+            signing_key.encode('utf-8'),
+            base_string.encode('utf-8'),
+            hashlib.sha1
         ).digest()
-    ).decode("utf-8")
+    ).decode('utf-8')
 
-    params["oauth_signature"] = signature
-    auth_header = "OAuth " + ", ".join(
+    params['oauth_signature'] = signature
+    auth_header = 'OAuth ' + ', '.join([
         f'{k}="{urllib.parse.quote(str(v), safe="")}"'
         for k, v in params.items()
-    )
+    ])
+
+    if proxy_url:
+        log(f"[Twitter] Verwende Proxy: {proxy_url.split('@')[-1]}")
+        opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({
+                'http':  proxy_url,
+                'https': proxy_url,
+            })
+        )
+    else:
+        opener = urllib.request.build_opener()
 
     log(f"[Twitter] Poste Tweet ({len(text)} Zeichen)...")
-    log(f"[Twitter] Timestamp: {oauth_timestamp} | Nonce: {oauth_nonce[:8]}...")
 
-    body = json.dumps({"text": text}).encode("utf-8")
     req = urllib.request.Request(
         url,
-        data=body,
+        data=json.dumps({'text': text}).encode('utf-8'),
         headers={
-            "Authorization":  auth_header,
-            "Content-Type":   "application/json",
-            "User-Agent":     "OpenGuenther/1.0",
-            "Content-Length": str(len(body)),
+            'Authorization': auth_header,
+            'Content-Type':  'application/json',
         },
-        method="POST",
+        method='POST',
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json.loads(resp.read().decode("utf-8"))
-            tweet_id = result.get("data", {}).get("id", "")
+        with opener.open(req, timeout=30) as resp:
+            result = json.loads(resp.read().decode('utf-8'))
+            tweet_id = result.get('data', {}).get('id', '')
             log(f"[Twitter] Tweet erfolgreich gepostet! ID: {tweet_id}")
             return {
                 "success": True,
@@ -191,26 +208,22 @@ def handler(text: str) -> dict:
                 "url": f"https://x.com/i/web/status/{tweet_id}" if tweet_id else None,
             }
     except urllib.error.HTTPError as e:
-        error_body = e.read().decode("utf-8", errors="replace")
-        log(f"[Twitter] HTTP {e.code} {e.reason}")
-        log(f"[Twitter] Response: {error_body}")
+        error_body = e.read().decode('utf-8', errors='replace')
+        log(f"[Twitter] HTTP {e.code} {e.reason}: {error_body}")
         hint = ""
         if e.code == 503:
             hint = (
-                " | Hinweis: 503 bedeutet oft fehlendes 'Read and Write'-Recht in der Twitter-App "
-                "oder Free-Tier ohne POST-Zugriff. Access Token nach Berechtigungsänderung neu generieren!"
+                " | Hinweis: Twitter blockiert Datacenter-IPs (Hetzner, AWS …). "
+                "Trage einen Proxy mit Residential-IP in den Tool-Einstellungen ein."
             )
         elif e.code == 401:
-            hint = " | Hinweis: 401 = Keys ungültig oder Access Token abgelaufen."
+            hint = " | Hinweis: Keys ungültig oder Access Token abgelaufen."
         elif e.code == 403:
-            hint = " | Hinweis: 403 = App hat keine Schreibrechte oder duplizierter Tweet."
-        return {
-            "success": False,
-            "error": f"Twitter API Fehler {e.code} ({e.reason}): {error_body}{hint}"
-        }
+            hint = " | Hinweis: App hat keine Schreibrechte oder duplizierter Tweet."
+        return {"success": False, "error": f"Twitter API {e.code} ({e.reason}): {error_body}{hint}"}
     except urllib.error.URLError as e:
         log(f"[Twitter] Verbindungsfehler: {e.reason}")
         return {"success": False, "error": f"Verbindungsfehler: {e.reason}"}
     except Exception as e:
-        log(f"[Twitter] Unerwarteter Fehler: {e}")
+        log(f"[Twitter] Fehler: {e}")
         return {"success": False, "error": f"Fehler: {str(e)}"}
