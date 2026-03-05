@@ -350,3 +350,4 @@ For reference, these tools ship with OpenGuenther:
 | `text_to_image` | Text rendered as PNG |
 | `list_available_tools` | List all registered tools |
 | `get_help` | Help about Guenther and its features |
+| `post_tweet` | Post a tweet on Twitter/X (OAuth 1.0a, API keys in tool settings) |
