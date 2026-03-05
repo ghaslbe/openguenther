@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.38] — 2026-03-05
+
+### Bluesky Built-in Tool
+
+- **`post_bluesky`**: Neues Built-in MCP Tool zum Posten auf Bluesky (AT Protocol)
+- Authentifizierung via Handle + App-Passwort (kein OAuth-Overhead)
+- Hashtags werden automatisch als klickbare Facets (byte-genaue UTF-8-Offsets) verlinkt
+- Beitrag wird auf 300 Zeichen gekürzt falls nötig; gibt Post-URI und URL zurück
+- Nur 2 Felder in den Tool-Einstellungen nötig; kein Proxy erforderlich
+
+---
+
 ## [1.4.37] — 2026-03-05
 
 ### Twitter/X Built-in Tool
