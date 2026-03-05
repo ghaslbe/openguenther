@@ -213,8 +213,8 @@ def handler(text: str) -> dict:
         hint = ""
         if e.code == 503:
             hint = (
-                " | Hinweis: Twitter blockiert Datacenter-IPs (Hetzner, AWS …). "
-                "Trage einen Proxy mit Residential-IP in den Tool-Einstellungen ein."
+                " | Hinweis: 503 kann bedeuten dass Twitter API-Calls von Hoster-IPs (Hetzner, AWS, …) blockiert. "
+                "Lösung: Proxy mit Residential-IP in den Tool-Einstellungen eintragen."
             )
         elif e.code == 401:
             hint = " | Hinweis: Keys ungültig oder Access Token abgelaufen."
