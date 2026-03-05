@@ -89,23 +89,33 @@ def handler(text: str) -> dict:
         if emit_log:
             emit_log({"type": "text", "message": msg})
 
+    # ── Eingabe-Validierung ────────────────────────────────────────────────────
+    if not text or not text.strip():
+        return {"success": False, "error": "Tweet-Text darf nicht leer sein."}
+
     cfg = get_tool_settings("post_tweet")
 
-    api_key = cfg.get("api_key", "").strip()
-    api_secret = cfg.get("api_secret", "").strip()
-    access_token = cfg.get("access_token", "").strip()
+    api_key            = cfg.get("api_key", "").strip()
+    api_secret         = cfg.get("api_secret", "").strip()
+    access_token       = cfg.get("access_token", "").strip()
     access_token_secret = cfg.get("access_token_secret", "").strip()
 
-    missing = [k for k, v in [
-        ("API Key", api_key), ("API Secret", api_secret),
-        ("Access Token", access_token), ("Access Token Secret", access_token_secret)
-    ] if not v]
+    missing = [label for label, val in [
+        ("API Key",             api_key),
+        ("API Secret",          api_secret),
+        ("Access Token",        access_token),
+        ("Access Token Secret", access_token_secret),
+    ] if not val]
     if missing:
         return {
             "success": False,
-            "error": f"Fehlende Twitter-Zugangsdaten: {', '.join(missing)}. Bitte in den Tool-Einstellungen konfigurieren."
+            "error": (
+                f"Fehlende Twitter-Zugangsdaten: {', '.join(missing)}. "
+                "Bitte in Einstellungen → Tools → post_tweet eintragen."
+            )
         }
 
+    text = text.strip()
     if len(text) > 280:
         text = text[:277] + "..."
         log("[Twitter] Tweet auf 280 Zeichen gekürzt")
@@ -114,19 +124,19 @@ def handler(text: str) -> dict:
     oauth_timestamp = str(int(time.time()))
     oauth_nonce = _generate_nonce()
 
-    oauth_params = {
-        "oauth_consumer_key": api_key,
-        "oauth_nonce": oauth_nonce,
+    params = {
+        "oauth_consumer_key":     api_key,
+        "oauth_nonce":            oauth_nonce,
         "oauth_signature_method": "HMAC-SHA1",
-        "oauth_timestamp": oauth_timestamp,
-        "oauth_token": access_token,
-        "oauth_version": "1.0",
+        "oauth_timestamp":        oauth_timestamp,
+        "oauth_token":            access_token,
+        "oauth_version":          "1.0",
     }
 
-    # Build signature base string (only OAuth params, not body for JSON requests)
+    # Signatur-Basis: Keys NICHT extra encodieren (identisch zum Original)
     param_string = "&".join(
-        f"{urllib.parse.quote(k, safe='')}={urllib.parse.quote(str(v), safe='')}"
-        for k, v in sorted(oauth_params.items())
+        f"{k}={urllib.parse.quote(str(v), safe='')}"
+        for k, v in sorted(params.items())
     )
     base_string = "&".join([
         "POST",
@@ -147,27 +157,30 @@ def handler(text: str) -> dict:
         ).digest()
     ).decode("utf-8")
 
-    oauth_params["oauth_signature"] = signature
+    params["oauth_signature"] = signature
     auth_header = "OAuth " + ", ".join(
         f'{k}="{urllib.parse.quote(str(v), safe="")}"'
-        for k, v in oauth_params.items()
+        for k, v in params.items()
     )
 
     log(f"[Twitter] Poste Tweet ({len(text)} Zeichen)...")
+    log(f"[Twitter] Timestamp: {oauth_timestamp} | Nonce: {oauth_nonce[:8]}...")
 
     body = json.dumps({"text": text}).encode("utf-8")
     req = urllib.request.Request(
         url,
         data=body,
         headers={
-            "Authorization": auth_header,
-            "Content-Type": "application/json",
+            "Authorization":  auth_header,
+            "Content-Type":   "application/json",
+            "User-Agent":     "OpenGuenther/1.0",
+            "Content-Length": str(len(body)),
         },
         method="POST",
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             result = json.loads(resp.read().decode("utf-8"))
             tweet_id = result.get("data", {}).get("id", "")
             log(f"[Twitter] Tweet erfolgreich gepostet! ID: {tweet_id}")
@@ -179,7 +192,15 @@ def handler(text: str) -> dict:
             }
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8", errors="replace")
-        log(f"[Twitter] HTTP {e.code}: {error_body}")
-        return {"success": False, "error": f"Twitter API Fehler {e.code}: {error_body}"}
+        log(f"[Twitter] HTTP {e.code} {e.reason}")
+        log(f"[Twitter] Response: {error_body}")
+        return {
+            "success": False,
+            "error": f"Twitter API Fehler {e.code} ({e.reason}): {error_body}"
+        }
+    except urllib.error.URLError as e:
+        log(f"[Twitter] Verbindungsfehler: {e.reason}")
+        return {"success": False, "error": f"Verbindungsfehler: {e.reason}"}
     except Exception as e:
-        return {"success": False, "error": f"Fehler beim Posten: {str(e)}"}
+        log(f"[Twitter] Unerwarteter Fehler: {e}")
+        return {"success": False, "error": f"Fehler: {str(e)}"}
