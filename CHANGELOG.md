@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.39] — 2026-03-05
+
+### Mastodon Built-in Tool
+
+- **`post_mastodon`**: Neues Built-in MCP Tool zum Posten auf Mastodon via REST API
+- Nur 2 Felder: Instanz-URL + Access Token (kein OAuth-Overhead)
+- Nutzt `requests` statt `mastodon.py` — keine extra Dependency
+- Toot wird auf 500 Zeichen gekürzt falls nötig; gibt Post-ID und URL zurück
+- Sprechende Fehler für 401 (Token ungültig) und 403 (fehlende Schreibrechte)
+
+---
+
 ## [1.4.38] — 2026-03-05
 
 ### Bluesky Built-in Tool

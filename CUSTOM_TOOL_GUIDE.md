@@ -352,3 +352,4 @@ For reference, these tools ship with OpenGuenther:
 | `get_help` | Help about Guenther and its features |
 | `post_tweet` | Post a tweet on Twitter/X (OAuth 1.0a, API keys in tool settings) |
 | `post_bluesky` | Post on Bluesky (handle + app password, hashtags auto-linked) |
+| `post_mastodon` | Post a toot on Mastodon (instance URL + access token) |

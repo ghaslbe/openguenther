@@ -296,6 +296,7 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 | `send_telegram` | Telegram-Nachricht oder Audiodatei senden — per `@username` oder numerischer Chat-ID |
 | `post_tweet` | Tweet auf Twitter/X posten (OAuth 1.0a, API-Keys in Tool-Einstellungen) |
 | `post_bluesky` | Beitrag auf Bluesky posten (Handle + App-Passwort, Hashtags automatisch verlinkt) |
+| `post_mastodon` | Toot auf Mastodon posten (Instanz-URL + Access Token) |
 | `text_to_speech` | Text vorlesen via ElevenLabs (API Key in Tool-Einstellungen) |
 | `generate_password` | Sichere Passwörter generieren |
 | `calculate` | Mathematische Ausdrücke sicher auswerten (AST-basiert, kein eval) |
@@ -592,6 +593,7 @@ Data is stored persistently in a Docker volume (`/app/data`).
 | `send_telegram` | Send a Telegram message or audio file — via `@username` or numeric chat ID |
 | `post_tweet` | Post a tweet on Twitter/X (OAuth 1.0a, API keys in tool settings) |
 | `post_bluesky` | Post on Bluesky (handle + app password, hashtags auto-linked) |
+| `post_mastodon` | Post a toot on Mastodon (instance URL + access token) |
 | `text_to_speech` | Text-to-speech via ElevenLabs (API key in tool settings) |
 | `generate_password` | Generate secure passwords |
 | `calculate` | Evaluate mathematical expressions safely (AST-based, no eval) |
