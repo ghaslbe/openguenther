@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.4.44] — 2026-03-06
+
+### Agenten-Vorlagen-Tab
+- Einstellungen → Agenten: neuer Tab **"Vorlagen"** mit 8 vordefinierten Agenten-Vorlagen
+- Vorlagen: Orchestrator, Recherche-Assistent, Content-Manager, Daten-Analyst, Code-Reviewer, CRM-Assistent, Social-Media-Manager, Übersetzungs-Assistent
+- Ein-Klick-Installation; bei Namenskonflikt mit abweichendem Prompt automatisch als Kopie anlegen (z.B. "Orchestrator (2)")
+- Kategorie-Badges mit Farben pro Kategorie
+
+## [1.4.43] — 2026-03-06
+
+### Orchestrator — plan_task Tool + Default-Agent
+- Neues Built-in MCP Tool **`plan_task`**: holt alle verfügbaren Tools aus dem Registry und gibt strukturierten Planungs-Scaffold zurück
+- `app.py`: legt beim ersten Start automatisch den **"Orchestrator"**-Agenten an (nur wenn noch nicht vorhanden)
+- Orchestrator-Agent: System-Prompt erzwingt `plan_task` zuerst, dann sequentielle Ausführung mit Zwischenbericht
+- Badge "Orchestrator" für `plan_task` in Tool-Einstellungen
+
+## [1.4.42] — 2026-03-06
+
+### SFTP/FTP Tool
+- Neues Built-in MCP Tool **`sftp`**: Dateien auf SFTP- und FTP-Servern verwalten
+- Aktionen: `list_files`, `read_file`, `write_file`, `delete_file`, `rename_file`, `mkdir`, `stat_file`
+- SFTP via `paramiko` (verschlüsselt, empfohlen), FTP via eingebaute `ftplib`
+- Einstellungen: host, port, username, password, protocol
+
+## [1.4.41] — 2026-03-06
+
+### Sortierung Built-in Tools + Markdown Listen-Fix
+- Einstellungen → MCP Tools: Built-in-Liste sortierbar nach **A–Z** oder **Service-Badge** (Toggle-Buttons)
+- CSS-Fix: `ul`/`ol`-Listen in Chat-Nachrichten und Tool-Beschreibungen jetzt korrekt eingerückt (globaler Reset hatte `padding-left` entfernt)
+
+---
+
 ## [1.4.56] — 2026-03-06
 
 ### WordPress Tool
