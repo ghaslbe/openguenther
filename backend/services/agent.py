@@ -191,8 +191,8 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
             for k, v in obj.items():
                 if k in _UNSUPPORTED_SCHEMA_KEYS:
                     continue
-                # additionalProperties: {} (empty object) → drop it (avoid API rejection)
-                if k == 'additionalProperties' and v == {}:
+                # additionalProperties as a schema object (dict) is unsupported by OpenAI function calling
+                if k == 'additionalProperties' and isinstance(v, dict):
                     continue
                 result[k] = _sanitize_schema(v)
             return result
