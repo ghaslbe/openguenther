@@ -297,6 +297,67 @@ def handle_message(data):
     emit('agent_end', {'chat_id': chat_id})
 
 
+@socketio.on('start_agent_chat')
+def handle_start_agent_chat(data):
+    """Startet einen neuen Chat mit einem Agenten ohne User-Eingabe.
+    Der Agent begrüßt den Nutzer direkt anhand seines System-Prompts."""
+    agent_id = data.get('agent_id')
+    if not agent_id:
+        return
+
+    agent_cfg = get_agent(agent_id)
+    if not agent_cfg:
+        return
+
+    agent_name = agent_cfg.get('name', 'Agent')
+    agent_system_prompt = agent_cfg.get('system_prompt') or None
+    agent_provider_id = agent_cfg.get('provider_id') or None
+    agent_model = agent_cfg.get('model') or None
+
+    # Chat anlegen (kein User-Text — Titel = Agent-Name)
+    chat_id = create_chat(f"Chat mit {agent_name}", agent_id=agent_id)
+    emit('chat_created', {'chat_id': chat_id, 'title': f"Chat mit {agent_name}", 'agent_id': agent_id})
+
+    # Versteckter Trigger — wird NICHT gespeichert, erscheint nicht im Chat
+    trigger = "Begrüße den Nutzer kurz und erkläre in 2-3 Sätzen, wofür du da bist und was du kannst."
+    messages = [{'role': 'user', 'content': trigger}]
+
+    settings = get_settings()
+
+    def emit_log(entry):
+        if isinstance(entry, dict):
+            socketio.emit('guenther_log', entry)
+        else:
+            socketio.emit('guenther_log', {'type': 'text', 'message': str(entry)})
+
+    emit('agent_start', {'chat_id': chat_id})
+
+    sid = flask_request.sid
+    stop_event = threading.Event()
+    _cancel_flags[sid] = stop_event
+
+    try:
+        response = run_agent(messages, settings, emit_log, system_prompt=agent_system_prompt,
+                             agent_provider_id=agent_provider_id, agent_model=agent_model,
+                             chat_id=chat_id, stop_event=stop_event)
+        if stop_event.is_set():
+            emit('agent_end', {'chat_id': chat_id, 'cancelled': True})
+            return
+        response = file_store.extract_and_store(response, chat_id)
+        # Nur Assistant-Antwort speichern — kein User-Message-Eintrag
+        add_message(chat_id, 'assistant', response)
+        emit('agent_response', {'chat_id': chat_id, 'content': response})
+    except Exception as e:
+        error_msg = f"Fehler: {str(e)}"
+        emit_log(f"FEHLER: {error_msg}")
+        add_message(chat_id, 'assistant', error_msg)
+        emit('agent_response', {'chat_id': chat_id, 'content': error_msg})
+    finally:
+        _cancel_flags.pop(sid, None)
+
+    emit('agent_end', {'chat_id': chat_id})
+
+
 @socketio.on('cancel_generation')
 def handle_cancel():
     flag = _cancel_flags.get(flask_request.sid)

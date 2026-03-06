@@ -314,6 +314,9 @@ export default function App() {
     setMessages([]);
     setSelectedAgentId(agentId);
     setGuentherLogs([]);
+    if (agentId) {
+      socket.emit('start_agent_chat', { agent_id: agentId });
+    }
   }
 
   function handleClearLogs() {
