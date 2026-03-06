@@ -177,25 +177,21 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
 
     all_tools = registry.get_openai_tools()
 
-    # Recursively strip JSON Schema keywords rejected by OpenAI-compatible APIs
+    # Recursively strip JSON Schema keywords rejected by OpenAI-compatible APIs.
+    # 'additionalProperties' is stripped entirely: boolean false triggers strict-mode
+    # validation in gpt-4o which requires all properties to be in 'required' — unsafe
+    # for schemas with optional fields. 'default' is not part of the supported subset.
     _UNSUPPORTED_SCHEMA_KEYS = {
         '$schema', 'format', 'propertyNames', '$defs', '$ref', '$id',
         'minLength', 'maxLength', 'minimum', 'maximum', 'exclusiveMinimum',
         'exclusiveMaximum', 'multipleOf', 'pattern', 'minItems', 'maxItems',
         'uniqueItems', 'minProperties', 'maxProperties',
+        'additionalProperties', 'default',
     }
 
     def _sanitize_schema(obj):
         if isinstance(obj, dict):
-            result = {}
-            for k, v in obj.items():
-                if k in _UNSUPPORTED_SCHEMA_KEYS:
-                    continue
-                # additionalProperties as a schema object (dict) is unsupported by OpenAI function calling
-                if k == 'additionalProperties' and isinstance(v, dict):
-                    continue
-                result[k] = _sanitize_schema(v)
-            return result
+            return {k: _sanitize_schema(v) for k, v in obj.items() if k not in _UNSUPPORTED_SCHEMA_KEYS}
         if isinstance(obj, list):
             return [_sanitize_schema(i) for i in obj]
         return obj
