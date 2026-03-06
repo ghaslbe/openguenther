@@ -295,7 +295,25 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
         try:
             response = call_openrouter(messages, tools if tools else None, api_key, model, temperature, base_url=base_url, timeout=llm_timeout, provider_name=provider_display, provider_id=provider_id)
         except Exception as e:
-            error_msg = f"Fehler bei LLM-Anfrage: {str(e)}"
+            # Try to extract a human-readable upstream error message
+            import requests as _requests
+            upstream = ""
+            if isinstance(e, _requests.HTTPError) and e.response is not None:
+                try:
+                    body = e.response.json()
+                    err = body.get("error", {})
+                    meta = err.get("metadata", {}) if isinstance(err, dict) else {}
+                    raw = meta.get("raw", "") if isinstance(meta, dict) else ""
+                    if raw:
+                        import json as _json
+                        raw_obj = _json.loads(raw) if isinstance(raw, str) else raw
+                        upstream = raw_obj.get("error", {}).get("message", "") if isinstance(raw_obj, dict) else ""
+                except Exception:
+                    pass
+            base = str(e).split(" | upstream:")[0]
+            error_msg = f"Fehler bei LLM-Anfrage: {base}"
+            if upstream:
+                error_msg += f"\n\n**Details:** {upstream}"
             emit_log({"type": "text", "message": f"[{_ts()}] FEHLER: {error_msg}"})
             return error_msg
 
