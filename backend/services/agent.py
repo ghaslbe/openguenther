@@ -176,9 +176,21 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
             messages.append(msg)
 
     all_tools = registry.get_openai_tools()
-    # Strip $schema from parameters — rejected by OpenAI-compatible APIs
+
+    # Recursively strip JSON Schema keywords rejected by OpenAI-compatible APIs
+    _UNSUPPORTED_SCHEMA_KEYS = {'$schema', 'format', 'propertyNames', '$defs', '$ref', '$id'}
+
+    def _sanitize_schema(obj):
+        if isinstance(obj, dict):
+            return {k: _sanitize_schema(v) for k, v in obj.items() if k not in _UNSUPPORTED_SCHEMA_KEYS}
+        if isinstance(obj, list):
+            return [_sanitize_schema(i) for i in obj]
+        return obj
+
     for _t in all_tools:
-        _t.get('function', {}).get('parameters', {}).pop('$schema', None)
+        params = _t.get('function', {}).get('parameters')
+        if params:
+            _t['function']['parameters'] = _sanitize_schema(params)
 
     # ── Log: Start ──
     emit_log({"type": "header", "message": "GUENTHER AGENT GESTARTET"})
