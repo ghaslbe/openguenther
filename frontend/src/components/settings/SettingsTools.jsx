@@ -121,20 +121,63 @@ export default function SettingsTools({ providers }) {
   const customMcpTools = tools.filter(t => t.custom).sort(sortByName);
   const externalTools = tools.filter(t => !t.builtin).sort(sortByName);
 
+  const TOOL_CATEGORY = {
+    // Databases
+    airtable:          { label: 'Airtable',    bg: '#fcb400', fg: '#000' },
+    mysql:             { label: 'MySQL',        bg: '#00758f', fg: '#fff' },
+    postgresql:        { label: 'PostgreSQL',   bg: '#336791', fg: '#fff' },
+    mongodb:           { label: 'MongoDB',      bg: '#4db33d', fg: '#fff' },
+    pinecone:          { label: 'Pinecone',     bg: '#1c17ff', fg: '#fff' },
+    // Project / Productivity
+    trello:            { label: 'Trello',       bg: '#0052cc', fg: '#fff' },
+    notion:            { label: 'Notion',       bg: '#333',    fg: '#fff' },
+    todoist:           { label: 'Todoist',      bg: '#db4035', fg: '#fff' },
+    // Communication
+    slack:             { label: 'Slack',        bg: '#4a154b', fg: '#fff' },
+    discord:           { label: 'Discord',      bg: '#5865f2', fg: '#fff' },
+    send_telegram:     { label: 'Telegram',     bg: '#0088cc', fg: '#fff' },
+    email:             { label: 'E-Mail',       bg: '#555',    fg: '#fff' },
+    // Social / Publishing
+    twitter:           { label: 'Twitter/X',   bg: '#111',    fg: '#fff' },
+    bluesky:           { label: 'Bluesky',      bg: '#0085ff', fg: '#fff' },
+    mastodon:          { label: 'Mastodon',     bg: '#6364ff', fg: '#fff' },
+    post_mastodon:     { label: 'Mastodon',     bg: '#6364ff', fg: '#fff' },
+    post_bluesky:      { label: 'Bluesky',      bg: '#0085ff', fg: '#fff' },
+    post_tweet:        { label: 'Twitter/X',   bg: '#111',    fg: '#fff' },
+    // CRM
+    hubspot:           { label: 'HubSpot',      bg: '#ff7a59', fg: '#fff' },
+    pipedrive:         { label: 'Pipedrive',    bg: '#215732', fg: '#fff' },
+    // Media / AI
+    tts:               { label: 'ElevenLabs',   bg: '#ff6c2f', fg: '#fff' },
+    youtube_transcript:{ label: 'YouTube',      bg: '#ff0000', fg: '#fff' },
+    generate_image:    { label: 'Image AI',     bg: '#7c3aed', fg: '#fff' },
+    text_to_speech:    { label: 'ElevenLabs',   bg: '#ff6c2f', fg: '#fff' },
+    // Finance / Data
+    stock:             { label: 'Finance',      bg: '#16a34a', fg: '#fff' },
+    flights:           { label: 'Flights',      bg: '#0ea5e9', fg: '#fff' },
+    weather:           { label: 'Weather',      bg: '#0284c7', fg: '#fff' },
+    geocode:           { label: 'Maps',         bg: '#15803d', fg: '#fff' },
+    seo:               { label: 'SEO',          bg: '#ea580c', fg: '#fff' },
+    fetch_url:         { label: 'Web',          bg: '#475569', fg: '#fff' },
+    wikipedia:         { label: 'Wikipedia',    bg: '#737373', fg: '#fff' },
+  };
+
   function renderTool(tool) {
     const edit = toolEdits[tool.name] || {};
     const isOpen = expanded[tool.name];
     const hasOverride = tool.current_provider || tool.current_model;
     const schema = tool.settings_schema || [];
 
+    const cat = TOOL_CATEGORY[tool.name];
+
     return (
       <div key={tool.name} className="tool-accordion-item">
         <div className="tool-accordion-header" onClick={() => toggleExpand(tool)}>
           <span className="tool-accordion-name">{tool.name}</span>
           {tool.builtin && !tool.custom && (
-            <span className="tool-accordion-badge" style={{ background: '#2a7a3b', color: '#fff' }}>
-              Built-in
-            </span>
+            cat
+              ? <span className="tool-accordion-badge" style={{ background: cat.bg, color: cat.fg }}>{cat.label}</span>
+              : <span className="tool-accordion-badge" style={{ background: '#2a7a3b', color: '#fff' }}>Local</span>
           )}
           {tool.custom && (
             <span className="tool-accordion-badge" style={{ background: '#b85c00', color: '#fff' }}>
