@@ -190,41 +190,44 @@ export default function SettingsTools({ providers }) {
 
     return (
       <div key={tool.name} className="tool-accordion-item">
-        <div className="tool-accordion-header" onClick={() => toggleExpand(tool)}>
-          {tool.builtin && !tool.custom && (
-            cat
-              ? <span className="tool-accordion-badge" style={{ background: cat.bg, color: cat.fg }}>{cat.label}</span>
-              : <span className="tool-accordion-badge" style={{ background: '#2a7a3b', color: '#fff' }}>Local</span>
-          )}
-          <span className="tool-accordion-name">{tool.name}</span>
-          {tool.builtin && !tool.custom && (
-            <span className="tool-accordion-badge" style={{ background: '#2a7a3b', color: '#fff' }}>
-              Built-in
-            </span>
-          )}
-          {tool.custom && (
-            <span className="tool-accordion-badge" style={{ background: '#b85c00', color: '#fff' }}>
-              Custom
-            </span>
-          )}
-          {!tool.builtin && (
-            <span className="tool-accordion-badge" style={{ background: '#1a5fa8', color: '#fff' }}>
-              Extern
-            </span>
-          )}
-          {hasOverride && (
-            <span className="tool-accordion-badge override" title={`${tool.current_provider || 'std'} / ${tool.current_model || 'std'}`}>
-              {t('settings.tools.override')}
-            </span>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className="tool-accordion-header" style={{ flex: 1 }} onClick={() => toggleExpand(tool)}>
+            {tool.builtin && !tool.custom && (
+              cat
+                ? <span className="tool-accordion-badge" style={{ background: cat.bg, color: cat.fg }}>{cat.label}</span>
+                : <span className="tool-accordion-badge" style={{ background: '#2a7a3b', color: '#fff' }}>Local</span>
+            )}
+            <span className="tool-accordion-name">{tool.name}</span>
+            {tool.builtin && !tool.custom && (
+              <span className="tool-accordion-badge" style={{ background: '#2a7a3b', color: '#fff' }}>
+                Built-in
+              </span>
+            )}
+            {tool.custom && (
+              <span className="tool-accordion-badge" style={{ background: '#b85c00', color: '#fff' }}>
+                Custom
+              </span>
+            )}
+            {!tool.builtin && (
+              <span className="tool-accordion-badge" style={{ background: '#1a5fa8', color: '#fff' }}>
+                Extern
+              </span>
+            )}
+            {hasOverride && (
+              <span className="tool-accordion-badge override" title={`${tool.current_provider || 'std'} / ${tool.current_model || 'std'}`}>
+                {t('settings.tools.override')}
+              </span>
+            )}
+            <span className={`tool-accordion-chevron ${isOpen ? 'open' : ''}`}>▼</span>
+          </div>
           <div
             className={`tool-toggle${enabledStates[tool.name] !== false ? ' tool-toggle-on' : ''}`}
             title={enabledStates[tool.name] !== false ? 'Deaktivieren' : 'Aktivieren'}
             onClick={e => handleToggleEnabled(e, tool.name)}
+            style={{ marginRight: '12px' }}
           >
             <span className="tool-toggle-knob" />
           </div>
-          <span className={`tool-accordion-chevron ${isOpen ? 'open' : ''}`}>▼</span>
         </div>
 
         {isOpen && (
