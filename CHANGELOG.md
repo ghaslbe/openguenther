@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.45] — 2026-03-06
+
+### Trello Tool
+
+- **`trello`**: Neues Built-in MCP Tool fuer Trello
+- Aktionen: `get_boards`, `get_lists`, `get_cards`, `get_card` (mit Checklisten), `create_card`, `update_card`, `move_card`, `create_list`, `add_comment`, `archive_card`
+- API Key + Token in Tool-Einstellungen konfigurierbar
+- Kein zusaetzliches Package noetig (nutzt `requests`)
+
+---
+
 ## [1.4.44] — 2026-03-06
 
 ### MongoDB Tool
