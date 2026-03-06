@@ -1852,6 +1852,76 @@ select.input {
   padding: 8px 0;
 }
 
+/* ── Agent Templates ── */
+.agent-templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.agent-template-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agent-template-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.agent-template-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.agent-template-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.agent-template-preview {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  font-family: 'Courier New', monospace;
+  background: var(--bg-dark);
+  border-radius: 4px;
+  padding: 6px 8px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  flex: 1;
+}
+
+.btn-install-agent {
+  margin-top: 4px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-install-agent:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.btn-install-agent:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .agent-form {
   display: flex;
   flex-direction: column;
