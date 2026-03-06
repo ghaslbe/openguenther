@@ -21,7 +21,9 @@ Lese und schreibe Seiten und Datenbanken in Notion.
 
 **Integration Token:** Unter [notion.so/my-integrations](https://www.notion.so/my-integrations) eine neue Integration erstellen → Token kopieren (beginnt mit `secret_`).
 
-**Wichtig:** Die Integration muss in jeder Notion-Seite/Datenbank explizit eingeladen werden (Seite oeffnen → Drei Punkte → Verbindungen → Integration hinzufuegen)."""
+**Wichtig:** Die Integration muss in jeder Notion-Seite/Datenbank explizit eingeladen werden (Seite oeffnen → Drei Punkte → Verbindungen → Integration hinzufuegen).
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

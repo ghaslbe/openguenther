@@ -29,7 +29,9 @@ Alle vier Werte sind erforderlich. Der Account muss über den Access Token verif
 
 **Proxy (optional):** Twitter blockiert API-Calls von Datacenter-IPs (Hetzner, AWS etc.).
 Falls der Server eine solche IP hat, trage hier einen HTTP/HTTPS-Proxy mit Residential-IP ein.
-Format: `http://user:pass@host:port` oder `http://host:port`"""
+Format: `http://user:pass@host:port` oder `http://host:port`
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

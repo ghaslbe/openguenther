@@ -13,7 +13,9 @@ Postet einen Toot auf einer Mastodon-Instanz via REST API.
    → Rechte `write:statuses` aktivieren → Token kopieren
 3. **Instanz-URL** und **Access Token** hier eintragen
 
-**Hinweis:** Mastodon blockiert keine Datacenter-IPs — kein Proxy nötig."""
+**Hinweis:** Mastodon blockiert keine Datacenter-IPs — kein Proxy nötig.
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

@@ -15,7 +15,9 @@ Postet einen Beitrag auf Bluesky. Hashtags werden automatisch als klickbare Face
    (kein normales Konto-Passwort verwenden!)
 3. Handle (z.B. `deinname.bsky.social`) und App-Passwort hier eintragen
 
-**Hinweis:** Bluesky blockiert keine Datacenter-IPs — kein Proxy nötig."""
+**Hinweis:** Bluesky blockiert keine Datacenter-IPs — kein Proxy nötig.
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

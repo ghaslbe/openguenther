@@ -82,7 +82,9 @@ Sendet E-Mails über einen beliebigen SMTP-Server.
 
 **Gmail:** SMTP-Server `smtp.gmail.com`, Port `587`. Wichtig: kein normales Google-Passwort — stattdessen ein **App-Passwort** erstellen: Google-Konto → Sicherheit → 2-Faktor-Authentifizierung → App-Passwörter.
 
-**Andere Anbieter:** Outlook `smtp.office365.com:587`, GMX `mail.gmx.net:587`, web.de `smtp.web.de:587`. Die Zugangsdaten entsprechen dem normalen E-Mail-Login."""
+**Andere Anbieter:** Outlook `smtp.office365.com:587`, GMX `mail.gmx.net:587`, web.de `smtp.web.de:587`. Die Zugangsdaten entsprechen dem normalen E-Mail-Login.
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {"key": "smtp_server", "label": "SMTP Server", "type": "text", "placeholder": "smtp.gmail.com"},

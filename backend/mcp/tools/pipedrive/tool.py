@@ -19,7 +19,9 @@ Verwalte Deals, Kontakte und Aktivitaeten in Pipedrive.
 
 **API Token:** In Pipedrive unter Einstellungen → Persoenliche Einstellungen → API → API Token kopieren.
 
-**Subdomain:** Der erste Teil deiner Pipedrive-URL, z.B. bei `meinefirma.pipedrive.com` ist es `meinefirma`."""
+**Subdomain:** Der erste Teil deiner Pipedrive-URL, z.B. bei `meinefirma.pipedrive.com` ist es `meinefirma`.
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

@@ -29,7 +29,9 @@ Ermöglicht die Verwaltung einer Pinecone Vector-DB: Indizes anlegen/löschen, T
 **Embedding-Modell:** Wird verwendet um Texte automatisch in Vektoren umzuwandeln (via OpenRouter). Die Dimension muss zum Index passen:
 - `openai/text-embedding-3-small` → 1536 Dimensionen
 - `openai/text-embedding-3-large` → 3072 Dimensionen
-- `openai/text-embedding-ada-002` → 1536 Dimensionen"""
+- `openai/text-embedding-ada-002` → 1536 Dimensionen
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

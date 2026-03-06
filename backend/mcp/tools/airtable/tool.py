@@ -23,7 +23,9 @@ Scopes benoetigt: `data.records:read`, `data.records:write`, `schema.bases:read`
 
 **Base ID:** Steht in der Airtable-URL: `https://airtable.com/appXXXXXXXX/...` — der Teil `appXXXXXXXX` ist die Base ID.
 
-**Tabellen-Name:** Exakter Name des Tabs/der Tabelle in der Base (gross-/kleinschreibungssensitiv)."""
+**Tabellen-Name:** Exakter Name des Tabs/der Tabelle in der Base (gross-/kleinschreibungssensitiv).
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

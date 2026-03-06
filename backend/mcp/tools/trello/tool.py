@@ -21,7 +21,9 @@ Lese und verwalte Boards, Listen und Karten in Trello.
 
 **API Key + Token:** Auf [trello.com/power-ups/admin](https://trello.com/power-ups/admin) einen neuen Power-Up erstellen (oder vorhandenen waehlen) → API Key kopieren. Dann auf der gleichen Seite "Token generieren" → Token kopieren.
 
-Alternativ direkt: `https://trello.com/1/authorize?expiration=never&scope=read,write&response_type=token&key=DEIN_API_KEY`"""
+Alternativ direkt: `https://trello.com/1/authorize?expiration=never&scope=read,write&response_type=token&key=DEIN_API_KEY`
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

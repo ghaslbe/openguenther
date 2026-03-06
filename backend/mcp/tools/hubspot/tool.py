@@ -20,7 +20,9 @@ Verwalte Kontakte, Firmen und Deals in HubSpot.
 
 **Private App Token:** In HubSpot unter Einstellungen → Integrationen → Private Apps → "Private App erstellen".
 Berechtigungen benoetigt: `crm.objects.contacts.read/write`, `crm.objects.companies.read/write`, `crm.objects.deals.read/write`.
-Token beginnt mit `pat-`."""
+Token beginnt mit `pat-`.
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

@@ -21,7 +21,9 @@ Sende Nachrichten und lese Channels in Slack.
 **Bot Token:** In der [Slack App-Verwaltung](https://api.slack.com/apps) eine neue App erstellen (oder vorhandene waehlen):
 1. "OAuth & Permissions" → Bot Token Scopes hinzufuegen: `chat:write`, `channels:read`, `channels:history`, `users:read`
 2. App im Workspace installieren → Bot User OAuth Token kopieren (beginnt mit `xoxb-`)
-3. Bot in gewuenschte Channels einladen (`/invite @BotName`)"""
+3. Bot in gewuenschte Channels einladen (`/invite @BotName`)
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

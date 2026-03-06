@@ -28,7 +28,9 @@ Discord Server → Channel-Einstellungen → Integrationen → Webhooks → Neue
 3. OAuth2 → URL Generator: Scopes `bot`, Permissions `Send Messages`, `Read Message History`, `View Channels`
 4. Generierten Link oeffnen → Bot zum Server einladen
 
-Fuer einfaches Senden reicht der Webhook. Fuer `get_messages` und `get_channels` wird der Bot Token benoetigt."""
+Fuer einfaches Senden reicht der Webhook. Fuer `get_messages` und `get_channels` wird der Bot Token benoetigt.
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

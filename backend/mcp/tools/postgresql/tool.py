@@ -24,7 +24,9 @@ Verbindet sich mit einer PostgreSQL-Datenbank und fuehrt Abfragen aus.
 **Sicherheit:** Verwende einen Datenbankbenutzer mit minimalen Rechten (nur SELECT fuer Lesezugriff,
 zusaetzlich INSERT/UPDATE/DELETE wenn Schreibzugriff gewuenscht). Vergib niemals superuser-Zugangsdaten.
 
-**SSL:** Fuer Remote-Server `sslmode = require` empfohlen."""
+**SSL:** Fuer Remote-Server `sslmode = require` empfohlen.
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

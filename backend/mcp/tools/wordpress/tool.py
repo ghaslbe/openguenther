@@ -24,7 +24,9 @@ Lese und verwalte Beitraege, Seiten, Kategorien und Tags ueber die WordPress RES
 2. Ganz unten: "Anwendungspasswoerter" → Namen eingeben (z.B. "Guenther") → "Anwendungspasswort hinzufuegen"
 3. Das generierte Passwort kopieren (wird nur einmal angezeigt!)
 
-**Voraussetzung:** WordPress 5.6+ und Permalinks muessen aktiviert sein (nicht "Einfach")."""
+**Voraussetzung:** WordPress 5.6+ und Permalinks muessen aktiviert sein (nicht "Einfach").
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

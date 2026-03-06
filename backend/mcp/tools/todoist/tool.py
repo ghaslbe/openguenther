@@ -18,7 +18,9 @@ SETTINGS_INFO = """**Todoist**
 
 Verwalte Aufgaben und Projekte in Todoist.
 
-**API Token:** In Todoist unter Einstellungen → Integrationen → Entwickler → API Token kopieren."""
+**API Token:** In Todoist unter Einstellungen → Integrationen → Entwickler → API Token kopieren.
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {

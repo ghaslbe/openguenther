@@ -21,7 +21,9 @@ Verbindet sich mit einer MongoDB-Datenbank (lokal oder Atlas) und fuehrt Operati
 
 Fuer MongoDB Atlas den Connection String aus "Connect -> Drivers" kopieren.
 
-**Benoetigt:** `pymongo` (wird automatisch mit installiert)."""
+**Benoetigt:** `pymongo` (wird automatisch mit installiert).
+
+> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
 
 SETTINGS_SCHEMA = [
     {
