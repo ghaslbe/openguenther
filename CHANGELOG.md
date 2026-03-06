@@ -1,5 +1,60 @@
 # Changelog
 
+## [1.4.51] — 2026-03-06
+
+### Pipedrive Tool
+- **`pipedrive`**: Neues Built-in MCP Tool fuer Pipedrive CRM
+- Aktionen: `get_deals`, `create_deal`, `update_deal`, `get_persons`, `create_person`, `get_organizations`, `create_organization`, `get_pipelines`, `add_activity`
+- API Token + Subdomain in Tool-Einstellungen konfigurierbar
+
+---
+
+## [1.4.50] — 2026-03-06
+
+### HubSpot Tool
+- **`hubspot`**: Neues Built-in MCP Tool fuer HubSpot CRM
+- Aktionen: `search_contacts`, `get_contact`, `create_contact`, `update_contact`, `get_deals`, `create_deal`, `get_companies`, `create_company`
+- Private App Token in Tool-Einstellungen konfigurierbar
+
+---
+
+## [1.4.49] — 2026-03-06
+
+### Discord Tool
+- **`discord`**: Neues Built-in MCP Tool fuer Discord
+- Aktionen: `send_webhook` (kein Bot noetig), `send_message`, `get_channels`, `get_messages`
+- Webhook URL und/oder Bot Token in Tool-Einstellungen konfigurierbar
+
+---
+
+## [1.4.48] — 2026-03-06
+
+### Slack Tool
+- **`slack`**: Neues Built-in MCP Tool fuer Slack
+- Aktionen: `send_message`, `get_channels`, `get_messages`, `reply_to_thread`
+- Bot Token in Tool-Einstellungen konfigurierbar
+
+---
+
+## [1.4.47] — 2026-03-06
+
+### Todoist Tool
+- **`todoist`**: Neues Built-in MCP Tool fuer Todoist
+- Aktionen: `get_tasks`, `get_projects`, `create_task`, `update_task`, `complete_task`, `delete_task`, `add_comment`
+- API Token in Tool-Einstellungen konfigurierbar
+
+---
+
+## [1.4.46] — 2026-03-06
+
+### Notion Tool
+- **`notion`**: Neues Built-in MCP Tool fuer Notion
+- Aktionen: `search`, `get_page`, `create_page`, `append_text`, `query_database`, `create_database_entry`
+- Integration Token in Tool-Einstellungen konfigurierbar
+- Automatische Property-Extraktion fuer Datenbank-Eintraege (title, select, date, number, checkbox, etc.)
+
+---
+
 ## [1.4.45] — 2026-03-06
 
 ### Trello Tool
