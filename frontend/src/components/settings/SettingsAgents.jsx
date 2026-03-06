@@ -67,8 +67,9 @@ const AGENT_TEMPLATES = [
       '1. Kläre das Analyseziel und die verfügbaren Datenquellen.\n' +
       '2. Hole die Daten (mysql, postgresql, mongodb, airtable oder andere Tools).\n' +
       '3. Analysiere die Daten: Trends, Ausreißer, Muster, Zusammenfassungen.\n' +
-      '4. Präsentiere die Ergebnisse strukturiert mit konkreten Zahlen.\n' +
-      '5. Leite Handlungsempfehlungen ab wenn sinnvoll.\n\n' +
+      '4. Erstelle wenn sinnvoll einen Chart (create_chart) um Trends visuell darzustellen.\n' +
+      '5. Präsentiere die Ergebnisse strukturiert mit konkreten Zahlen.\n' +
+      '6. Leite Handlungsempfehlungen ab wenn sinnvoll.\n\n' +
       'WICHTIG:\n' +
       '- Nenne immer die Datenquelle und den Abfragezeitraum.\n' +
       '- Weise auf fehlende oder unvollständige Daten hin.\n' +

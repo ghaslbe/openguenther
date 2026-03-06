@@ -157,6 +157,7 @@ export default function SettingsTools({ providers }) {
     wordpress:              { label: 'WordPress',      bg: '#21759b', fg: '#fff' },
     sftp:                   { label: 'SFTP/FTP',       bg: '#374151', fg: '#fff' },
     plan_task:              { label: 'Orchestrator',   bg: '#7c3aed', fg: '#fff' },
+    create_chart:           { label: 'Chart',          bg: '#0891b2', fg: '#fff' },
   };
 
   const sortByName = (a, b) => a.name.localeCompare(b.name);
