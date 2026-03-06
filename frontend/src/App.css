@@ -304,6 +304,40 @@ html, body, #root {
   margin-bottom: 0;
 }
 
+.message-content ul,
+.message-content ol {
+  padding-left: 1.5em;
+  margin-bottom: 8px;
+}
+
+.message-content li {
+  margin-bottom: 3px;
+}
+
+.message-content li > ul,
+.message-content li > ol {
+  margin-bottom: 0;
+}
+
+/* Settings tool info markdown */
+.markdown-prose ul,
+.markdown-prose ol {
+  padding-left: 1.5em;
+  margin-bottom: 6px;
+}
+
+.markdown-prose li {
+  margin-bottom: 2px;
+}
+
+.markdown-prose p {
+  margin-bottom: 6px;
+}
+
+.markdown-prose strong {
+  color: var(--text-primary);
+}
+
 .message-content pre {
   background: rgba(0, 0, 0, 0.3);
   padding: 12px;

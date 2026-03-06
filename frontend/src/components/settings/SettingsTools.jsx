@@ -14,6 +14,7 @@ export default function SettingsTools({ providers }) {
   const [showPasswords, setShowPasswords] = useState({});
   const [uploadWarning, setUploadWarning] = useState(false);
   const [pendingFile, setPendingFile] = useState(null);
+  const [sortMode, setSortMode] = useState('name');
   const uploadRef = useRef(null);
 
   useEffect(() => {
@@ -117,7 +118,13 @@ export default function SettingsTools({ providers }) {
 
   const activeProviders = Object.entries(providers || {}).filter(([, p]) => p.enabled);
   const sortByName = (a, b) => a.name.localeCompare(b.name);
-  const builtinTools = tools.filter(t => t.builtin && !t.custom).sort(sortByName);
+  const sortByBadge = (a, b) => {
+    const la = (TOOL_CATEGORY[a.name]?.label || 'Local').toLowerCase();
+    const lb = (TOOL_CATEGORY[b.name]?.label || 'Local').toLowerCase();
+    return la !== lb ? la.localeCompare(lb) : a.name.localeCompare(b.name);
+  };
+  const sortFn = sortMode === 'badge' ? sortByBadge : sortByName;
+  const builtinTools = tools.filter(t => t.builtin && !t.custom).sort(sortFn);
   const customMcpTools = tools.filter(t => t.custom).sort(sortByName);
   const externalTools = tools.filter(t => !t.builtin).sort(sortByName);
 
@@ -213,7 +220,9 @@ export default function SettingsTools({ providers }) {
                 color: 'var(--text-secondary)',
                 lineHeight: '1.6',
               }}>
-                <ReactMarkdown>{tool.settings_info || tool.description}</ReactMarkdown>
+                <div className="markdown-prose">
+                  <ReactMarkdown>{tool.settings_info || tool.description}</ReactMarkdown>
+                </div>
               </div>
             )}
             {tool.agent_overridable !== false && (
@@ -327,7 +336,27 @@ export default function SettingsTools({ providers }) {
       </p>
 
       <div className="settings-section">
-        <h3>{t('settings.tools.builtinSection')}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <h3 style={{ margin: 0 }}>{t('settings.tools.builtinSection')}</h3>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px' }}>
+            <button
+              onClick={() => setSortMode('name')}
+              style={{
+                padding: '3px 10px', fontSize: '12px', borderRadius: '4px', cursor: 'pointer',
+                border: '1px solid var(--border)', background: sortMode === 'name' ? 'var(--accent)' : 'var(--bg-secondary)',
+                color: sortMode === 'name' ? '#fff' : 'var(--text)', fontWeight: sortMode === 'name' ? 600 : 400,
+              }}
+            >A–Z</button>
+            <button
+              onClick={() => setSortMode('badge')}
+              style={{
+                padding: '3px 10px', fontSize: '12px', borderRadius: '4px', cursor: 'pointer',
+                border: '1px solid var(--border)', background: sortMode === 'badge' ? 'var(--accent)' : 'var(--bg-secondary)',
+                color: sortMode === 'badge' ? '#fff' : 'var(--text)', fontWeight: sortMode === 'badge' ? 600 : 400,
+              }}
+            >Service</button>
+          </div>
+        </div>
         {builtinTools.map(renderTool)}
       </div>
 
