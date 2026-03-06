@@ -1582,23 +1582,18 @@ select.input {
   height: 18px;
   flex-shrink: 0;
   cursor: pointer;
-}
-
-.tool-toggle input {
-  display: none;
-}
-
-.tool-toggle-slider {
-  position: absolute;
-  inset: 0;
   background: var(--bg-dark);
   border: 1px solid var(--border);
   border-radius: 18px;
   transition: background 0.2s, border-color 0.2s;
 }
 
-.tool-toggle-slider::before {
-  content: '';
+.tool-toggle-on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.tool-toggle-knob {
   position: absolute;
   width: 12px;
   height: 12px;
@@ -1609,12 +1604,7 @@ select.input {
   transition: transform 0.2s, background 0.2s;
 }
 
-.tool-toggle input:checked + .tool-toggle-slider {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.tool-toggle input:checked + .tool-toggle-slider::before {
+.tool-toggle-on .tool-toggle-knob {
   transform: translateX(16px);
   background: #fff;
 }
