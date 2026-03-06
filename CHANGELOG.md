@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.4.44] — 2026-03-06
+
+### MongoDB Tool
+
+- **`mongodb`**: Neues Built-in MCP Tool fuer MongoDB (lokal und Atlas)
+- Aktionen: `find` (mit Filter, Projektion, Sortierung), `insert`, `update` (one/many), `delete` (one/many), `count`, `list_collections`, `aggregate` (Pipeline)
+- Connection String + Datenbankname in Tool-Einstellungen konfigurierbar
+- Unterstuetzt MongoDB-Filter-Syntax (`$gte`, `$regex`, `$in`, etc.) und Aggregation-Pipelines
+- ObjectId und datetime werden automatisch zu Strings serialisiert
+- `pymongo` in `requirements.txt` ergaenzt
+
+---
+
+## [1.4.43] — 2026-03-06
+
+### PostgreSQL Tool
+
+- **`postgresql`**: Neues Built-in MCP Tool fuer PostgreSQL-Datenbanken
+- Aktionen: `query` (SELECT), `execute` (INSERT/UPDATE/DELETE/DDL), `list_tables`, `describe_table`, `count_rows`
+- Verbindungsdaten (Host, Port, Datenbank, Benutzer, Passwort, SSL-Modus) in Tool-Einstellungen konfigurierbar
+- Schema-Parameter fuer `list_tables` und `describe_table` (Standard: `public`)
+- Sicherheits-Check: `query` erlaubt nur lesende Statements
+- `psycopg2-binary` in `requirements.txt` ergaenzt
+
+---
+
 ## [1.4.42] — 2026-03-06
 
 ### MySQL / MariaDB Tool
