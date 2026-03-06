@@ -217,8 +217,8 @@ export default function SettingsTools({ providers }) {
               {t('settings.tools.override')}
             </span>
           )}
-          <label className="tool-toggle" title={enabledStates[tool.name] !== false ? 'Deaktivieren' : 'Aktivieren'} onClick={e => handleToggleEnabled(e, tool.name)}>
-            <input type="checkbox" readOnly checked={enabledStates[tool.name] !== false} />
+          <label className="tool-toggle" title={enabledStates[tool.name] !== false ? 'Deaktivieren' : 'Aktivieren'} onClick={e => e.stopPropagation()}>
+            <input type="checkbox" checked={enabledStates[tool.name] !== false} onChange={e => handleToggleEnabled(e, tool.name)} />
             <span className="tool-toggle-slider" />
           </label>
           <span className={`tool-accordion-chevron ${isOpen ? 'open' : ''}`}>▼</span>
