@@ -69,10 +69,13 @@ def call_openrouter(messages, tools=None, api_key='', model='openai/gpt-4o-mini'
             error_msg = response.text or response.reason
             error_code = response.status_code
 
-        raise requests.HTTPError(
-            f"{provider_name} {error_code}: {error_msg}",
-            response=response
-        )
+        # Include metadata.raw if present — OpenRouter puts the upstream error there
+        metadata = error_detail.get('metadata', {}) if isinstance(error_detail, dict) else {}
+        raw = metadata.get('raw', '') if isinstance(metadata, dict) else ''
+        full_msg = f"{provider_name} {error_code}: {error_msg}"
+        if raw:
+            full_msg += f" | upstream: {raw}"
+        raise requests.HTTPError(full_msg, response=response)
 
     bytes_received = len(response.content)
     data = response.json()
