@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.56] — 2026-03-06
+
+### WordPress Tool
+
+- **`wordpress`**: Neues Built-in MCP Tool fuer WordPress REST API
+- Aktionen: `get_posts`, `get_post`, `create_post`, `update_post`, `delete_post`, `get_pages`, `get_categories`, `get_tags`, `create_category`
+- Authentifizierung via Anwendungspasswort (kein Plugin noetig, WordPress 5.6+)
+- Site-URL, Benutzername und Anwendungspasswort in Tool-Einstellungen konfigurierbar
+- WordPress-Badge in Tool-Einstellungen ergaenzt
+
+---
+
 ## [1.4.51] — 2026-03-06
 
 ### Pipedrive Tool

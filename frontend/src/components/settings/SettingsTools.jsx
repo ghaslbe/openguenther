@@ -157,6 +157,7 @@ export default function SettingsTools({ providers }) {
     wikipedia_search:       { label: 'Wikipedia',      bg: '#737373', fg: '#fff' },
     fetch_url:              { label: 'Web',            bg: '#475569', fg: '#fff' },
     seo:                    { label: 'Web Scraping',   bg: '#ea580c', fg: '#fff' },
+    wordpress:              { label: 'WordPress',      bg: '#21759b', fg: '#fff' },
   };
 
   function renderTool(tool) {
