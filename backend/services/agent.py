@@ -175,7 +175,10 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
         else:
             messages.append(msg)
 
-    all_tools = registry.get_openai_tools()
+    all_tools = [
+        t for t in registry.get_openai_tools()
+        if get_tool_settings(t['function']['name']).get('enabled', True)
+    ]
 
     # Recursively strip JSON Schema keywords rejected by OpenAI-compatible APIs.
     # 'additionalProperties' is stripped entirely: boolean false triggers strict-mode

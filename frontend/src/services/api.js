@@ -74,6 +74,15 @@ export async function fetchMcpTools() {
   return res.json();
 }
 
+export async function setToolEnabled(toolName, enabled) {
+  const res = await fetch(`${BASE}/api/mcp/tools/${toolName}/enabled`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled })
+  });
+  return res.json();
+}
+
 export async function fetchToolSettings(toolName) {
   const res = await fetch(`${BASE}/api/mcp/tools/${toolName}/settings`);
   return res.json();

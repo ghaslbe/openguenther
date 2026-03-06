@@ -1575,6 +1575,50 @@ select.input {
   transform: rotate(180deg);
 }
 
+/* ── Tool enable/disable toggle ── */
+.tool-toggle {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.tool-toggle input {
+  display: none;
+}
+
+.tool-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.tool-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  left: 2px;
+  top: 2px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.tool-toggle input:checked + .tool-toggle-slider {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.tool-toggle input:checked + .tool-toggle-slider::before {
+  transform: translateX(16px);
+  background: #fff;
+}
+
 .tool-accordion-body {
   padding: 12px;
   border-top: 1px solid var(--border);

@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
-import { fetchMcpTools, fetchToolSettings, updateToolSettings, reloadMcpTools, uploadCustomTool } from '../../services/api';
+import { fetchMcpTools, fetchToolSettings, updateToolSettings, setToolEnabled, reloadMcpTools, uploadCustomTool } from '../../services/api';
 
 export default function SettingsTools({ providers }) {
   const { t } = useTranslation();
   const [tools, setTools] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [toolEdits, setToolEdits] = useState({});
+  const [enabledStates, setEnabledStates] = useState({});
   const [saving, setSaving] = useState({});
   const [message, setMessage] = useState('');
   const [reloading, setReloading] = useState(false);
@@ -24,20 +25,28 @@ export default function SettingsTools({ providers }) {
   async function loadTools() {
     const data = await fetchMcpTools();
     setTools(data);
-    // Initialize edit state from current values
     const edits = {};
+    const enabled = {};
     for (const tool of data) {
       edits[tool.name] = {
         provider: tool.current_provider || '',
         model: tool.current_model || '',
         timeout: '',
       };
-      // Add schema fields
       for (const field of (tool.settings_schema || [])) {
         edits[tool.name][field.key] = '';
       }
+      enabled[tool.name] = tool.enabled !== false;
     }
     setToolEdits(edits);
+    setEnabledStates(enabled);
+  }
+
+  async function handleToggleEnabled(e, toolName) {
+    e.stopPropagation();
+    const newVal = !enabledStates[toolName];
+    setEnabledStates(prev => ({ ...prev, [toolName]: newVal }));
+    await setToolEnabled(toolName, newVal);
   }
 
   async function toggleExpand(tool) {
@@ -208,6 +217,10 @@ export default function SettingsTools({ providers }) {
               {t('settings.tools.override')}
             </span>
           )}
+          <label className="tool-toggle" title={enabledStates[tool.name] !== false ? 'Deaktivieren' : 'Aktivieren'} onClick={e => handleToggleEnabled(e, tool.name)}>
+            <input type="checkbox" readOnly checked={enabledStates[tool.name] !== false} />
+            <span className="tool-toggle-slider" />
+          </label>
           <span className={`tool-accordion-chevron ${isOpen ? 'open' : ''}`}>▼</span>
         </div>
 
