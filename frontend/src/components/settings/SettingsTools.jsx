@@ -117,16 +117,6 @@ export default function SettingsTools({ providers }) {
   }
 
   const activeProviders = Object.entries(providers || {}).filter(([, p]) => p.enabled);
-  const sortByName = (a, b) => a.name.localeCompare(b.name);
-  const sortByBadge = (a, b) => {
-    const la = (TOOL_CATEGORY[a.name]?.label || 'Local').toLowerCase();
-    const lb = (TOOL_CATEGORY[b.name]?.label || 'Local').toLowerCase();
-    return la !== lb ? la.localeCompare(lb) : a.name.localeCompare(b.name);
-  };
-  const sortFn = sortMode === 'badge' ? sortByBadge : sortByName;
-  const builtinTools = tools.filter(t => t.builtin && !t.custom).sort(sortFn);
-  const customMcpTools = tools.filter(t => t.custom).sort(sortByName);
-  const externalTools = tools.filter(t => !t.builtin).sort(sortByName);
 
   const TOOL_CATEGORY = {
     // Databases
@@ -166,6 +156,17 @@ export default function SettingsTools({ providers }) {
     seo:                    { label: 'Web Scraping',   bg: '#ea580c', fg: '#fff' },
     wordpress:              { label: 'WordPress',      bg: '#21759b', fg: '#fff' },
   };
+
+  const sortByName = (a, b) => a.name.localeCompare(b.name);
+  const sortByBadge = (a, b) => {
+    const la = (TOOL_CATEGORY[a.name]?.label || 'Local').toLowerCase();
+    const lb = (TOOL_CATEGORY[b.name]?.label || 'Local').toLowerCase();
+    return la !== lb ? la.localeCompare(lb) : a.name.localeCompare(b.name);
+  };
+  const sortFn = sortMode === 'badge' ? sortByBadge : sortByName;
+  const builtinTools = tools.filter(t => t.builtin && !t.custom).sort(sortFn);
+  const customMcpTools = tools.filter(t => t.custom).sort(sortByName);
+  const externalTools = tools.filter(t => !t.builtin).sort(sortByName);
 
   function renderTool(tool) {
     const edit = toolEdits[tool.name] || {};
