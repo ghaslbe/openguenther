@@ -1,6 +1,16 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+function logsToText(logs) {
+  return logs.map(log => {
+    if (!log) return '';
+    if (typeof log === 'string') return log;
+    if (log.type === 'json') return `[${log.label || 'json'}]\n${JSON.stringify(log.data, null, 2)}`;
+    if (log.type === 'header') return `=== ${log.message} ===`;
+    return log.message || '';
+  }).join('\n');
+}
+
 function syntaxHighlight(json) {
   if (typeof json !== 'string') {
     json = JSON.stringify(json, null, 2);
@@ -99,7 +109,14 @@ export default function GuentherBox({ logs, width, onResizeStart, onClear }) {
           <span className="guenther-title">GUENTHER</span>
           <span className="guenther-subtitle">MCP Terminal</span>
         </div>
-        <button className="btn-guenther-clear" onClick={onClear} title={t('guenther.clearTitle')}>CLR</button>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <button
+            className="btn-guenther-clear"
+            onClick={() => navigator.clipboard.writeText(logsToText(logs))}
+            title="In Zwischenablage kopieren"
+          >⧉</button>
+          <button className="btn-guenther-clear" onClick={onClear} title={t('guenther.clearTitle')}>CLR</button>
+        </div>
       </div>
       <div className="guenther-terminal">
         {logs.map((log, idx) => (
