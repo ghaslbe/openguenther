@@ -309,9 +309,11 @@ export default function App() {
     }
   }
 
-  function handleNewChat() {
+  function handleNewChat(agentId = '') {
     setActiveChatId(null);
     setMessages([]);
+    setSelectedAgentId(agentId);
+    setGuentherLogs([]);
   }
 
   function handleClearLogs() {

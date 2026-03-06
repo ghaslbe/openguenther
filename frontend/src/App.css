@@ -132,6 +132,70 @@ html, body, #root {
   background: var(--bg-input);
 }
 
+.new-chat-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  z-index: 999;
+  padding: 4px 0;
+  overflow: hidden;
+}
+
+.new-chat-menu-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-direction: column;
+}
+
+.new-chat-menu-item:hover {
+  background: rgba(255,255,255,0.07);
+}
+
+[data-theme="light"] .new-chat-menu-item:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.new-chat-menu-item > span:first-child + span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.new-chat-menu-icon {
+  font-size: 14px;
+}
+
+.new-chat-menu-item {
+  flex-direction: row;
+  align-items: center;
+}
+
+.new-chat-menu-desc {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-left: auto;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.new-chat-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
 .chat-list-items {
   flex: 1;
   overflow-y: auto;

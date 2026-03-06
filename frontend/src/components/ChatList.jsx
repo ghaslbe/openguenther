@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat, onDeleteChat, onOpenSettings, agents }) {
   const { t } = useTranslation();
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
 
   function getAgentName(agentId) {
     if (!agentId || !agents) return null;
@@ -10,11 +12,53 @@ export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat,
     return agent ? agent.name : null;
   }
 
+  // Menü schließen bei Klick außerhalb
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    }
+    if (showMenu) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
+
+  function handleSelect(agentId) {
+    setShowMenu(false);
+    onNewChat(agentId || '');
+  }
+
   return (
     <div className="chat-list">
       <div className="chat-list-header">
         <h2>Chats</h2>
-        <button className="btn-new-chat" onClick={onNewChat} title={t('chatList.newChatTitle')}>+</button>
+        <div ref={menuRef} style={{ position: 'relative' }}>
+          <button
+            className="btn-new-chat"
+            onClick={() => setShowMenu(s => !s)}
+            title={t('chatList.newChatTitle')}
+          >+</button>
+          {showMenu && (
+            <div className="new-chat-menu">
+              <div className="new-chat-menu-item" onClick={() => handleSelect('')}>
+                <span className="new-chat-menu-icon">💬</span>
+                <span>Ohne Agent</span>
+              </div>
+              {agents && agents.length > 0 && (
+                <>
+                  <div className="new-chat-menu-divider" />
+                  {agents.map(a => (
+                    <div key={a.id} className="new-chat-menu-item" onClick={() => handleSelect(a.id)}>
+                      <span className="new-chat-menu-icon">🤖</span>
+                      <span>{a.name}</span>
+                      {a.description && <span className="new-chat-menu-desc">{a.description}</span>}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       <div className="chat-list-items">
         {chats.map(chat => (

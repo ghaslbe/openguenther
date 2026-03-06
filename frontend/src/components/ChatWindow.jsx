@@ -378,21 +378,6 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, onCance
         )}
         <div ref={messagesEndRef} />
       </div>
-      {!activeChatId && agents && agents.length > 0 && (
-        <div className="agent-picker">
-          <label htmlFor="agent-select">Agent:</label>
-          <select
-            id="agent-select"
-            value={selectedAgentId}
-            onChange={e => onAgentChange(e.target.value)}
-          >
-            <option value="">{t('chat.noAgent')}</option>
-            {agents.map(a => (
-              <option key={a.id} value={a.id}>{a.name}</option>
-            ))}
-          </select>
-        </div>
-      )}
       {attachedFile && (
         <div className="file-attachment-bar">
           <span className="file-attachment-name">{attachedFile.icon || '📎'} {attachedFile.name}</span>
