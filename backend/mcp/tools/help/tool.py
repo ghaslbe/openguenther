@@ -1,8 +1,8 @@
 from mcp.registry import registry
 
 
-def list_available_tools():
-    """List all available MCP tools with their descriptions."""
+def list_available_tools(search=None):
+    """List all available MCP tools with their descriptions, optionally filtered by keyword."""
     tools = registry.list_tools()
     tool_list = []
     for t in tools:
@@ -11,6 +11,19 @@ def list_available_tools():
             "description": t.description,
             "builtin": t.server_id is None,
         })
+
+    if search:
+        q = search.lower()
+        tool_list = [
+            t for t in tool_list
+            if q in t["name"].lower() or q in t["description"].lower()
+        ]
+        return {
+            "query": search,
+            "matches": len(tool_list),
+            "tools": tool_list,
+        }
+
     return {
         "total": len(tool_list),
         "tools": tool_list
@@ -340,10 +353,20 @@ def get_help(topic="general"):
 
 LIST_TOOLS_DEFINITION = {
     "name": "list_available_tools",
-    "description": "Listet alle verfuegbaren MCP-Tools mit Namen und Beschreibung auf.",
+    "description": (
+        "Listet alle verfuegbaren MCP-Tools mit Namen und Beschreibung auf. "
+        "Mit 'search' kann nach Tools gesucht werden — durchsucht Name UND Beschreibung. "
+        "Beispiele: search='database', search='slack', search='pdf', search='mail'. "
+        "Ohne search werden alle Tools zurueckgegeben."
+    ),
     "input_schema": {
         "type": "object",
-        "properties": {},
+        "properties": {
+            "search": {
+                "type": "string",
+                "description": "Optionaler Suchbegriff — filtert Tools nach Name oder Beschreibung (case-insensitive)."
+            }
+        },
         "required": []
     }
 }
