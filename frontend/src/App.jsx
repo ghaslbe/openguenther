@@ -315,7 +315,7 @@ export default function App() {
     setSelectedAgentId(agentId);
     setGuentherLogs([]);
     if (agentId) {
-      socket.emit('start_agent_chat', { agent_id: agentId });
+      socket.emit('send_message', { content: 'Hallo', agent_id: agentId });
     }
   }
 
