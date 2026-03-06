@@ -245,6 +245,15 @@ export async function resetUsageStats() {
   await fetch(`${BASE}/api/usage/stats`, { method: 'DELETE' });
 }
 
+export async function renameChat(chatId, title) {
+  const res = await fetch(`${BASE}/api/chats/${chatId}/title`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title })
+  });
+  return res.json();
+}
+
 export async function fetchChatInfo(chatId) {
   const res = await fetch(`${BASE}/api/chats/${chatId}/info`);
   return res.json();

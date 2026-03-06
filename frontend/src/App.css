@@ -50,6 +50,7 @@ html, body, #root {
   letter-spacing: 1px;
   font-size: 18px;
   font-weight: 700;
+  position: relative;
 }
 
 .topbar-open {
@@ -88,6 +89,81 @@ html, body, #root {
   display: flex;
   flex: 1;
   overflow: hidden;
+}
+
+/* ── Topbar Search ── */
+
+.topbar-search-wrap {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  z-index: 200;
+}
+
+.topbar-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  padding: 5px 12px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.topbar-search-input:focus {
+  border-color: var(--accent);
+  background: rgba(255,255,255,0.1);
+}
+
+.topbar-search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.topbar-search-popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+
+.topbar-search-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.topbar-search-result:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.topbar-search-result-title {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar-search-result-agent {
+  font-size: 11px;
+  color: var(--accent);
+  background: rgba(79,195,247,0.1);
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
 }
 
 /* ── Chat List (Left Sidebar) ── */
@@ -229,24 +305,44 @@ html, body, #root {
   white-space: nowrap;
 }
 
-.btn-delete-chat {
+.btn-delete-chat,
+.btn-rename-chat {
   background: transparent;
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 14px;
-  padding: 2px 6px;
+  font-size: 13px;
+  padding: 2px 5px;
   border-radius: 4px;
   opacity: 0;
   transition: opacity 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 
-.chat-list-item:hover .btn-delete-chat {
+.chat-list-item:hover .btn-delete-chat,
+.chat-list-item:hover .btn-rename-chat {
   opacity: 1;
 }
 
 .btn-delete-chat:hover {
   color: var(--danger);
+}
+
+.btn-rename-chat:hover {
+  color: var(--accent);
+}
+
+.chat-title-input {
+  flex: 1;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 14px;
+  padding: 2px 6px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .chat-list-empty {

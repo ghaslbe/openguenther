@@ -5,7 +5,7 @@ import ChatWindow from './components/ChatWindow';
 import GuentherBox from './components/GuentherBox';
 import Settings from './components/Settings';
 import FirstRunOverlay from './components/FirstRunOverlay';
-import { fetchChats, fetchChat, deleteChat, fetchAgents, fetchProviders, fetchChatInfo, fetchChatUsage, uploadBinaryFile } from './services/api';
+import { fetchChats, fetchChat, deleteChat, renameChat, fetchAgents, fetchProviders, fetchChatInfo, fetchChatUsage, uploadBinaryFile } from './services/api';
 import { getSocket } from './services/socket';
 
 function formatBytes(n) {
@@ -169,6 +169,9 @@ export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [showFirstRun, setShowFirstRun] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef(null);
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
@@ -332,6 +335,11 @@ export default function App() {
     loadChats();
   }
 
+  async function handleRenameChat(chatId, newTitle) {
+    await renameChat(chatId, newTitle);
+    setChats(prev => prev.map(c => c.id === chatId ? { ...c, title: newTitle } : c));
+  }
+
   // Determine which agent name to show in ChatWindow
   function getActiveAgentName() {
     if (!activeChatId) {
@@ -347,6 +355,22 @@ export default function App() {
       return a ? a.name : null;
     }
   }
+
+  // Close search popup when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false);
+        setSearchQuery('');
+      }
+    }
+    if (searchOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [searchOpen]);
+
+  const searchResults = searchQuery.trim().length > 0
+    ? chats.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 8)
+    : [];
 
   function cancelGeneration() {
     socket.emit('cancel_generation');
@@ -391,6 +415,43 @@ export default function App() {
       <div className="app-topbar">
         <span className="topbar-open">OPEN</span><span className="topbar-guenther">guenther</span>
         <span className="topbar-version">v{__APP_VERSION__}</span><span className="topbar-beta">beta</span>
+        <div className="topbar-search-wrap" ref={searchRef}>
+          <input
+            className="topbar-search-input"
+            type="text"
+            placeholder="Chats durchsuchen…"
+            value={searchQuery}
+            onFocus={() => setSearchOpen(true)}
+            onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+          />
+          {searchOpen && searchResults.length > 0 && (
+            <div className="topbar-search-popup">
+              {searchResults.map(chat => (
+                <div
+                  key={chat.id}
+                  className="topbar-search-result"
+                  onMouseDown={() => {
+                    handleSelectChat(chat.id);
+                    setSearchOpen(false);
+                    setSearchQuery('');
+                  }}
+                >
+                  <span className="topbar-search-result-title">{chat.title}</span>
+                  {chat.agent_id && agents.find(a => a.id === chat.agent_id) && (
+                    <span className="topbar-search-result-agent">
+                      {agents.find(a => a.id === chat.agent_id).name}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {searchOpen && searchQuery.trim().length > 0 && searchResults.length === 0 && (
+            <div className="topbar-search-popup">
+              <div style={{ padding: '10px 14px', fontSize: '13px', color: 'var(--text-secondary)' }}>Keine Treffer</div>
+            </div>
+          )}
+        </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px', alignItems: 'center' }}>
           <button className="btn-theme-toggle" style={{ marginLeft: 0 }} onClick={() => setShowUsage(v => !v)}>
             📊
@@ -410,6 +471,7 @@ export default function App() {
         onSelectChat={handleSelectChat}
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
+        onRenameChat={handleRenameChat}
         onOpenSettings={() => setShowSettings(true)}
         agents={agents}
       />

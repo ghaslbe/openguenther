@@ -238,8 +238,15 @@ def handle_message(data):
     if agent_id is None:
         agent_id = chat.get('agent_id')
 
-    # Update title on first message
-    if len(messages) == 1:
+    # Update title on first real user message.
+    # For agent chats the first message is the auto-greeting "Hallo", so we
+    # also update the title on the second user message (= first real input).
+    user_messages = [m for m in messages if m['role'] == 'user']
+    is_first_real_message = (
+        len(user_messages) == 1 or
+        (len(user_messages) == 2 and bool(chat.get('agent_id')))
+    )
+    if is_first_real_message:
         title = content[:50] + ('...' if len(content) > 50 else '')
         update_chat_title(chat_id, title)
         emit('chat_updated', {'chat_id': chat_id, 'title': title})

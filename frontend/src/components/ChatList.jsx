@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat, onDeleteChat, onOpenSettings, agents }) {
+export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat, onDeleteChat, onRenameChat, onOpenSettings, agents }) {
   const { t } = useTranslation();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
+  const editInputRef = useRef(null);
 
   function getAgentName(agentId) {
     if (!agentId || !agents) return null;
@@ -12,7 +15,6 @@ export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat,
     return agent ? agent.name : null;
   }
 
-  // Menü schließen bei Klick außerhalb
   useEffect(() => {
     function handleClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -23,9 +25,35 @@ export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat,
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showMenu]);
 
+  useEffect(() => {
+    if (editingId && editInputRef.current) {
+      editInputRef.current.focus();
+      editInputRef.current.select();
+    }
+  }, [editingId]);
+
   function handleSelect(agentId) {
     setShowMenu(false);
     onNewChat(agentId || '');
+  }
+
+  function startEdit(e, chat) {
+    e.stopPropagation();
+    setEditingId(chat.id);
+    setEditingTitle(chat.title);
+  }
+
+  function commitEdit(chatId) {
+    const trimmed = editingTitle.trim();
+    if (trimmed && trimmed !== chats.find(c => c.id === chatId)?.title) {
+      onRenameChat(chatId, trimmed);
+    }
+    setEditingId(null);
+  }
+
+  function handleEditKeyDown(e, chatId) {
+    if (e.key === 'Enter') { e.preventDefault(); commitEdit(chatId); }
+    if (e.key === 'Escape') { setEditingId(null); }
   }
 
   return (
@@ -65,21 +93,40 @@ export default function ChatList({ chats, activeChatId, onSelectChat, onNewChat,
           <div
             key={chat.id}
             className={`chat-list-item ${chat.id === activeChatId ? 'active' : ''}`}
-            onClick={() => onSelectChat(chat.id)}
+            onClick={() => editingId !== chat.id && onSelectChat(chat.id)}
           >
             <div className="chat-item-body">
-              <span className="chat-title">{chat.title}</span>
+              {editingId === chat.id ? (
+                <input
+                  ref={editInputRef}
+                  className="chat-title-input"
+                  value={editingTitle}
+                  onChange={e => setEditingTitle(e.target.value)}
+                  onBlur={() => commitEdit(chat.id)}
+                  onKeyDown={e => handleEditKeyDown(e, chat.id)}
+                  onClick={e => e.stopPropagation()}
+                />
+              ) : (
+                <span className="chat-title" onDoubleClick={e => startEdit(e, chat)}>{chat.title}</span>
+              )}
               {getAgentName(chat.agent_id) && (
                 <span className="chat-agent-badge">{getAgentName(chat.agent_id)}</span>
               )}
             </div>
-            <button
-              className="btn-delete-chat"
-              onClick={(e) => { e.stopPropagation(); onDeleteChat(chat.id); }}
-              title={t('chatList.deleteChatTitle')}
-            >
-              x
-            </button>
+            {editingId !== chat.id && (
+              <>
+                <button
+                  className="btn-rename-chat"
+                  onClick={e => startEdit(e, chat)}
+                  title="Umbenennen"
+                >✏</button>
+                <button
+                  className="btn-delete-chat"
+                  onClick={(e) => { e.stopPropagation(); onDeleteChat(chat.id); }}
+                  title={t('chatList.deleteChatTitle')}
+                >x</button>
+              </>
+            )}
           </div>
         ))}
         {chats.length === 0 && (
