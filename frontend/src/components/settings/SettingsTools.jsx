@@ -123,43 +123,40 @@ export default function SettingsTools({ providers }) {
 
   const TOOL_CATEGORY = {
     // Databases
-    airtable:          { label: 'Airtable',    bg: '#fcb400', fg: '#000' },
-    mysql:             { label: 'MySQL',        bg: '#00758f', fg: '#fff' },
-    postgresql:        { label: 'PostgreSQL',   bg: '#336791', fg: '#fff' },
-    mongodb:           { label: 'MongoDB',      bg: '#4db33d', fg: '#fff' },
-    pinecone:          { label: 'Pinecone',     bg: '#1c17ff', fg: '#fff' },
+    airtable:               { label: 'Airtable',      bg: '#fcb400', fg: '#000' },
+    mysql:                  { label: 'MySQL',          bg: '#00758f', fg: '#fff' },
+    postgresql:             { label: 'PostgreSQL',     bg: '#336791', fg: '#fff' },
+    mongodb:                { label: 'MongoDB',        bg: '#4db33d', fg: '#fff' },
+    pinecone:               { label: 'Pinecone',       bg: '#1c17ff', fg: '#fff' },
     // Project / Productivity
-    trello:            { label: 'Trello',       bg: '#0052cc', fg: '#fff' },
-    notion:            { label: 'Notion',       bg: '#333',    fg: '#fff' },
-    todoist:           { label: 'Todoist',      bg: '#db4035', fg: '#fff' },
+    trello:                 { label: 'Trello',         bg: '#0052cc', fg: '#fff' },
+    notion:                 { label: 'Notion',         bg: '#333',    fg: '#fff' },
+    todoist:                { label: 'Todoist',        bg: '#db4035', fg: '#fff' },
     // Communication
-    slack:             { label: 'Slack',        bg: '#4a154b', fg: '#fff' },
-    discord:           { label: 'Discord',      bg: '#5865f2', fg: '#fff' },
-    send_telegram:     { label: 'Telegram',     bg: '#0088cc', fg: '#fff' },
-    email:             { label: 'E-Mail',       bg: '#555',    fg: '#fff' },
+    slack:                  { label: 'Slack',          bg: '#4a154b', fg: '#fff' },
+    discord:                { label: 'Discord',        bg: '#5865f2', fg: '#fff' },
+    send_telegram:          { label: 'Telegram',       bg: '#0088cc', fg: '#fff' },
+    send_email:             { label: 'SMTP',           bg: '#555',    fg: '#fff' },
     // Social / Publishing
-    twitter:           { label: 'Twitter/X',   bg: '#111',    fg: '#fff' },
-    bluesky:           { label: 'Bluesky',      bg: '#0085ff', fg: '#fff' },
-    mastodon:          { label: 'Mastodon',     bg: '#6364ff', fg: '#fff' },
-    post_mastodon:     { label: 'Mastodon',     bg: '#6364ff', fg: '#fff' },
-    post_bluesky:      { label: 'Bluesky',      bg: '#0085ff', fg: '#fff' },
-    post_tweet:        { label: 'Twitter/X',   bg: '#111',    fg: '#fff' },
+    post_tweet:             { label: 'Twitter/X',      bg: '#111',    fg: '#fff' },
+    post_bluesky:           { label: 'Bluesky',        bg: '#0085ff', fg: '#fff' },
+    post_mastodon:          { label: 'Mastodon',       bg: '#6364ff', fg: '#fff' },
     // CRM
-    hubspot:           { label: 'HubSpot',      bg: '#ff7a59', fg: '#fff' },
-    pipedrive:         { label: 'Pipedrive',    bg: '#215732', fg: '#fff' },
+    hubspot:                { label: 'HubSpot',        bg: '#ff7a59', fg: '#fff' },
+    pipedrive:              { label: 'Pipedrive',      bg: '#215732', fg: '#fff' },
     // Media / AI
-    tts:               { label: 'ElevenLabs',   bg: '#ff6c2f', fg: '#fff' },
-    youtube_transcript:{ label: 'YouTube',      bg: '#ff0000', fg: '#fff' },
-    generate_image:    { label: 'Image AI',     bg: '#7c3aed', fg: '#fff' },
-    text_to_speech:    { label: 'ElevenLabs',   bg: '#ff6c2f', fg: '#fff' },
-    // Finance / Data
-    stock:             { label: 'Finance',      bg: '#16a34a', fg: '#fff' },
-    flights:           { label: 'Flights',      bg: '#0ea5e9', fg: '#fff' },
-    weather:           { label: 'Weather',      bg: '#0284c7', fg: '#fff' },
-    geocode:           { label: 'Maps',         bg: '#15803d', fg: '#fff' },
-    seo:               { label: 'SEO',          bg: '#ea580c', fg: '#fff' },
-    fetch_url:         { label: 'Web',          bg: '#475569', fg: '#fff' },
-    wikipedia:         { label: 'Wikipedia',    bg: '#737373', fg: '#fff' },
+    text_to_speech:         { label: 'ElevenLabs',     bg: '#ff6c2f', fg: '#fff' },
+    get_youtube_transcript: { label: 'YouTube',        bg: '#ff0000', fg: '#fff' },
+    generate_image:         { label: 'Image AI',       bg: '#7c3aed', fg: '#fff' },
+    // Data / Web Services
+    get_stock_price:        { label: 'Yahoo Finance',  bg: '#6001d2', fg: '#fff' },
+    get_flights_nearby:     { label: 'OpenSky',        bg: '#0ea5e9', fg: '#fff' },
+    get_weather:            { label: 'Open-Meteo',     bg: '#0284c7', fg: '#fff' },
+    geocode_location:       { label: 'OpenStreetMap',  bg: '#7ebc6f', fg: '#000' },
+    resolve_callsign:       { label: 'ADSB.one',       bg: '#334155', fg: '#fff' },
+    wikipedia_search:       { label: 'Wikipedia',      bg: '#737373', fg: '#fff' },
+    fetch_url:              { label: 'Web',            bg: '#475569', fg: '#fff' },
+    seo:                    { label: 'Web Scraping',   bg: '#ea580c', fg: '#fff' },
   };
 
   function renderTool(tool) {
