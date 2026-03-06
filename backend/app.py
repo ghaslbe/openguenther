@@ -233,10 +233,6 @@ def handle_message(data):
                 'content': msg['content']
             })
 
-    # OpenRouter/OpenAI require messages to start with 'user'
-    # (can happen when agent auto-greeted without a user message)
-    while messages and messages[0]['role'] != 'user':
-        messages.pop(0)
 
     # For existing chats, read agent_id from DB
     if agent_id is None:
@@ -323,8 +319,9 @@ def handle_start_agent_chat(data):
     chat_id = create_chat(f"Chat mit {agent_name}", agent_id=agent_id)
     emit('chat_created', {'chat_id': chat_id, 'title': f"Chat mit {agent_name}", 'agent_id': agent_id})
 
-    # Versteckter Trigger — wird NICHT gespeichert, erscheint nicht im Chat
-    trigger = "Begrüße den Nutzer kurz und erkläre in 2-3 Sätzen, wofür du da bist und was du kannst."
+    # "Hallo" als User-Message speichern damit History korrekt mit 'user' beginnt
+    trigger = "Hallo"
+    add_message(chat_id, 'user', trigger)
     messages = [{'role': 'user', 'content': trigger}]
 
     settings = get_settings()
