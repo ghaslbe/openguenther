@@ -49,11 +49,13 @@ class TelegramGateway:
         self._thread = None
         self._stop_event = threading.Event()
         self._user_sessions = {}  # username -> chat_id
+        self._user_agents = {}    # username -> agent_id or None
 
     def start(self, token):
         if self._thread and self._thread.is_alive():
             self.stop()
         self._stop_event.clear()
+        self._register_commands(token)
         self._thread = threading.Thread(
             target=self._poll_loop,
             args=(token,),
@@ -145,6 +147,15 @@ class TelegramGateway:
         t.start()
         return stop_event
 
+    def _register_commands(self, token):
+        commands = [
+            {"command": "start",  "description": "Guenther starten"},
+            {"command": "agents", "description": "Verfügbare Agenten anzeigen"},
+            {"command": "agent",  "description": "Agent auswählen, z.B. /agent Orchestrator"},
+            {"command": "new",    "description": "Neue Chat-Session starten"},
+        ]
+        self._api_post(token, "setMyCommands", commands=commands)
+
     def _get_updates(self, token, offset):
         url = TELEGRAM_API.format(token=token, method="getUpdates")
         try:
@@ -153,7 +164,7 @@ class TelegramGateway:
                 params={
                     "offset": offset,
                     "timeout": 25,
-                    "allowed_updates": ["message"]
+                    "allowed_updates": ["message", "callback_query"]
                 },
                 timeout=30
             )
@@ -187,6 +198,131 @@ class TelegramGateway:
             logger.error(f"Photo download error: {e}")
             return None, None
 
+    def _send_message_md(self, token, chat_id, text, reply_markup=None):
+        """Send a message with Markdown parse_mode."""
+        if len(text) > 4096:
+            text = text[:4090] + "\n[...]"
+        payload = {"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}
+        if reply_markup:
+            payload["reply_markup"] = reply_markup
+        url = TELEGRAM_API.format(token=token, method="sendMessage")
+        try:
+            http_requests.post(url, json=payload, timeout=10)
+        except Exception as e:
+            logger.error(f"sendMessage (md) error: {e}")
+
+    def _handle_agents_command(self, token, telegram_chat_id):
+        from config import get_agents
+        agents = get_agents()
+        if not agents:
+            self._send_message(token, telegram_chat_id, "Keine Agenten konfiguriert.")
+            return
+        lines = ["🤖 *Verfügbare Agenten:*\n"]
+        for a in agents:
+            lines.append(f"*{a['name']}*")
+            if a.get("description"):
+                lines.append(f"_{a['description']}_")
+            lines.append("")
+        keyboard = [[{"text": f"🤖 {a['name']}", "callback_data": f"agent:{a['id']}"}] for a in agents]
+        keyboard.append([{"text": "✖ Kein Agent", "callback_data": "agent:off"}])
+        self._send_message_md(
+            token, telegram_chat_id,
+            "\n".join(lines),
+            reply_markup={"inline_keyboard": keyboard}
+        )
+
+    def _select_agent_by_input(self, token, telegram_chat_id, username, arg):
+        from config import get_agents, get_agent
+        if arg.lower() == "off":
+            self._user_agents[username] = None
+            self._send_message(token, telegram_chat_id, "✅ Kein Agent aktiv.")
+            return
+        agents = get_agents()
+        agent = None
+        try:
+            idx = int(arg) - 1
+            if 0 <= idx < len(agents):
+                agent = agents[idx]
+        except ValueError:
+            agent = next((a for a in agents if a["name"].lower() == arg.lower()), None)
+        if not agent:
+            self._send_message(token, telegram_chat_id, f'Agent "{arg}" nicht gefunden. /agents für die Liste.')
+            return
+        t = threading.Thread(
+            target=self._start_agent_session,
+            args=(token, telegram_chat_id, username, agent["id"], None),
+            daemon=True
+        )
+        t.start()
+
+    def _handle_callback_query(self, token, query):
+        query_id = query["id"]
+        data = query.get("data", "")
+        from_user = query.get("from", {})
+        username = from_user.get("username", "")
+        telegram_chat_id = query["message"]["chat"]["id"]
+        # Always answer to dismiss loading indicator
+        self._api_post(token, "answerCallbackQuery", callback_query_id=query_id)
+        # Auth check
+        settings = get_settings()
+        allowed_users = settings.get("telegram", {}).get("allowed_users", [])
+        if not username or username not in allowed_users:
+            return
+        if data.startswith("agent:"):
+            agent_id = data[6:]
+            if agent_id == "off":
+                self._user_agents[username] = None
+                self._send_message(token, telegram_chat_id, "✅ Kein Agent aktiv. Neue Nachrichten ohne Agent.")
+            else:
+                t = threading.Thread(
+                    target=self._start_agent_session,
+                    args=(token, telegram_chat_id, username, agent_id, None),
+                    daemon=True
+                )
+                t.start()
+
+    def _start_agent_session(self, token, telegram_chat_id, username, agent_id, custom_title):
+        from config import get_agent
+        agent_cfg = get_agent(agent_id)
+        if not agent_cfg:
+            self._send_message(token, telegram_chat_id, "Agent nicht gefunden.")
+            return
+        self._user_agents[username] = agent_id
+        title = custom_title or f"Telegram: @{username} ({agent_cfg['name']})"
+        chat_id = create_chat(title)
+        self._user_sessions[username] = chat_id
+        self.socketio.emit("chat_created", {"chat_id": chat_id, "title": title, "agent_id": agent_id})
+        # Get agent greeting
+        typing_stop = self._start_typing_loop(token, telegram_chat_id)
+        try:
+            add_message(chat_id, "user", "Hallo")
+            messages = [{"role": "user", "content": "Hallo"}]
+            settings = get_settings()
+
+            def emit_log(entry):
+                e = entry if isinstance(entry, dict) else {"type": "text", "message": str(entry)}
+                self.socketio.emit("guenther_log", e)
+
+            response = run_agent(
+                messages, settings, emit_log,
+                system_prompt=agent_cfg.get("system_prompt") or None,
+                agent_provider_id=agent_cfg.get("provider_id") or None,
+                agent_model=agent_cfg.get("model") or None,
+                chat_id=chat_id,
+                no_tools=True
+            )
+            response = file_store.extract_and_store(response, chat_id)
+            add_message(chat_id, "assistant", response)
+            self.socketio.emit("agent_response", {"chat_id": chat_id, "content": response})
+            clean = self._clean_text_for_telegram(response)
+            if clean:
+                self._send_message(token, telegram_chat_id, clean)
+        except Exception as e:
+            logger.error(f"Agent greeting error: {e}", exc_info=True)
+            self._send_message(token, telegram_chat_id, f"Fehler beim Agent-Start: {e}")
+        finally:
+            typing_stop.set()
+
     def _poll_loop(self, token):
         offset = 0
         logger.info("Telegram polling loop started")
@@ -199,7 +335,10 @@ class TelegramGateway:
             for update in result.get("result", []):
                 offset = update["update_id"] + 1
                 try:
-                    self._handle_update(token, update)
+                    if "callback_query" in update:
+                        self._handle_callback_query(token, update["callback_query"])
+                    else:
+                        self._handle_update(token, update)
                 except Exception as e:
                     logger.error(
                         f"Error handling update {update.get('update_id')}: {e}",
@@ -312,29 +451,45 @@ class TelegramGateway:
         if not text:
             return
 
-        if text.startswith("/new"):
-            parts = text.split(None, 1)
-            title = (
-                parts[1].strip()
-                if len(parts) > 1 and parts[1].strip()
-                else f"Telegram: @{username}"
-            )
-            chat_id = create_chat(title)
-            self._user_sessions[username] = chat_id
-            self.socketio.emit("chat_created", {"chat_id": chat_id, "title": title})
-            self._send_message(
-                token, telegram_chat_id,
-                f'Neue Chat-Session gestartet: "{title}"'
-            )
-            return
-
         if text == "/start":
             self._send_message(
                 token, telegram_chat_id,
-                "Hallo! Ich bin Guenther, dein MCP-Agent. "
-                "Schreib einfach los oder nutze /new <Name> für eine neue Chat-Session. "
-                "Du kannst mir auch Fotos schicken!"
+                "Hallo! Ich bin Guenther, dein MCP-Agent.\n\n"
+                "Schreib einfach los oder nutze:\n"
+                "/agents – Agenten anzeigen\n"
+                "/new – Neue Chat-Session\n\n"
+                "Du kannst mir auch Fotos und Sprachnachrichten schicken!"
             )
+            return
+
+        if text.startswith("/new"):
+            parts = text.split(None, 1)
+            agent_id = self._user_agents.get(username)
+            if agent_id:
+                t = threading.Thread(
+                    target=self._start_agent_session,
+                    args=(token, telegram_chat_id, username, agent_id, parts[1].strip() if len(parts) > 1 else None),
+                    daemon=True
+                )
+                t.start()
+            else:
+                title = parts[1].strip() if len(parts) > 1 and parts[1].strip() else f"Telegram: @{username}"
+                chat_id = create_chat(title)
+                self._user_sessions[username] = chat_id
+                self.socketio.emit("chat_created", {"chat_id": chat_id, "title": title})
+                self._send_message(token, telegram_chat_id, f'Neue Chat-Session gestartet: "{title}"')
+            return
+
+        if text == "/agents":
+            self._handle_agents_command(token, telegram_chat_id)
+            return
+
+        if text.startswith("/agent"):
+            arg = text[6:].strip()
+            if not arg:
+                self._handle_agents_command(token, telegram_chat_id)
+            else:
+                self._select_agent_by_input(token, telegram_chat_id, username, arg)
             return
 
         if username not in self._user_sessions:
@@ -458,8 +613,21 @@ class TelegramGateway:
                 else:
                     self.socketio.emit("guenther_log", {"type": "text", "message": str(entry)})
 
+            # Use selected agent if any
+            agent_cfg = None
+            agent_id = self._user_agents.get(username)
+            if agent_id:
+                from config import get_agent
+                agent_cfg = get_agent(agent_id)
+
             self.socketio.emit("agent_start", {"chat_id": chat_id})
-            response = run_agent(messages, settings, emit_log, chat_id=chat_id)
+            response = run_agent(
+                messages, settings, emit_log,
+                system_prompt=agent_cfg.get("system_prompt") or None if agent_cfg else None,
+                agent_provider_id=agent_cfg.get("provider_id") or None if agent_cfg else None,
+                agent_model=agent_cfg.get("model") or None if agent_cfg else None,
+                chat_id=chat_id
+            )
             response = file_store.extract_and_store(response, chat_id)
             add_message(chat_id, "assistant", response)
             self.socketio.emit("agent_response", {"chat_id": chat_id, "content": response})
