@@ -368,7 +368,8 @@ LIST_TOOLS_DEFINITION = {
             }
         },
         "required": []
-    }
+    },
+    "always_enabled": True,
 }
 
 HELP_DEFINITION = {

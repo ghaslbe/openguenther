@@ -151,6 +151,7 @@ def list_mcp_tools():
             "current_provider": ts.get("provider", ""),
             "current_model": ts.get("model", ""),
             "enabled": ts.get("enabled", True),
+            "always_enabled": t.always_enabled,
         })
     return result
 

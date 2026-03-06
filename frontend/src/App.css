@@ -1609,6 +1609,11 @@ select.input {
   background: #fff;
 }
 
+.tool-toggle-locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .tool-accordion-body {
   padding: 12px;
   border-top: 1px solid var(--border);

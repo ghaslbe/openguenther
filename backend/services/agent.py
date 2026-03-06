@@ -177,7 +177,8 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
 
     all_tools = [
         t for t in registry.get_openai_tools()
-        if get_tool_settings(t['function']['name']).get('enabled', True)
+        if (registry.get_tool(t['function']['name']).always_enabled
+            or get_tool_settings(t['function']['name']).get('enabled', True))
     ]
 
     # Recursively strip JSON Schema keywords rejected by OpenAI-compatible APIs.

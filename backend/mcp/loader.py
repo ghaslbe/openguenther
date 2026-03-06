@@ -75,6 +75,7 @@ def _register_module(mod, source_label='', custom=False):
                 settings_info=info,
                 custom=is_custom,
                 usage=usage,
+                always_enabled=bool(td.get('always_enabled', False)),
             ))
             logger.info(f"[loader] Registered '{name}' from {source_label}")
             count += 1
@@ -106,6 +107,7 @@ def _register_module(mod, source_label='', custom=False):
         settings_info=info,
         custom=is_custom,
         usage=usage,
+        always_enabled=bool(td.get('always_enabled', False)),
     ))
     logger.info(f"[loader] Registered '{name}' from {source_label}")
     return 1

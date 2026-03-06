@@ -29,6 +29,7 @@ TOOL_DEFINITION = {
         },
         "required": ["goal"],
     },
+    "always_enabled": True,
 }
 
 

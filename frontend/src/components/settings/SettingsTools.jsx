@@ -221,9 +221,9 @@ export default function SettingsTools({ providers }) {
             <span className={`tool-accordion-chevron ${isOpen ? 'open' : ''}`}>▼</span>
           </div>
           <div
-            className={`tool-toggle${enabledStates[tool.name] !== false ? ' tool-toggle-on' : ''}`}
-            title={enabledStates[tool.name] !== false ? 'Deaktivieren' : 'Aktivieren'}
-            onClick={e => handleToggleEnabled(e, tool.name)}
+            className={`tool-toggle${enabledStates[tool.name] !== false ? ' tool-toggle-on' : ''}${tool.always_enabled ? ' tool-toggle-locked' : ''}`}
+            title={tool.always_enabled ? 'Immer aktiv' : (enabledStates[tool.name] !== false ? 'Deaktivieren' : 'Aktivieren')}
+            onClick={tool.always_enabled ? undefined : e => handleToggleEnabled(e, tool.name)}
             style={{ marginRight: '12px' }}
           >
             <span className="tool-toggle-knob" />
