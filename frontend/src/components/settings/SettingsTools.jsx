@@ -173,11 +173,16 @@ export default function SettingsTools({ providers }) {
     return (
       <div key={tool.name} className="tool-accordion-item">
         <div className="tool-accordion-header" onClick={() => toggleExpand(tool)}>
-          <span className="tool-accordion-name">{tool.name}</span>
           {tool.builtin && !tool.custom && (
             cat
               ? <span className="tool-accordion-badge" style={{ background: cat.bg, color: cat.fg }}>{cat.label}</span>
               : <span className="tool-accordion-badge" style={{ background: '#2a7a3b', color: '#fff' }}>Local</span>
+          )}
+          <span className="tool-accordion-name">{tool.name}</span>
+          {tool.builtin && !tool.custom && (
+            <span className="tool-accordion-badge" style={{ background: '#2a7a3b', color: '#fff' }}>
+              Built-in
+            </span>
           )}
           {tool.custom && (
             <span className="tool-accordion-badge" style={{ background: '#b85c00', color: '#fff' }}>
