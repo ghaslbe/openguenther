@@ -299,6 +299,7 @@ export default function App() {
 
   async function handleSelectChat(chatId) {
     setActiveChatId(chatId);
+    setGuentherLogs([]);
     const chat = await fetchChat(chatId);
     if (chat && chat.messages) {
       setMessages(chat.messages.map(m => ({
