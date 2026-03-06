@@ -178,11 +178,24 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
     all_tools = registry.get_openai_tools()
 
     # Recursively strip JSON Schema keywords rejected by OpenAI-compatible APIs
-    _UNSUPPORTED_SCHEMA_KEYS = {'$schema', 'format', 'propertyNames', '$defs', '$ref', '$id'}
+    _UNSUPPORTED_SCHEMA_KEYS = {
+        '$schema', 'format', 'propertyNames', '$defs', '$ref', '$id',
+        'minLength', 'maxLength', 'minimum', 'maximum', 'exclusiveMinimum',
+        'exclusiveMaximum', 'multipleOf', 'pattern', 'minItems', 'maxItems',
+        'uniqueItems', 'minProperties', 'maxProperties',
+    }
 
     def _sanitize_schema(obj):
         if isinstance(obj, dict):
-            return {k: _sanitize_schema(v) for k, v in obj.items() if k not in _UNSUPPORTED_SCHEMA_KEYS}
+            result = {}
+            for k, v in obj.items():
+                if k in _UNSUPPORTED_SCHEMA_KEYS:
+                    continue
+                # additionalProperties: {} (empty object) → drop it (avoid API rejection)
+                if k == 'additionalProperties' and v == {}:
+                    continue
+                result[k] = _sanitize_schema(v)
+            return result
         if isinstance(obj, list):
             return [_sanitize_schema(i) for i in obj]
         return obj
