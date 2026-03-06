@@ -132,7 +132,7 @@ def _pick_provider_and_model_for_tools(selected_tools, settings):
     return override_provider_cfg or default_provider_cfg, override_model
 
 
-def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provider_id=None, agent_model=None, chat_id=None, stop_event=None):
+def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provider_id=None, agent_model=None, chat_id=None, stop_event=None, no_tools=False):
     """
     Run the agent loop: send messages to LLM, handle tool calls, iterate.
     Logs ALL communication to Guenther terminal.
@@ -188,22 +188,32 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
     emit_log({"type": "header", "message": "SYSTEM PROMPT"})
     emit_log({"type": "text", "message": active_prompt})
 
-    # ── Log: Alle Tool Definitions ──
-    emit_log({"type": "header", "message": f"ALLE TOOLS ({len(all_tools)})"})
-    emit_log({"type": "json", "label": "all_tools", "data": all_tools})
-
     emit_log({"type": "text", "message": f"[{_ts()}] LLM Timeout: {llm_timeout}s"})
 
-    # ── Tool Router: Pre-filter ──
-    tools = _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=base_url, timeout=llm_timeout, provider_id=provider_id)
+    if no_tools:
+        # Agent-Start: keine Tools, kein Tool-Router — nur System-Prompt + Nachricht
+        emit_log({"type": "text", "message": f"[{_ts()}] Kein Tool-Routing (Agent-Start)"})
+        tools = []
+    else:
+        # ── Log: Alle Tool Definitions ──
+        emit_log({"type": "header", "message": f"ALLE TOOLS ({len(all_tools)})"})
+        emit_log({"type": "json", "label": "all_tools", "data": all_tools})
 
-    # ── Provider+Model override: use tool-specific overrides if all tools agree ──
-    effective_provider_cfg, effective_model = _pick_provider_and_model_for_tools(tools, settings)
-    if effective_model != model or effective_provider_cfg.get('base_url', base_url) != base_url:
-        emit_log({"type": "text", "message": f"[{_ts()}] Override aktiv: Provider={effective_provider_cfg.get('name', provider_id)} Modell={effective_model}"})
-        model = effective_model
-        api_key = effective_provider_cfg.get('api_key', '') or api_key
-        base_url = effective_provider_cfg.get('base_url', base_url)
+        # ── Tool Router: Pre-filter ──
+        tools = _select_tools(all_tools, chat_messages, api_key, model, emit_log, base_url=base_url, timeout=llm_timeout, provider_id=provider_id)
+
+        # ── Provider+Model override: use tool-specific overrides if all tools agree ──
+        # Only override if there's an actual tool-level setting (not a default fallback that conflicts with agent settings)
+        effective_provider_cfg, effective_model = _pick_provider_and_model_for_tools(tools, settings)
+        tool_has_provider_override = any(
+            (get_tool_settings(t.get('function', {}).get('name', '')).get('provider') or '').strip()
+            for t in tools
+        )
+        if tool_has_provider_override and (effective_model != model or effective_provider_cfg.get('base_url', base_url) != base_url):
+            emit_log({"type": "text", "message": f"[{_ts()}] Tool-Override aktiv: Provider={effective_provider_cfg.get('name', provider_id)} Modell={effective_model}"})
+            model = effective_model
+            api_key = effective_provider_cfg.get('api_key', '') or api_key
+            base_url = effective_provider_cfg.get('base_url', base_url)
 
     # ── Log: Gefilterte Tools ──
     emit_log({"type": "header", "message": f"AKTIVE TOOLS FUER DIESEN REQUEST ({len(tools)})"})

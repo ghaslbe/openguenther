@@ -270,10 +270,13 @@ def handle_message(data):
             agent_provider_id = agent_cfg.get('provider_id') or None
             agent_model = agent_cfg.get('model') or None
 
+    # Beim initialen Agent-Greeting (neuer Chat mit agent_id) keine Tools nötig
+    is_agent_start = bool(agent_id and len(messages) == 1)
+
     try:
         response = run_agent(messages, settings, emit_log, system_prompt=agent_system_prompt,
                              agent_provider_id=agent_provider_id, agent_model=agent_model, chat_id=chat_id,
-                             stop_event=stop_event)
+                             stop_event=stop_event, no_tools=is_agent_start)
         if stop_event.is_set():
             emit_log({"type": "text", "message": "⏹ Generierung abgebrochen."})
             emit('agent_end', {'chat_id': chat_id, 'cancelled': True})
