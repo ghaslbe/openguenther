@@ -68,11 +68,14 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 
 **KI-Features**
 - **Agenten-System**: eigene KI-Agenten mit individuellem System-Prompt anlegen — per Dropdown im Chat wählen, Name erscheint statt „Guenther"; optionaler Provider- und Modell-Override pro Agent
+- **Agenten-Vorlagen**: 8 vorgefertigte Agenten (Orchestrator, Recherche-Assistent, Content-Manager, Daten-Analyst, Code-Reviewer, CRM-Assistent, Social-Media-Manager, Übersetzungs-Assistent) per Klick installierbar
+- **Orchestrator-Agent**: plant komplexe Aufgaben automatisch mit `plan_task`, führt Schritte nacheinander aus und berichtet Zwischenergebnisse
 - **Code-Interpreter** (`run_code`): Python-Code per LLM generieren und ausführen, mit Selbstkorrektur-Loop
 - **Datei-Upload** (📎): Textdateien (CSV, JSON, XML, TXT etc.) hochladen — Inhalt wird als Kontext ans LLM übergeben; Binärdateien (Audio: MP3/WAV/OGG/FLAC/M4A; Office: XLS/XLSX/DOC/DOCX) werden serverseitig gespeichert, LLM erhält nur den Dateipfad
 - **Bildgenerierung**: via OpenRouter (Flux, Gemini Image, etc.)
 - **Bildbearbeitung**: via process_image (blur, grayscale, rotate, …)
 - **Präsentations-Generator**: PowerPoint-Dateien (.pptx) direkt aus dem Chat erstellen — Guenther strukturiert das Thema, speichert die Datei persistent und liefert einen Download-Button
+- **Chart-Generator**: Diagramme (Linie, Balken, Torte, Scatter, Histogramm) aus beliebigen Daten als PNG erstellen — direkt downloadbar oder per Telegram versendbar
 
 **Automatisierung**
 - **Autoprompts**: Prompts mit Zeitplan hinterlegen (Intervall / täglich / wöchentlich, Zeiten in UTC) — per Default still ausgeführt (kein Chat-Eintrag), optional in dedizierten Chat speichern; ▶ Button zum sofortigen manuellen Ausführen mit Log-Anzeige
@@ -276,37 +279,79 @@ Daten werden persistent in einem Docker-Volume gespeichert (`/app/data`).
 
 ### Built-in Tools
 
+**Daten & Web**
+
 | Tool | Beschreibung |
 |------|-------------|
 | `get_weather` | Wetter & Vorhersage via Open-Meteo (kein API-Key) |
-| `wikipedia_search` | Wikipedia-Artikel suchen inkl. Weiterleitungen, Ortsteil-Treffern und automatischem Fallback auf Englisch |
+| `wikipedia_search` | Wikipedia-Artikel suchen inkl. Weiterleitungen und automatischem Englisch-Fallback |
 | `get_stock_price` | Aktienkurs, Tagesveränderung, Kennzahlen via Yahoo Finance (kein API-Key) |
-| `geocode_location` | Geokoordinaten für PLZ, Ortsnamen oder Adressen via OpenStreetMap Nominatim (kein API-Key) |
-| `get_flights_nearby` | Live-Flugzeuge in der Nähe von Koordinaten via OpenSky Network ADS-B (kein API-Key) |
-| `resolve_callsign` | Flugzeug-Rufzeichen auflösen: Airline-Name via OpenFlights + Live-Daten via adsb.one (kein API-Key) |
-| `fetch_website_info` | Titel, Description und Meta-Daten einer Webseite abrufen |
-| `run_code` | Python-Code per LLM generieren und ausführen — Dateikonvertierung, Datenanalyse, Berechnungen |
+| `geocode_location` | Geokoordinaten für PLZ, Ortsnamen oder Adressen via OpenStreetMap Nominatim |
+| `get_flights_nearby` | Live-Flugzeuge in der Nähe via OpenSky Network ADS-B (kein API-Key) |
+| `resolve_callsign` | Flugzeug-Rufzeichen auflösen via OpenFlights + adsb.one (kein API-Key) |
+| `fetch_url` | Webseite abrufen: Titel, Meta-Daten, Seitentext |
+| `analyze_seo` | SEO-Analyse als visueller HTML-Report — Score, Meta, OG-Tags, JSON-LD u.v.m. |
+| `get_youtube_transcript` | YouTube-Transkript als Text abrufen (URL oder Video-ID, kein API-Key) |
+
+**KI & Medien**
+
+| Tool | Beschreibung |
+|------|-------------|
+| `run_code` | Python-Code per LLM generieren und ausführen — Selbstkorrektur-Loop, Auto-pip |
 | `generate_image` | Bildgenerierung via OpenRouter (Flux, Gemini Image, etc.) |
 | `process_image` | Bildbearbeitung via ImageMagick (blur, grayscale, rotate, crop, …) |
 | `text_to_image` | Text als PNG rendern (konfigurierbare Schrift, Farben, Hintergrund) |
+| `create_chart` | Charts aus Daten als PNG erstellen — line, bar, pie, scatter, histogram; direkt downloadbar oder per Telegram sendbar |
+| `generate_presentation` | PowerPoint (.pptx) aus Thema oder Quelltext — 8 Layouts, 2 Themes, Download-Button |
+| `text_to_speech` | Text vorlesen via ElevenLabs (API-Key in Tool-Einstellungen) |
 | `generate_qr_code` | QR-Code als PNG generieren |
-| `analyze_seo` | SEO-Analyse einer URL oder eines HTML-Codes — Score, Title, Meta, Headings, OG-Tags, JSON-LD u.v.m. als visueller HTML-Report |
-| `generate_presentation` | PowerPoint-Präsentation (.pptx) aus Thema oder Quelltext — 8 Layouts, 2 Themes, Download-Button im Chat |
-| `send_email` | E-Mail via SMTP senden |
-| `send_telegram` | Telegram-Nachricht oder Audiodatei senden — per `@username` oder numerischer Chat-ID |
-| `post_tweet` | Tweet auf Twitter/X posten (OAuth 1.0a, API-Keys in Tool-Einstellungen) |
-| `post_bluesky` | Beitrag auf Bluesky posten (Handle + App-Passwort, Hashtags automatisch verlinkt) |
-| `post_mastodon` | Toot auf Mastodon posten (Instanz-URL + Access Token) |
-| `get_youtube_transcript` | YouTube-Transkript als Text abrufen (URL oder Video-ID, kein API Key nötig) |
-| `text_to_speech` | Text vorlesen via ElevenLabs (API Key in Tool-Einstellungen) |
 | `generate_password` | Sichere Passwörter generieren |
-| `calculate` | Mathematische Ausdrücke sicher auswerten (AST-basiert, kein eval) |
+
+**Kommunikation & Social**
+
+| Tool | Beschreibung |
+|------|-------------|
+| `send_email` | E-Mail via SMTP senden |
+| `send_telegram` | Telegram-Nachricht oder Audiodatei senden — per `@username` oder Chat-ID |
+| `post_tweet` | Tweet auf Twitter/X posten (OAuth 1.0a, API-Keys in Tool-Einstellungen) |
+| `post_bluesky` | Beitrag auf Bluesky posten (Handle + App-Passwort) |
+| `post_mastodon` | Toot auf Mastodon posten (Instanz-URL + Access Token) |
+| `discord` | Discord: Nachrichten per Webhook oder Bot senden, Channels & Nachrichten lesen |
+| `slack` | Slack: Nachrichten senden, Channels & Threads lesen (Bot Token) |
+
+**Datenbanken & Dateien**
+
+| Tool | Beschreibung |
+|------|-------------|
+| `mysql` | MySQL: Abfragen, Tabellen verwalten (host, port, user, password in Einstellungen) |
+| `postgresql` | PostgreSQL: Abfragen, Schema-Operationen (Verbindungsdaten in Einstellungen) |
+| `mongodb` | MongoDB: find, insert, update, delete, aggregate (Connection String in Einstellungen) |
+| `airtable` | Airtable: Records lesen, erstellen, aktualisieren, löschen (API-Key in Einstellungen) |
+| `sftp` | SFTP/FTP: Dateien auflisten, lesen, hochladen, löschen, umbenennen |
+
+**Produktivität & CRM**
+
+| Tool | Beschreibung |
+|------|-------------|
+| `notion` | Notion: Seiten lesen/erstellen, Datenbanken abfragen (Integration Token) |
+| `trello` | Trello: Boards, Listen, Cards verwalten (API-Key + Token) |
+| `todoist` | Todoist: Tasks und Projekte verwalten (API-Token) |
+| `hubspot` | HubSpot CRM: Kontakte, Firmen, Deals (Private App Token) |
+| `pipedrive` | Pipedrive CRM: Deals, Personen, Organisationen, Aktivitäten (API-Token + Subdomain) |
+| `wordpress` | WordPress REST API: Beiträge, Seiten, Kategorien lesen und verwalten |
+
+**Publishing**
+
+| Tool | Beschreibung |
+|------|-------------|
+| `plan_task` | Orchestrator: strukturierten Ausführungsplan aus Ziel + verfügbaren Tools erstellen |
+| `list_available_tools` | Alle registrierten Tools auflisten, optional per Suchbegriff filtern |
+| `pinecone` | Pinecone Vector-DB: Indexes, Vektoren, Auto-Embedding (API-Key erforderlich) |
+| `build_mcp_tool` | Custom Tool erstellen oder bearbeiten — LLM generiert Code, venv-Test, Auto-pip |
+| `delete_mcp_tool` | Custom Tool dauerhaft löschen |
+| `calculate` | Mathematische Ausdrücke sicher auswerten (AST-basiert) |
 | `roll_dice` | Würfeln (n Würfel mit m Seiten) |
 | `get_current_time` | Aktuelle Uhrzeit mit Zeitzone |
-| `build_mcp_tool` | Custom Tool per Beschreibung erstellen oder bearbeiten — LLM generiert Code, venv-Test, Auto-pip, Selbstkorrektur (Loops konfigurierbar, Standard: 15) |
-| `delete_mcp_tool` | Custom Tool dauerhaft löschen und aus Registry entfernen |
-| `list_available_tools` | Alle aktuell registrierten Tools auflisten |
-| `pinecone` | Pinecone Vector-DB verwalten: Indexes anlegen/löschen, Vektoren upserten (mit Auto-Embedding), abfragen und löschen (API-Key erforderlich) |
 | `get_help` | Hilfe und Erklärungen zu Guenther und seinen Funktionen |
 
 ---
@@ -366,11 +411,14 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 
 **AI Features**
 - **Agent system**: create custom AI agents with individual system prompts — select via dropdown in chat, name replaces "Guenther"; optional per-agent provider and model override
+- **Agent templates**: 8 ready-to-install agent templates (Orchestrator, Research Assistant, Content Manager, Data Analyst, Code Reviewer, CRM Assistant, Social Media Manager, Translation Assistant)
+- **Orchestrator agent**: automatically plans complex tasks with `plan_task`, executes steps sequentially and reports intermediate results
 - **Code interpreter** (`run_code`): generate and execute Python code via LLM, with self-correction loop
 - **File upload** (📎): upload text files (CSV, JSON, XML, TXT etc.) — content is passed as context to the LLM; binary files (audio: MP3/WAV/OGG/FLAC/M4A; office: XLS/XLSX/DOC/DOCX) are stored server-side, LLM receives only the file path
 - **Image generation**: via OpenRouter (Flux, Gemini Image, etc.)
 - **Image editing**: via process_image (blur, grayscale, rotate, …)
 - **Presentation generator**: create PowerPoint files (.pptx) directly from chat — Guenther structures the topic, stores the file persistently and delivers a download button
+- **Chart generator**: create diagrams (line, bar, pie, scatter, histogram) from any data as PNG — directly downloadable or sendable via Telegram
 
 **Automation**
 - **Autoprompts**: schedule prompts to run automatically (interval / daily / weekly, times in UTC) — runs silently by default (no chat entry), optionally save results to a dedicated chat; ▶ button to run immediately with log display
@@ -574,37 +622,79 @@ Data is stored persistently in a Docker volume (`/app/data`).
 
 ### Built-in Tools
 
+**Data & Web**
+
 | Tool | Description |
 |------|-------------|
 | `get_weather` | Weather & forecast via Open-Meteo (no API key needed) |
-| `wikipedia_search` | Search Wikipedia articles including redirects, sub-locality matches and automatic English fallback |
+| `wikipedia_search` | Search Wikipedia articles including redirects and automatic English fallback |
 | `get_stock_price` | Stock price, daily change, key figures via Yahoo Finance (no API key needed) |
-| `geocode_location` | Geocoordinates for postal codes, place names or addresses via OpenStreetMap Nominatim (no API key) |
+| `geocode_location` | Geocoordinates for postal codes, place names or addresses via OpenStreetMap Nominatim |
 | `get_flights_nearby` | Live aircraft near given coordinates via OpenSky Network ADS-B (no API key) |
-| `resolve_callsign` | Resolve aircraft callsign: airline name via OpenFlights + live data via adsb.one (no API key) |
-| `fetch_website_info` | Fetch title, description and meta data from any website |
-| `run_code` | Generate and execute Python code via LLM — file conversion, data analysis, calculations |
+| `resolve_callsign` | Resolve aircraft callsign via OpenFlights + adsb.one (no API key) |
+| `fetch_url` | Fetch a website: title, meta data, page text |
+| `analyze_seo` | SEO analysis as visual HTML report — score, meta, OG tags, JSON-LD and more |
+| `get_youtube_transcript` | Fetch YouTube transcript as text (URL or video ID, no API key needed) |
+
+**AI & Media**
+
+| Tool | Description |
+|------|-------------|
+| `run_code` | Generate and execute Python code via LLM — self-correction loop, auto-pip |
 | `generate_image` | Image generation via OpenRouter (Flux, Gemini Image, etc.) |
 | `process_image` | Image editing via ImageMagick (blur, grayscale, rotate, crop, …) |
 | `text_to_image` | Render text as PNG (configurable font, colours, background) |
+| `create_chart` | Create charts from data as PNG — line, bar, pie, scatter, histogram; downloadable or sendable via Telegram |
+| `generate_presentation` | PowerPoint (.pptx) from a topic or source text — 8 layouts, 2 themes, download button |
+| `text_to_speech` | Text-to-speech via ElevenLabs (API key in tool settings) |
 | `generate_qr_code` | Generate QR codes as PNG |
-| `analyze_seo` | SEO analysis of a URL or HTML code — score, title, meta, headings, OG tags, JSON-LD and more as a visual HTML report |
-| `generate_presentation` | PowerPoint presentation (.pptx) from a topic or source text — 8 layouts, 2 themes, download button in chat |
+| `generate_password` | Generate secure passwords |
+
+**Communication & Social**
+
+| Tool | Description |
+|------|-------------|
 | `send_email` | Send email via SMTP |
 | `send_telegram` | Send a Telegram message or audio file — via `@username` or numeric chat ID |
 | `post_tweet` | Post a tweet on Twitter/X (OAuth 1.0a, API keys in tool settings) |
 | `post_bluesky` | Post on Bluesky (handle + app password, hashtags auto-linked) |
 | `post_mastodon` | Post a toot on Mastodon (instance URL + access token) |
-| `get_youtube_transcript` | Fetch a YouTube transcript as text (URL or video ID, no API key needed) |
-| `text_to_speech` | Text-to-speech via ElevenLabs (API key in tool settings) |
-| `generate_password` | Generate secure passwords |
-| `calculate` | Evaluate mathematical expressions safely (AST-based, no eval) |
+| `discord` | Discord: send messages via webhook or bot, read channels & messages |
+| `slack` | Slack: send messages, read channels & threads (bot token) |
+
+**Databases & Files**
+
+| Tool | Description |
+|------|-------------|
+| `mysql` | MySQL: queries and table management (host, port, user, password in settings) |
+| `postgresql` | PostgreSQL: queries and schema operations (connection details in settings) |
+| `mongodb` | MongoDB: find, insert, update, delete, aggregate (connection string in settings) |
+| `airtable` | Airtable: read, create, update and delete records (API key in settings) |
+| `sftp` | SFTP/FTP: list, read, upload, delete and rename files |
+
+**Productivity & CRM**
+
+| Tool | Description |
+|------|-------------|
+| `notion` | Notion: read/create pages, query databases (integration token) |
+| `trello` | Trello: manage boards, lists and cards (API key + token) |
+| `todoist` | Todoist: manage tasks and projects (API token) |
+| `hubspot` | HubSpot CRM: contacts, companies, deals (private app token) |
+| `pipedrive` | Pipedrive CRM: deals, persons, organisations, activities (API token + subdomain) |
+| `wordpress` | WordPress REST API: read and manage posts, pages, categories |
+
+**Utilities & System**
+
+| Tool | Description |
+|------|-------------|
+| `plan_task` | Orchestrator: create a structured execution plan from a goal and available tools |
+| `list_available_tools` | List all registered tools, optionally filtered by search term |
+| `pinecone` | Manage Pinecone Vector DB: indexes, vectors, auto-embedding (API key required) |
+| `build_mcp_tool` | Create or edit a custom tool — LLM generates code, venv test, auto-pip |
+| `delete_mcp_tool` | Permanently delete a custom tool |
+| `calculate` | Evaluate mathematical expressions safely (AST-based) |
 | `roll_dice` | Roll dice (n dice with m sides) |
 | `get_current_time` | Get current time with timezone |
-| `build_mcp_tool` | Create or edit a custom tool from a description — LLM generates code, venv test, auto-pip, self-correction (configurable loops, default: 15) |
-| `delete_mcp_tool` | Permanently delete a custom tool and remove it from the registry |
-| `list_available_tools` | List all currently registered tools |
-| `pinecone` | Manage Pinecone Vector DB: create/delete indexes, upsert vectors (with auto-embedding), query and delete vectors (API key required) |
 | `get_help` | Get help and explanations about Guenther and its capabilities |
 
 ---

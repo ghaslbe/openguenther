@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.45] — 2026-03-06
+
+### Chart Generator MCP Tool
+- Neues Built-in MCP Tool **`create_chart`**: erstellt PNG-Diagramme aus Daten via matplotlib
+- Typen: `line`, `bar`, `barh`, `pie`, `scatter`, `histogram`
+- Mehrere Serien gleichzeitig (y_key kommagetrennt bei line/bar)
+- Dark/Light Theme, anpassbare Farben, Achsenbeschriftungen, Titel, Rotation X-Labels
+- Gibt `[LOCAL_FILE]`-Marker zurück → Download-Button im Chat + direkt per `send_telegram` versendbar
+- `matplotlib` zu `requirements.txt` hinzugefügt
+- Daten-Analyst Agenten-Vorlage: `create_chart`-Schritt ergänzt
+
+---
+
 ## [1.4.44] — 2026-03-06
 
 ### Agenten-Vorlagen-Tab
