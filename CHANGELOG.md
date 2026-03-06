@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.4.42] — 2026-03-06
+
+### MySQL / MariaDB Tool
+
+- **`mysql`**: Neues Built-in MCP Tool fuer MySQL/MariaDB-Datenbanken
+- Aktionen: `query` (SELECT), `execute` (INSERT/UPDATE/DELETE/DDL), `list_tables`, `describe_table`, `count_rows`
+- Verbindungsdaten (Host, Port, Datenbank, Benutzer, Passwort) in Tool-Einstellungen konfigurierbar
+- Sicherheits-Check: `query` erlaubt nur lesende Statements (SELECT/SHOW/EXPLAIN/DESC)
+- Automatisches LIMIT (max. 500 Zeilen) bei SELECT-Abfragen
+- Verwendet `PyMySQL` (pure Python, keine native Abhaengigkeit)
+- `PyMySQL` in `requirements.txt` ergaenzt
+
+---
+
+## [1.4.41] — 2026-03-06
+
+### Airtable Tool
+
+- **`airtable`**: Neues Built-in MCP Tool fuer Airtable-Bases
+- Aktionen: `get_records` (Datensaetze abrufen, filterbar per Formel), `create_record`, `update_record`, `delete_record`, `count_records` (paginiert), `list_fields`
+- API Key (Personal Access Token) in Tool-Einstellungen konfigurierbar
+- Base ID und Tabellenname als Parameter pro Aufruf
+- Unterstuetzt Airtable-Formeln fuer Filter (z.B. `AND({Status}='aktiv', {Land}='DE')`)
+- Unterstuetzt Sortierung nach Feld und Richtung
+
+---
+
 ## [1.4.40] — 2026-03-05
 
 ### YouTube Transcript Tool

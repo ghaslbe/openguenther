@@ -13,3 +13,4 @@ lxml
 apscheduler==3.10.4
 pydub
 youtube-transcript-api
+PyMySQL
