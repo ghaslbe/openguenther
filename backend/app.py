@@ -48,6 +48,47 @@ load_builtin_tools()
 load_custom_tools()
 load_external_tools()
 
+# Seed default agents (only if not yet present)
+def _seed_default_agents():
+    from config import get_agents, save_agents
+    agents = get_agents()
+    existing_names = {a['name'] for a in agents}
+    seeded = []
+
+    if 'Orchestrator' not in existing_names:
+        seeded.append({
+            'id': str(uuid.uuid4()),
+            'name': 'Orchestrator',
+            'description': 'Plant komplexe Aufgaben und fuehrt sie Schritt fuer Schritt mit den verfuegbaren Tools aus.',
+            'system_prompt': (
+                'Du bist ein Orchestrator-Agent. Deine Aufgabe ist es, komplexe Ziele '
+                'systematisch zu planen und auszufuehren.\n\n'
+                'VORGEHEN BEI JEDER AUFGABE:\n'
+                '1. Rufe zuerst plan_task(goal="<Aufgabe>") auf, um einen strukturierten '
+                'Plan auf Basis der verfuegbaren Tools zu erstellen.\n'
+                '2. Praesentiiere den Plan dem Nutzer klar und uebersichtlich (nummerierte Schritte).\n'
+                '3. Fuehre die Schritte nacheinander aus. Warte nicht auf Bestaetigung, '
+                'sofern der Nutzer nichts anderes sagt.\n'
+                '4. Berichte nach jedem Schritt kurz das Ergebnis (1-2 Saetze).\n'
+                '5. Passe den Plan an, wenn ein Schritt fehlschlaegt oder unerwartete '
+                'Ergebnisse liefert — erklaere kurz warum.\n'
+                '6. Fasse am Ende zusammen, was erreicht wurde.\n\n'
+                'WICHTIG:\n'
+                '- Beginne IMMER mit plan_task — auch bei scheinbar einfachen Aufgaben.\n'
+                '- Nutze immer die am besten geeigneten verfuegbaren Tools.\n'
+                '- Wenn ein Tool fehlt, sage es dem Nutzer klar.\n'
+                '- Antworte praegnant — keine langen Erklaerungen zwischen den Schritten.'
+            ),
+            'provider_id': '',
+            'model': '',
+        })
+
+    if seeded:
+        agents.extend(seeded)
+        save_agents(agents)
+
+_seed_default_agents()
+
 
 # ── Static file serving ──
 
