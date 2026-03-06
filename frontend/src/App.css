@@ -137,10 +137,10 @@ html, body, #root {
   top: calc(100% + 6px);
   right: 0;
   min-width: 220px;
-  background: var(--bg-secondary);
+  background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
   z-index: 999;
   padding: 4px 0;
   overflow: hidden;
