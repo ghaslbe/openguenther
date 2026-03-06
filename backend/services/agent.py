@@ -176,6 +176,9 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
             messages.append(msg)
 
     all_tools = registry.get_openai_tools()
+    # Strip $schema from parameters — rejected by OpenAI-compatible APIs
+    for _t in all_tools:
+        _t.get('function', {}).get('parameters', {}).pop('$schema', None)
 
     # ── Log: Start ──
     emit_log({"type": "header", "message": "GUENTHER AGENT GESTARTET"})
