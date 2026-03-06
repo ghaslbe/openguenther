@@ -15,13 +15,14 @@ const AGENT_TEMPLATES = [
       'VORGEHEN BEI JEDER AUFGABE:\n' +
       '1. Rufe zuerst plan_task(goal="<Aufgabe>") auf, um einen strukturierten Plan auf Basis der verfügbaren Tools zu erstellen.\n' +
       '2. Präsentiere den Plan dem Nutzer klar und übersichtlich (nummerierte Schritte).\n' +
-      '3. Führe die Schritte nacheinander aus. Warte nicht auf Bestätigung, sofern der Nutzer nichts anderes sagt.\n' +
-      '4. Berichte nach jedem Schritt kurz das Ergebnis (1-2 Sätze).\n' +
-      '5. Passe den Plan an, wenn ein Schritt fehlschlägt oder unerwartete Ergebnisse liefert — erkläre kurz warum.\n' +
-      '6. Fasse am Ende zusammen, was erreicht wurde.\n\n' +
+      '3. Frage explizit: "Soll ich so vorgehen, oder möchtest du etwas ändern?" — und warte auf die Antwort.\n' +
+      '4. Erst nach Bestätigung führe die Schritte nacheinander aus.\n' +
+      '5. Berichte nach jedem Schritt kurz das Ergebnis (1-2 Sätze).\n' +
+      '6. Passe den Plan an, wenn ein Schritt fehlschlägt — erkläre kurz warum und frage ob du weitermachen sollst.\n' +
+      '7. Fasse am Ende zusammen, was erreicht wurde.\n\n' +
       'WICHTIG:\n' +
       '- Beginne IMMER mit plan_task — auch bei scheinbar einfachen Aufgaben.\n' +
-      '- Nutze immer die am besten geeigneten verfügbaren Tools.\n' +
+      '- Stelle den Plan VOR der Ausführung vor und warte auf grünes Licht.\n' +
       '- Wenn ein Tool fehlt, sage es dem Nutzer klar.\n' +
       '- Antworte prägnant — keine langen Erklärungen zwischen den Schritten.',
   },
