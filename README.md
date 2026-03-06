@@ -58,6 +58,8 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **Live Tool-Anzeige**: während Guenther denkt, wird das aktive Tool + Log-Status neben den Punkten angezeigt
 - **Guenther-Terminal**: Live-Ansicht aller API-Kommunikation im DOS-Stil mit Syntax-Highlighting und einklappbaren Blöcken
 - **`/new`-Befehl**: neue Chat-Session direkt per Texteingabe starten
+- **Chat-Umbenennung**: ✏-Button in der Sidebar oder Doppelklick auf den Titel zum direkten Umbenennen eines Chats
+- **Chat-Suche**: Suchfeld in der Topbar-Mitte — Ergebnisse erscheinen in einem Popup, Klick öffnet den Chat
 
 **LLM-Provider**
 - **OpenRouter**: Zugang zu hunderten Modellen (OpenAI, Anthropic, Google, Meta, …) mit einem API-Key
@@ -84,6 +86,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 
 **Telegram**
 - **Telegram-Gateway**: Chatten via Telegram, inkl. Foto- und Sprachnachrichten; `/new` startet neue Chat-Session
+- **Agent-Auswahl via Telegram**: `/agents` zeigt alle Agenten als Inline-Keyboard-Buttons; `/agent <Name>` wählt direkt; `/agent off` deaktiviert
 - **Spracherkennung** (STT): OpenAI Whisper oder OpenRouter-kompatible Modelle für Telegram-Sprachnachrichten
 - **Sprachausgabe** (TTS): via ElevenLabs, Ergebnisse auch als Telegram-Audio sendbar
 - **`send_telegram`-Tool**: Guenther kann aktiv Telegram-Nachrichten und **Audiodateien** (MP3, WAV, OGG …) senden — per `@username` oder numerischer Chat-ID (ideal für Autoprompts)
@@ -93,6 +96,7 @@ Ein selbst gehosteter KI-Agent mit Chat-Interface, MCP-Tool-Unterstützung und T
 - **Custom Tools manuell**: Python-Dateien in `/app/data/custom_tools/` ablegen — werden automatisch geladen (siehe `CUSTOM_TOOL_GUIDE.md`); Ladefehler (z.B. fehlende Libraries) erscheinen direkt im Guenther-Terminal
 - **`[LOCAL_FILE]`-Muster**: Custom Tools die Dateien erzeugen geben `[LOCAL_FILE](/pfad)` zurück — das Backend speichert die Datei im Chat-Ordner und zeigt einen Download-Button; der Dateiinhalt gelangt nie ans LLM
 - **Custom Tools ZIP Download/Upload**: installierte Custom Tools als ZIP herunterladen (Backup/Teilen) oder neue Tools als ZIP hochladen — mit Sicherheits-Warndialog und Path-Traversal-Schutz
+- **MCP Tool-Schalter**: jedes Tool kann in den Einstellungen per Toggle deaktiviert werden — deaktivierte Tools werden nicht ans LLM gesendet; `plan_task` und `list_available_tools` sind immer aktiv (ausgegraut)
 - **Externe MCP-Server**: beliebige stdio-basierte MCP-Server (JSON-RPC 2.0) anbindbar — inkl. `npx`-basierter Pakete (Node.js im Image enthalten), Umgebungsvariablen pro Server konfigurierbar, Inline-Bearbeitung, Reload-Button
 - **Webhook-System**: externe Systeme (Home Automation, Skripte, etc.) können Guenther per `POST /webhook/<id>` triggern — Bearer-Token-Auth, optionale feste Chat-ID, optionaler Agent, synchrone Antwort
 - **JSON Export/Import**: Agenten, Autoprompts und MCP-Server können als JSON exportiert und importiert werden — inklusive Versionsnummer für Kompatibilitätsprüfung; MCP-Export enthält keine API-Keys (Env-Werte werden geleert)
@@ -401,6 +405,8 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **Live tool display**: while Guenther is thinking, the active tool + log status is shown next to the typing dots
 - **Guenther Terminal**: live view of all API communication in DOS style with syntax highlighting and collapsible blocks
 - **`/new` command**: start a new chat session directly by typing in the chat
+- **Chat rename**: ✏ button in the sidebar or double-click on the title to rename a chat inline
+- **Chat search**: search bar in the topbar centre — results appear in a popup, click to open the chat
 
 **LLM Providers**
 - **OpenRouter**: access hundreds of models (OpenAI, Anthropic, Google, Meta, …) with a single API key
@@ -427,6 +433,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 
 **Telegram**
 - **Telegram Gateway**: chat via Telegram, including photos and voice messages; `/new` starts a new chat session
+- **Agent selection via Telegram**: `/agents` shows all agents as Inline Keyboard buttons; `/agent <name>` selects directly; `/agent off` deactivates
 - **Speech recognition** (STT): OpenAI Whisper or OpenRouter-compatible models for Telegram voice messages
 - **Text-to-speech** (TTS): via ElevenLabs, results can also be sent as Telegram audio
 - **`send_telegram` tool**: Guenther can actively send Telegram messages and **audio files** (MP3, WAV, OGG …) — via `@username` or numeric chat ID (ideal for autoprompts)
@@ -436,6 +443,7 @@ A self-hosted AI agent with chat interface, MCP tool support and Telegram integr
 - **Custom tools manually**: drop Python files into `/app/data/custom_tools/` — loaded automatically (see `CUSTOM_TOOL_GUIDE.md`); load errors (e.g. missing libraries) appear directly in the Guenther terminal
 - **`[LOCAL_FILE]` pattern**: custom tools that produce files return `[LOCAL_FILE](/path)` — the backend stores the file in the chat folder and shows a download button; file content never reaches the LLM
 - **Custom tools ZIP download/upload**: download installed custom tools as ZIP (backup/sharing) or install new tools via ZIP upload — with security warning dialog and path traversal protection
+- **MCP tool toggles**: each tool can be individually enabled or disabled in settings — disabled tools are not sent to the LLM; `plan_task` and `list_available_tools` are always active (greyed out)
 - **External MCP servers**: connect any stdio-based MCP server (JSON-RPC 2.0) — including `npx`-based packages (Node.js included in image), per-server environment variables, inline editing, reload button
 - **Webhook system**: external systems (home automation, scripts, etc.) can trigger Guenther via `POST /webhook/<id>` — Bearer token auth, optional fixed chat ID, optional agent, synchronous response
 - **JSON Export/Import**: agents, autoprompts and MCP servers can be exported and imported as JSON — with version number for compatibility checking; MCP export strips env values (no API keys leaked)

@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.4.49] — 2026-03-06
+
+### always_enabled-Flag + Bug-Fixes
+- `plan_task` und `list_available_tools` haben `"always_enabled": true` im TOOL_DEFINITION — Toggle in Einstellungen ist ausgegraut und kann nicht deaktiviert werden
+- `MCPTool`-Klasse um `always_enabled`-Attribut erweitert; `loader.py` liest Flag aus TOOL_DEFINITION
+- `agent.py`: always_enabled-Tools werden unabhängig vom enabled-Status immer ins LLM-Request eingebunden
+- **Bug-Fix settings.json-Korruption**: atomare Writes via Temp-Datei + `os.replace()` + `threading.Lock()` — verhindert Datenverlust bei parallelen Schreibzugriffen
+- **Bug-Fix Toggle-Doppelevent**: Toggle als reines CSS-Div (kein `<input type="checkbox">`) außerhalb des Accordion-Header-Divs als Flex-Sibling — verhindert doppelten API-Aufruf durch Browser-Event-Forwarding
+
+---
+
+## [1.4.48] — 2026-03-06
+
+### Telegram Agent-Auswahl
+- Neuer Telegram-Bot-Befehl `/agents`: zeigt alle konfigurierten Agenten als Inline-Keyboard-Buttons an
+- Befehl `/agent <Name>` wählt Agenten direkt per Name aus
+- Befehl `/agent off` deaktiviert den aktiven Agenten (zurück zu Standard-Guenther)
+- Tap auf Inline-Button → Agent wird aktiviert, Begrüßungs-Greeting wird gesendet
+- `setMyCommands` registriert `/start`, `/agents`, `/agent`, `/new` im Bot-Menü
+- `/new` berücksichtigt aktiven Agenten und startet neue Session mit dem gewählten Agenten
+
+---
+
+## [1.4.47] — 2026-03-06
+
+### MCP Tool Ein/Aus-Schalter
+- Einstellungen → Tools: jedes Tool hat rechts einen Toggle-Schalter (Ein/Aus)
+- Zustand wird in `settings.json` unter `tool_settings.<name>.enabled` gespeichert
+- `agent.py`: deaktivierte Tools werden aus dem LLM-Request gefiltert — das LLM kennt sie nicht
+- API: `PUT /api/mcp/tools/<name>/enabled` speichert den Zustand
+- Tools-Liste (`GET /api/mcp/tools`) liefert `enabled`- und `always_enabled`-Felder
+
+---
+
+## [1.4.46] — 2026-03-06
+
+### Chat-Umbenennung + Chat-Suche + Agent-Titel-Fix
+- **Inline Chat-Umbenennung**: ✏-Button neben jedem Chat-Eintrag in der Sidebar (erscheint bei Hover); alternativ Doppelklick auf Titel — Eingabefeld direkt in der Liste, Enter zum Bestätigen, Escape zum Abbrechen
+- **Chat-Suche**: Suchfeld in der Mitte der Topbar; Ergebnisse erscheinen in einem Popup darunter; Klick auf Treffer öffnet den Chat
+- **Agent-Chat-Titel-Fix**: Agent-Chats wurden mit „Hallo" betitelt (automatisches Begrüßungs-Greeting). Titel wird jetzt erst beim ersten echten Nutzer-Input gesetzt
+
+---
+
 ## [1.4.45] — 2026-03-06
 
 ### Chart Generator MCP Tool
