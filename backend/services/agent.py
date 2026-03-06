@@ -191,7 +191,11 @@ def run_agent(chat_messages, settings, emit_log, system_prompt=None, agent_provi
 
     def _sanitize_schema(obj):
         if isinstance(obj, dict):
-            return {k: _sanitize_schema(v) for k, v in obj.items() if k not in _UNSUPPORTED_SCHEMA_KEYS}
+            result = {k: _sanitize_schema(v) for k, v in obj.items() if k not in _UNSUPPORTED_SCHEMA_KEYS}
+            # OpenAI requires 'items' on every array schema
+            if result.get('type') == 'array' and 'items' not in result:
+                result['items'] = {'type': 'object'}
+            return result
         if isinstance(obj, list):
             return [_sanitize_schema(i) for i in obj]
         return obj

@@ -113,6 +113,7 @@ TOOL_DEFINITION = {
             },
             "pipeline": {
                 "type": "array",
+                "items": {"type": "object"},
                 "description": (
                     "Aggregation-Pipeline fuer 'aggregate' als JSON-Array. "
                     'Beispiel: [{"$match": {"status": "aktiv"}}, {"$group": {"_id": "$land", "anzahl": {"$sum": 1}}}]'
