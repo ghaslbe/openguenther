@@ -159,11 +159,9 @@ def list_mcp_tools():
 def set_tool_enabled_route(tool_name):
     data = flask_request.get_json() or {}
     enabled = bool(data.get('enabled', True))
-    settings = get_settings()
-    ts = settings.setdefault('tool_settings', {}).setdefault(tool_name, {})
+    ts = get_tool_settings(tool_name)
     ts['enabled'] = enabled
-    from config import save_settings
-    save_settings(settings)
+    save_tool_settings(tool_name, ts)
     return {"success": True}
 
 

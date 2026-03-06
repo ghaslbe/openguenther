@@ -1,7 +1,9 @@
 import os
 import json
+import threading
 
 DATA_DIR = os.environ.get('DATA_DIR', '/app/data')
+_settings_lock = threading.Lock()
 SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
 DB_FILE = os.path.join(DATA_DIR, 'guenther.db')
 AGENTS_FILE = os.path.join(DATA_DIR, 'agents.json')
@@ -65,8 +67,11 @@ def get_settings():
 
 def save_settings(settings):
     os.makedirs(DATA_DIR, exist_ok=True)
-    with open(SETTINGS_FILE, 'w') as f:
-        json.dump(settings, f, indent=2)
+    tmp = SETTINGS_FILE + '.tmp'
+    with _settings_lock:
+        with open(tmp, 'w') as f:
+            json.dump(settings, f, indent=2)
+        os.replace(tmp, SETTINGS_FILE)
 
 
 def get_agents():
