@@ -155,6 +155,7 @@ export default function SettingsTools({ providers }) {
     fetch_url:              { label: 'Web',            bg: '#475569', fg: '#fff' },
     seo:                    { label: 'Web Scraping',   bg: '#ea580c', fg: '#fff' },
     wordpress:              { label: 'WordPress',      bg: '#21759b', fg: '#fff' },
+    sftp:                   { label: 'SFTP/FTP',       bg: '#374151', fg: '#fff' },
   };
 
   const sortByName = (a, b) => a.name.localeCompare(b.name);
