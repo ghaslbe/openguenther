@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.52] — 2026-04-12
+
+### WordPress MCP Tool
+- Neues Built-in Tool `wordpress`: Beiträge lesen/erstellen/bearbeiten/löschen, Seiten, Kategorien, Tags, Medien-Upload, Mediathek
+- **Markdown-Workflow**: Inhalt wird als Markdown gesendet (WordPress-Plugin konvertiert zu HTML); empfangene HTML-Inhalte werden mit `html2text` automatisch nach Markdown umgewandelt
+- Auth: WordPress Application Passwords
+- Aktionen: `get_posts`, `get_post`, `create_post`, `update_post`, `delete_post`, `get_pages`, `get_categories`, `get_tags`, `create_category`, `upload_media`, `list_media`
+- Settings: WordPress URL, Benutzername, Application Password (einmalig in Einstellungen → MCP Tools → wordpress)
+- `html2text` zu `requirements.txt` hinzugefügt
+
+---
+
 ## [1.4.51] — 2026-04-12
 
 ### Kreativitäts-Schieber im Chat

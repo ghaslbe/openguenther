@@ -1,32 +1,53 @@
 """
 WordPress MCP Tool
 
-Beitraege, Seiten, Kategorien und Tags ueber die WordPress REST API verwalten.
+Beitraege erstellen/lesen/bearbeiten/loeschen, Medien hochladen und auflisten.
+Auth: WordPress Application Passwords (Benutzer + App-Passwort).
 
-Einstellungen (Einstellungen -> MCP Tools -> wordpress):
-  - site_url  : WordPress-URL (z.B. https://meineblog.de)
-  - username  : WordPress-Benutzername
-  - app_password : Anwendungspasswort (WordPress → Profil → Anwendungspasswoerter)
+Markdown-Workflow:
+  - Inhalt SENDEN:  Markdown direkt übermitteln — WordPress-Plugin konvertiert zu HTML.
+  - Inhalt LESEN:   HTML aus WordPress wird automatisch zu Markdown umgewandelt.
 """
 
+import os
+import mimetypes
 import requests
 from requests.auth import HTTPBasicAuth
 
 from config import get_tool_settings
 from services.tool_context import get_emit_log
 
+# html2text: HTML → Markdown (wird lazy importiert damit Ladefehler sichtbar sind)
+try:
+    import html2text as _html2text
+    _H2T = _html2text.HTML2Text()
+    _H2T.ignore_links = False
+    _H2T.ignore_images = False
+    _H2T.body_width = 0          # kein Zeilenumbruch
+    _H2T.unicode_snob = True
+    def _html_to_md(html: str) -> str:
+        return _H2T.handle(html or '').strip()
+except ImportError:
+    def _html_to_md(html: str) -> str:
+        # Fallback: einfaches Tag-Stripping
+        import re
+        return re.sub(r'<[^>]+>', '', html or '').strip()
+
+
 SETTINGS_INFO = """**WordPress**
 
-Lese und verwalte Beitraege, Seiten, Kategorien und Tags ueber die WordPress REST API.
+Lese und verwalte Beitraege und Medien über die WordPress REST API.
+
+**Markdown-Workflow:**
+- Inhalte werden als **Markdown** gesendet — das WordPress-Plugin konvertiert zu HTML.
+- Empfangene Inhalte werden von HTML → Markdown umgewandelt.
 
 **Anwendungspasswort erstellen:**
-1. WordPress-Admin oeffnen → oben rechts auf deinen Namen klicken → Profil
-2. Ganz unten: "Anwendungspasswoerter" → Namen eingeben (z.B. "Guenther") → "Anwendungspasswort hinzufuegen"
-3. Das generierte Passwort kopieren (wird nur einmal angezeigt!)
+1. WordPress-Admin → oben rechts Name klicken → Profil
+2. Ganz unten: "Anwendungspasswörter" → Namen eingeben (z.B. "Guenther") → Hinzufügen
+3. Generiertes Passwort kopieren (wird nur einmal angezeigt!)
 
-**Voraussetzung:** WordPress 5.6+ und Permalinks muessen aktiviert sein (nicht "Einfach").
-
-> ⚠️ **Achtung:** Dieses Tool kann Daten schreiben, bearbeiten oder loeschen. Fehlerhafte Eingaben koennen zu **Datenverlust oder ungewollten Aktionen** fuehren. Bitte mit Bedacht einsetzen."""
+**Voraussetzung:** WordPress 5.6+ · Permalinks aktiviert (nicht "Einfach") · Markdown-Plugin aktiv"""
 
 SETTINGS_SCHEMA = [
     {
@@ -34,7 +55,7 @@ SETTINGS_SCHEMA = [
         "label": "WordPress URL",
         "type": "text",
         "placeholder": "https://meineblog.de",
-        "description": "URL deiner WordPress-Seite (ohne abschliessenden Slash)",
+        "description": "URL der WordPress-Installation (ohne abschließenden Slash)",
     },
     {
         "key": "username",
@@ -48,23 +69,19 @@ SETTINGS_SCHEMA = [
         "label": "Anwendungspasswort",
         "type": "password",
         "placeholder": "xxxx xxxx xxxx xxxx xxxx xxxx",
-        "description": "Anwendungspasswort aus WordPress → Profil → Anwendungspasswoerter (Leerzeichen sind OK)",
+        "description": "Anwendungspasswort aus WordPress → Profil → Anwendungspasswörter (Leerzeichen sind OK)",
     },
 ]
 
 TOOL_DEFINITION = {
     "name": "wordpress",
     "description": (
-        "WordPress: Beitraege und Seiten lesen, erstellen, bearbeiten und loeschen. "
-        "Aktionen: get_posts (Beitraege abrufen) | "
-        "get_post (einzelnen Beitrag lesen) | "
-        "create_post (neuen Beitrag schreiben) | "
-        "update_post (Beitrag bearbeiten) | "
-        "delete_post (Beitrag loeschen) | "
-        "get_pages (Seiten abrufen) | "
-        "get_categories (Kategorien auflisten) | "
-        "get_tags (Tags auflisten) | "
-        "create_category (neue Kategorie anlegen)"
+        "WordPress: Beitraege und Medien verwalten. "
+        "Inhalt wird als Markdown gesendet (Plugin konvertiert zu HTML); "
+        "empfangene HTML-Inhalte werden automatisch nach Markdown umgewandelt. "
+        "Aktionen: get_posts · get_post · create_post · update_post · delete_post · "
+        "get_pages · get_categories · get_tags · create_category · "
+        "upload_media · list_media"
     ),
     "input_schema": {
         "type": "object",
@@ -72,85 +89,117 @@ TOOL_DEFINITION = {
             "action": {
                 "type": "string",
                 "enum": [
-                    "get_posts",
-                    "get_post",
-                    "create_post",
-                    "update_post",
-                    "delete_post",
+                    "get_posts", "get_post",
+                    "create_post", "update_post", "delete_post",
                     "get_pages",
-                    "get_categories",
-                    "get_tags",
-                    "create_category",
+                    "get_categories", "get_tags", "create_category",
+                    "upload_media", "list_media",
                 ],
                 "description": (
-                    "Aktion: "
-                    "get_posts (Beitraege abrufen, filterbar nach Status/Kategorie/Suche) | "
-                    "get_post (einzelnen Beitrag per post_id lesen inkl. Inhalt) | "
-                    "create_post (neuer Beitrag mit title + content, optional status/categories/tags) | "
-                    "update_post (Beitrag aendern per post_id) | "
-                    "delete_post (Beitrag in Papierkorb per post_id) | "
-                    "get_pages (Seiten abrufen) | "
-                    "get_categories (alle Kategorien auflisten) | "
-                    "get_tags (alle Tags auflisten) | "
-                    "create_category (neue Kategorie per name anlegen)"
+                    "Aktion:\n"
+                    "  get_posts        — Beiträge auflisten (filter_status, search, filter_category, limit)\n"
+                    "  get_post         — Einzelnen Beitrag lesen inkl. Markdown-Inhalt (post_id)\n"
+                    "  create_post      — Neuen Beitrag erstellen (title, content als Markdown, status, categories, tags, featured_media_id)\n"
+                    "  update_post      — Beitrag aktualisieren (post_id + beliebige Felder)\n"
+                    "  delete_post      — Beitrag in Papierkorb (post_id)\n"
+                    "  get_pages        — Seiten auflisten\n"
+                    "  get_categories   — Alle Kategorien auflisten\n"
+                    "  get_tags         — Alle Tags auflisten\n"
+                    "  create_category  — Neue Kategorie anlegen (name)\n"
+                    "  upload_media     — Datei in Mediathek hochladen (file_path)\n"
+                    "  list_media       — Mediathek auflisten"
                 ),
             },
+            # ── Beitrags-Felder ──────────────────────────────────────────────
             "post_id": {
                 "type": "integer",
-                "description": "WordPress Beitrags-ID fuer get_post, update_post, delete_post",
+                "description": "Beitrags-ID (für get_post, update_post, delete_post)",
             },
             "title": {
                 "type": "string",
-                "description": "Titel des Beitrags oder der Seite",
+                "description": "Titel des Beitrags",
             },
             "content": {
                 "type": "string",
-                "description": "Inhalt des Beitrags (HTML oder plain text, WordPress konvertiert automatisch)",
+                "description": "Inhalt als Markdown — WordPress-Plugin konvertiert zu HTML",
             },
             "excerpt": {
                 "type": "string",
-                "description": "Kurzfassung/Teaser des Beitrags (optional)",
+                "description": "Teaser/Auszug (optional, auch Markdown)",
             },
             "status": {
                 "type": "string",
                 "enum": ["publish", "draft", "pending", "private"],
-                "description": "Beitragsstatus: publish (sofort veroeffentlichen), draft (Entwurf), pending (zur Pruefung), private",
+                "description": "Status: publish (sofort), draft (Entwurf), pending, private",
             },
             "categories": {
                 "type": "array",
                 "items": {"type": "integer"},
-                "description": "Liste von Kategorie-IDs fuer den Beitrag (IDs aus get_categories)",
+                "description": "Kategorie-IDs (aus get_categories)",
             },
             "tags": {
                 "type": "array",
                 "items": {"type": "integer"},
-                "description": "Liste von Tag-IDs fuer den Beitrag (IDs aus get_tags)",
+                "description": "Tag-IDs (aus get_tags)",
             },
+            "featured_media_id": {
+                "type": "integer",
+                "description": "Medien-ID des Vorschaubilds (aus upload_media oder list_media)",
+            },
+            # ── Filter/Pagination ────────────────────────────────────────────
             "search": {
                 "type": "string",
-                "description": "Suchbegriff fuer get_posts",
+                "description": "Suchbegriff",
             },
             "filter_status": {
                 "type": "string",
-                "description": "Status-Filter fuer get_posts: 'publish', 'draft', 'any' (Standard: publish)",
+                "description": "Status-Filter für get_posts: publish, draft, any (Standard: publish)",
             },
             "filter_category": {
                 "type": "integer",
-                "description": "Kategorie-ID zum Filtern bei get_posts",
-            },
-            "name": {
-                "type": "string",
-                "description": "Name fuer create_category",
+                "description": "Kategorie-ID-Filter für get_posts",
             },
             "limit": {
                 "type": "integer",
-                "description": "Maximale Anzahl Ergebnisse fuer get_posts / get_pages (Standard: 10)",
+                "description": "Maximale Anzahl Ergebnisse (Standard: 10, max: 100)",
+            },
+            "page": {
+                "type": "integer",
+                "description": "Seitennummer für Pagination (Standard: 1)",
+            },
+            # ── Medien-Felder ────────────────────────────────────────────────
+            "file_path": {
+                "type": "string",
+                "description": "Absoluter Pfad zur Datei auf dem Server (z.B. /app/data/uploads/bild.jpg)",
+            },
+            "media_title": {
+                "type": "string",
+                "description": "Titel der Mediendatei (optional, für upload_media)",
+            },
+            "alt_text": {
+                "type": "string",
+                "description": "Alt-Text für Bilder (optional, für upload_media)",
+            },
+            "caption": {
+                "type": "string",
+                "description": "Bildunterschrift (optional, für upload_media)",
+            },
+            "media_type": {
+                "type": "string",
+                "description": "Typ-Filter für list_media: image, video, audio, application",
+            },
+            # ── Sonstiges ────────────────────────────────────────────────────
+            "name": {
+                "type": "string",
+                "description": "Name für create_category",
             },
         },
         "required": ["action"],
     },
 }
 
+
+# ── Hilfsfunktionen ──────────────────────────────────────────────────────────
 
 def _cfg():
     return get_tool_settings("wordpress")
@@ -167,8 +216,8 @@ def _base(cfg):
     return f"{url}/wp-json/wp/v2"
 
 
-def _fmt_post(p):
-    return {
+def _fmt_post(p, include_content=False):
+    result = {
         "id": p.get("id"),
         "title": p.get("title", {}).get("rendered", ""),
         "status": p.get("status"),
@@ -176,9 +225,27 @@ def _fmt_post(p):
         "link": p.get("link", ""),
         "categories": p.get("categories", []),
         "tags": p.get("tags", []),
-        "excerpt": p.get("excerpt", {}).get("rendered", "").strip(),
+        "featured_media": p.get("featured_media"),
+        "excerpt": _html_to_md(p.get("excerpt", {}).get("rendered", "")),
+    }
+    if include_content:
+        result["content"] = _html_to_md(p.get("content", {}).get("rendered", ""))
+    return result
+
+
+def _fmt_media(m):
+    return {
+        "id": m.get("id"),
+        "title": m.get("title", {}).get("rendered", ""),
+        "media_type": m.get("media_type", ""),
+        "mime_type": m.get("mime_type", ""),
+        "source_url": m.get("source_url", ""),
+        "date": m.get("date", "")[:10],
+        "alt_text": m.get("alt_text", ""),
     }
 
+
+# ── Haupt-Handler ────────────────────────────────────────────────────────────
 
 def handler(
     action,
@@ -189,11 +256,19 @@ def handler(
     status="draft",
     categories=None,
     tags=None,
+    featured_media_id=None,
     search=None,
     filter_status="publish",
     filter_category=None,
     name=None,
     limit=10,
+    page=1,
+    # Medien
+    file_path=None,
+    media_title=None,
+    alt_text=None,
+    caption=None,
+    media_type=None,
 ):
     emit_log = get_emit_log()
 
@@ -210,8 +285,8 @@ def handler(
         return {
             "error": (
                 "WordPress nicht konfiguriert. "
-                "Bitte in Einstellungen -> MCP Tools -> wordpress "
-                "Site-URL, Benutzername und Anwendungspasswort eintragen."
+                "Bitte in Einstellungen → MCP Tools → wordpress "
+                "URL, Benutzername und Anwendungspasswort eintragen."
             )
         }
 
@@ -224,7 +299,7 @@ def handler(
         # ── get_posts ──────────────────────────────────────────────────────
         if action == "get_posts":
             header("WORDPRESS GET POSTS")
-            params = {"per_page": cap, "status": filter_status or "publish"}
+            params = {"per_page": cap, "page": int(page or 1), "status": filter_status or "publish"}
             if search:
                 params["search"] = search
             if filter_category:
@@ -232,47 +307,42 @@ def handler(
             r = requests.get(f"{base}/posts", auth=auth, params=params, timeout=15)
             r.raise_for_status()
             posts = r.json()
-            log(f"{len(posts)} Beitrag/Beitraege")
-            return {
-                "count": len(posts),
-                "posts": [_fmt_post(p) for p in posts],
-            }
+            total = r.headers.get("X-WP-Total", "?")
+            log(f"{len(posts)} Beitrag/Beiträge (gesamt: {total})")
+            return {"total": total, "count": len(posts), "posts": [_fmt_post(p) for p in posts]}
 
         # ── get_post ───────────────────────────────────────────────────────
         elif action == "get_post":
             if not post_id:
-                return {"error": "post_id erforderlich fuer get_post"}
+                return {"error": "post_id erforderlich"}
             header(f"WORDPRESS GET POST: {post_id}")
             r = requests.get(f"{base}/posts/{post_id}", auth=auth, timeout=15)
             r.raise_for_status()
             p = r.json()
-            result = _fmt_post(p)
-            result["content"] = p.get("content", {}).get("rendered", "")
+            result = _fmt_post(p, include_content=True)
             log(f"Beitrag: {result['title']}")
             return result
 
         # ── create_post ────────────────────────────────────────────────────
         elif action == "create_post":
             if not title:
-                return {"error": "title erforderlich fuer create_post"}
+                return {"error": "title ist ein Pflichtfeld"}
             if not content:
-                return {"error": "content erforderlich fuer create_post"}
+                return {"error": "content ist ein Pflichtfeld"}
             header(f"WORDPRESS CREATE: {title[:60]}")
-            payload = {
-                "title": title,
-                "content": content,
-                "status": status or "draft",
-            }
+            payload = {"title": title, "content": content, "status": status or "draft"}
             if excerpt:
                 payload["excerpt"] = excerpt
             if categories:
                 payload["categories"] = categories
             if tags:
                 payload["tags"] = tags
-            r = requests.post(f"{base}/posts", auth=auth, json=payload, timeout=15)
+            if featured_media_id:
+                payload["featured_media"] = featured_media_id
+            r = requests.post(f"{base}/posts", auth=auth, json=payload, timeout=20)
             r.raise_for_status()
             p = r.json()
-            log(f"Beitrag erstellt: ID {p.get('id')} ({p.get('status')})")
+            log(f"Erstellt: ID {p.get('id')} | Status: {p.get('status')} | {p.get('link', '')}")
             return {
                 "success": True,
                 "id": p.get("id"),
@@ -284,12 +354,12 @@ def handler(
         # ── update_post ────────────────────────────────────────────────────
         elif action == "update_post":
             if not post_id:
-                return {"error": "post_id erforderlich fuer update_post"}
+                return {"error": "post_id ist ein Pflichtfeld"}
             header(f"WORDPRESS UPDATE: {post_id}")
             payload = {}
-            if title:
+            if title is not None:
                 payload["title"] = title
-            if content:
+            if content is not None:
                 payload["content"] = content
             if excerpt is not None:
                 payload["excerpt"] = excerpt
@@ -299,12 +369,14 @@ def handler(
                 payload["categories"] = categories
             if tags is not None:
                 payload["tags"] = tags
+            if featured_media_id is not None:
+                payload["featured_media"] = featured_media_id
             if not payload:
-                return {"error": "Mindestens ein Feld angeben (title, content, status, ...)"}
-            r = requests.post(f"{base}/posts/{post_id}", auth=auth, json=payload, timeout=15)
+                return {"error": "Mindestens ein Feld angeben (title, content, status, …)"}
+            r = requests.post(f"{base}/posts/{post_id}", auth=auth, json=payload, timeout=20)
             r.raise_for_status()
             p = r.json()
-            log(f"Beitrag aktualisiert: {p.get('title', {}).get('rendered', '')}")
+            log(f"Aktualisiert: {p.get('title', {}).get('rendered', '')} | {p.get('status')}")
             return {
                 "success": True,
                 "id": p.get("id"),
@@ -316,29 +388,27 @@ def handler(
         # ── delete_post ────────────────────────────────────────────────────
         elif action == "delete_post":
             if not post_id:
-                return {"error": "post_id erforderlich fuer delete_post"}
+                return {"error": "post_id ist ein Pflichtfeld"}
             header(f"WORDPRESS DELETE: {post_id}")
             r = requests.delete(f"{base}/posts/{post_id}", auth=auth, timeout=15)
             r.raise_for_status()
             p = r.json()
-            log(f"Beitrag in Papierkorb: {post_id}")
-            return {
-                "success": True,
-                "id": post_id,
-                "status": p.get("status"),
-            }
+            log(f"In Papierkorb: ID {post_id}")
+            return {"success": True, "id": post_id, "status": p.get("status")}
 
         # ── get_pages ──────────────────────────────────────────────────────
         elif action == "get_pages":
             header("WORDPRESS GET PAGES")
-            params = {"per_page": cap, "status": "publish,draft,private"}
+            params = {"per_page": cap, "page": int(page or 1), "status": "publish,draft,private"}
             if search:
                 params["search"] = search
             r = requests.get(f"{base}/pages", auth=auth, params=params, timeout=15)
             r.raise_for_status()
             pages = r.json()
-            log(f"{len(pages)} Seite(n)")
+            total = r.headers.get("X-WP-Total", "?")
+            log(f"{len(pages)} Seite(n) (gesamt: {total})")
             return {
+                "total": total,
                 "count": len(pages),
                 "pages": [
                     {
@@ -361,10 +431,7 @@ def handler(
             log(f"{len(cats)} Kategorie(n)")
             return {
                 "count": len(cats),
-                "categories": [
-                    {"id": c.get("id"), "name": c.get("name"), "count": c.get("count", 0)}
-                    for c in cats
-                ],
+                "categories": [{"id": c.get("id"), "name": c.get("name"), "count": c.get("count", 0)} for c in cats],
             }
 
         # ── get_tags ───────────────────────────────────────────────────────
@@ -376,16 +443,13 @@ def handler(
             log(f"{len(tags_list)} Tag(s)")
             return {
                 "count": len(tags_list),
-                "tags": [
-                    {"id": t.get("id"), "name": t.get("name"), "count": t.get("count", 0)}
-                    for t in tags_list
-                ],
+                "tags": [{"id": t.get("id"), "name": t.get("name"), "count": t.get("count", 0)} for t in tags_list],
             }
 
         # ── create_category ────────────────────────────────────────────────
         elif action == "create_category":
             if not name:
-                return {"error": "name erforderlich fuer create_category"}
+                return {"error": "name ist ein Pflichtfeld"}
             header(f"WORDPRESS CREATE CATEGORY: {name}")
             r = requests.post(f"{base}/categories", auth=auth, json={"name": name}, timeout=15)
             r.raise_for_status()
@@ -393,16 +457,86 @@ def handler(
             log(f"Kategorie erstellt: ID {c.get('id')}")
             return {"success": True, "id": c.get("id"), "name": c.get("name")}
 
+        # ── upload_media ───────────────────────────────────────────────────
+        elif action == "upload_media":
+            if not file_path:
+                return {"error": "file_path ist ein Pflichtfeld"}
+            if not os.path.isfile(file_path):
+                return {"error": f"Datei nicht gefunden: {file_path}"}
+
+            filename = os.path.basename(file_path)
+            mime = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+            header(f"WORDPRESS UPLOAD MEDIA: {filename}")
+            log(f"Dateityp: {mime} | Größe: {os.path.getsize(file_path):,} Bytes")
+
+            with open(file_path, "rb") as f:
+                data = f.read()
+
+            upload_headers = {
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Content-Type": mime,
+            }
+            r = requests.post(
+                f"{base}/media",
+                data=data,
+                headers=upload_headers,
+                auth=auth,
+                timeout=60,
+            )
+            r.raise_for_status()
+            m = r.json()
+            media_id = m["id"]
+
+            # Optionale Meta-Felder nachträglich setzen
+            meta = {}
+            if media_title:
+                meta["title"] = media_title
+            if alt_text:
+                meta["alt_text"] = alt_text
+            if caption:
+                meta["caption"] = caption
+            if meta:
+                requests.post(f"{base}/media/{media_id}", json=meta, auth=auth, timeout=15)
+
+            log(f"Hochgeladen: ID {media_id} | {m.get('source_url', '')}")
+            return {
+                "success": True,
+                "id": media_id,
+                "url": m.get("source_url", ""),
+                "mime_type": mime,
+                "filename": filename,
+            }
+
+        # ── list_media ─────────────────────────────────────────────────────
+        elif action == "list_media":
+            header("WORDPRESS LIST MEDIA")
+            params = {"per_page": cap, "page": int(page or 1)}
+            if search:
+                params["search"] = search
+            if media_type:
+                params["media_type"] = media_type
+            r = requests.get(f"{base}/media", auth=auth, params=params, timeout=15)
+            r.raise_for_status()
+            items = r.json()
+            total = r.headers.get("X-WP-Total", "?")
+            log(f"{len(items)} Medien (gesamt: {total})")
+            return {
+                "total": total,
+                "count": len(items),
+                "media": [_fmt_media(m) for m in items],
+            }
+
         else:
             return {"error": f"Unbekannte Aktion: '{action}'."}
 
     except requests.HTTPError as e:
         try:
             detail = e.response.json()
+            msg = detail.get("message") or detail.get("code") or str(detail)
         except Exception:
-            detail = e.response.text[:300]
-        log(f"HTTP {e.response.status_code}: {detail}")
-        return {"error": f"WordPress API Fehler ({e.response.status_code}): {detail}"}
+            msg = e.response.text[:400]
+        log(f"HTTP {e.response.status_code}: {msg}")
+        return {"error": f"WordPress API Fehler ({e.response.status_code}): {msg}"}
     except Exception as e:
         log(f"Fehler: {e}")
         return {"error": str(e)}
