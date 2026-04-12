@@ -217,6 +217,7 @@ def handle_message(data):
     agent_id = data.get('agent_id') or None
     file_name = data.get('file_name', '')
     file_content = data.get('file_content', '')
+    temperature_override = data.get('temperature')
     if not content and not file_content:
         return
 
@@ -266,6 +267,13 @@ def handle_message(data):
         emit('chat_updated', {'chat_id': chat_id, 'title': title})
 
     settings = get_settings()
+    # Per-Nachricht Temperatur-Override (vom Kreativitäts-Schieber im Frontend)
+    if temperature_override is not None:
+        try:
+            settings = dict(settings)
+            settings['temperature'] = float(max(0.0, min(1.0, temperature_override)))
+        except (ValueError, TypeError):
+            pass
 
     def emit_log(entry):
         """Accepts structured log entries (dict) or plain strings."""

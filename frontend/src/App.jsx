@@ -376,7 +376,7 @@ export default function App() {
     socket.emit('cancel_generation');
   }
 
-  async function handleSendMessage(content, file = null) {
+  async function handleSendMessage(content, file = null, temperature = 0.5) {
     const icon = file?.icon || (file?.isBinary ? '📄' : '📎');
     const displayContent = file
       ? `${icon} ${file.name}${content ? `\n${content}` : ''}`
@@ -407,6 +407,7 @@ export default function App() {
       agent_id: activeChatId ? '' : selectedAgentId,
       file_name: fileName,
       file_content: fileContent,
+      temperature,
     });
   }
 

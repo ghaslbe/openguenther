@@ -241,15 +241,35 @@ function CopyButton({ text, align }) {
   );
 }
 
+const TEMP_STEPS = [
+  { max: 0.25, label: 'Präzise', color: '#4fc3f7' },
+  { max: 0.55, label: 'Ausgewogen', color: '#4caf50' },
+  { max: 0.80, label: 'Kreativ', color: '#ff9800' },
+  { max: 1.01, label: 'Wild', color: '#ef5350' },
+];
+
+function getTempMeta(val) {
+  return TEMP_STEPS.find(s => val < s.max) || TEMP_STEPS[TEMP_STEPS.length - 1];
+}
+
 export default function ChatWindow({ messages, onSendMessage, onNewChat, onCancel, isLoading, currentTool, currentToolLog, activeChatId, agents, selectedAgentId, onAgentChange, activeAgentName }) {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [attachedFile, setAttachedFile] = useState(null); // {name, content}
+  const [temperature, setTemperature] = useState(() => {
+    const stored = localStorage.getItem('chat_temperature');
+    return stored !== null ? parseFloat(stored) : 0.5;
+  });
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  function handleTempChange(val) {
+    setTemperature(val);
+    localStorage.setItem('chat_temperature', val);
+  }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -275,7 +295,7 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, onCance
       recognitionRef.current = null;
       setIsRecording(false);
     }
-    onSendMessage(text, attachedFile);
+    onSendMessage(text, attachedFile, temperature);
     setInput('');
     setAttachedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -388,6 +408,29 @@ export default function ChatWindow({ messages, onSendMessage, onNewChat, onCance
           >✕</button>
         </div>
       )}
+      {/* Kreativitäts-Schieber */}
+      {(() => {
+        const meta = getTempMeta(temperature);
+        return (
+          <div className="chat-temp-bar">
+            <span className="chat-temp-label-left">🎯</span>
+            <input
+              type="range"
+              min="0" max="1" step="0.05"
+              value={temperature}
+              onChange={(e) => handleTempChange(parseFloat(e.target.value))}
+              className="chat-temp-slider"
+              style={{ '--thumb-color': meta.color }}
+              title={`Kreativität / Temperatur: ${temperature}`}
+            />
+            <span className="chat-temp-label-right">🎨</span>
+            <span className="chat-temp-badge" style={{ color: meta.color, borderColor: meta.color + '55', background: meta.color + '15' }}>
+              {meta.label}
+            </span>
+          </div>
+        );
+      })()}
+
       <form className="chat-input-form" onSubmit={handleSubmit}>
         <input
           ref={fileInputRef}

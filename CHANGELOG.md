@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.51] — 2026-04-12
+
+### Kreativitäts-Schieber im Chat
+- Neuer Schieber direkt über der Eingabeleiste: von **Präzise** (0.0) bis **Wild** (1.0)
+- Vier Stufen: Präzise 🔵 · Ausgewogen 🟢 · Kreativ 🟠 · Wild 🔴 — Farbe und Label wechseln live
+- Wert wird in `localStorage` gespeichert (bleibt nach Reload erhalten)
+- Temperatur wird per Socket-Message ans Backend übermittelt und überschreibt pro Nachricht den Einstellungs-Default
+- Backend: `temperature_override` in `handle_message()` — geclamppt auf 0.0–1.0
+
+---
+
 ## [1.4.50] — 2026-04-12
 
 ### Speicher-Übersicht in Einstellungen
