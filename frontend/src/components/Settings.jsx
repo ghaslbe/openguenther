@@ -10,6 +10,7 @@ import SettingsHilfe from './settings/SettingsHilfe';
 import SettingsAgents from './settings/SettingsAgents';
 import SettingsAutoprompts from './settings/SettingsAutoprompts';
 import SettingsWebhooks from './settings/SettingsWebhooks';
+import SettingsSpeicher from './settings/SettingsSpeicher';
 
 export default function Settings({ onClose, onAgentsChange }) {
   const { t } = useTranslation();
@@ -34,6 +35,7 @@ export default function Settings({ onClose, onAgentsChange }) {
     { id: 'mcp',          label: t('settings.nav.mcp') },
     { id: 'webhooks',     label: t('settings.nav.webhooks') },
     { id: 'telegram',     label: t('settings.nav.telegram') },
+    { id: 'speicher',     label: t('settings.nav.speicher') },
     { id: 'hilfe',        label: t('settings.nav.hilfe') },
     { id: 'info',         label: t('settings.nav.info') },
   ];
@@ -56,6 +58,8 @@ export default function Settings({ onClose, onAgentsChange }) {
         return <SettingsWebhooks />;
       case 'telegram':
         return <SettingsTelegram />;
+      case 'speicher':
+        return <SettingsSpeicher />;
       case 'hilfe':
         return <SettingsHilfe />;
       case 'info':

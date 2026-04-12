@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.50] — 2026-04-12
+
+### Speicher-Übersicht in Einstellungen
+- Neuer Settings-Tab **Speicher**: zeigt Gesamtgröße des `/app/data`-Volumes mit farbiger Breakdown-Bar (Chat-Dateien, Uploads, Datenbank, Konfig)
+- Tabelle der größten Dateien (Top 50): Dateiname, Größe, zugehöriger Chat-Titel, Kategorie-Badge
+- **Download**-Button (⬇) und **Löschen**-Button (🗑) mit Inline-Bestätigung pro Datei
+- Backend: neue Route `/api/storage/info` (GET), `/api/storage/file` (DELETE), `/api/storage/download` (GET) in `routes/storage.py`
+- Pfad-Validierung beim Löschen/Download: nur Dateien innerhalb `DATA_DIR` erlaubt
+
+---
+
 ## [1.4.49] — 2026-03-06
 
 ### always_enabled-Flag + Bug-Fixes

@@ -16,6 +16,7 @@ from routes.autoprompts import autoprompts_bp, set_service as set_autoprompt_ser
 from routes.usage import usage_bp
 from routes.webhooks import webhooks_bp
 from routes.custom_tools import custom_tools_bp
+from routes.storage import storage_bp
 from mcp.registry import registry, MCPTool
 from mcp.loader import load_builtin_tools, load_custom_tools, get_startup_errors
 from mcp.manager import load_external_tools
@@ -36,6 +37,7 @@ app.register_blueprint(autoprompts_bp)
 app.register_blueprint(usage_bp)
 app.register_blueprint(webhooks_bp)
 app.register_blueprint(custom_tools_bp)
+app.register_blueprint(storage_bp)
 
 _cancel_flags = {}  # sid → threading.Event
 

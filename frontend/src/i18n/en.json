@@ -51,6 +51,7 @@
       "mcp": "MCP Servers",
       "webhooks": "Webhooks",
       "telegram": "Telegram",
+      "speicher": "Storage",
       "hilfe": "Help",
       "info": "Info"
     },
@@ -63,6 +64,7 @@
       "mcp": "External MCP Servers",
       "webhooks": "Webhooks",
       "telegram": "Telegram Gateway",
+      "speicher": "Storage & Files",
       "hilfe": "Help",
       "info": "Info"
     },
